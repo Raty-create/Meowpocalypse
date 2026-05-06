@@ -1,8 +1,9 @@
 #include "enemy.h"
-
-#define ENEMY_SIZE 32
+#include "config.h"
 
 enum { DEACTIVATE, ACTIVE };
+
+ENEMY enemies[ENEMY_LIMIT];
 
 void InitEnemy() {
 	for (int i = 0; i < ENEMY_LIMIT; i++) {

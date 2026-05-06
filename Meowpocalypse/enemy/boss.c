@@ -1,8 +1,9 @@
 #include "boss.h"
-
-#define BOSS_SIZE (32 * 3)
+#include "config.h"
 
 enum { DEACTIVATE, ACTIVE };
+
+BOSS boss;
 
 void InitBoss() {
 	boss.isActive = DEACTIVATE;

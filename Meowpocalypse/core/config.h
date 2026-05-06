@@ -1,0 +1,16 @@
+#pragma once
+
+#define TILE_SIZE 32
+
+#define PLAYER_SIZE 32
+
+#define ENEMY_SIZE 32
+#define ENEMY_LIMIT 50
+
+#define BOSS_SIZE (32 * 3)
+
+#define SCREEN_WIDTH 1920
+#define SCREEN_HEIGHT 1080
+
+#define SCREEN_TILE_X (SCREEN_WIDTH / TILE_SIZE)
+#define SCREEN_TILE_Y (SCREEN_HEIGHT / TILE_SIZE)

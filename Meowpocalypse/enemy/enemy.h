@@ -1,7 +1,6 @@
 #pragma once
 #include "object.h"
-
-#define ENEMY_LIMIT 50
+#include "config.h"
 
 typedef struct {
 	OBJECT base;

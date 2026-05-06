@@ -5,6 +5,6 @@ typedef struct {
 	OBJECT base;
 	int type;
 	int isActive;
-} ENEMY;
+} BOSS;
 
-extern ENEMY boss;
+extern BOSS boss;

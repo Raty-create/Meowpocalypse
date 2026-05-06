@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="Meowpocalypse/Meowpocalypse.vcxproj" />
+  <Project Path="Meowpocalypse/Meowpocalypse.vcxproj" Id="509ee2e3-b782-485e-a0e3-a697f7680149" />
 </Solution>
