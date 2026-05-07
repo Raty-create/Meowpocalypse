@@ -7,3 +7,6 @@ typedef struct {
 } PLAYER;
 
 extern PLAYER player;
+
+void InitPlayer();
+void UpdatePlayer();

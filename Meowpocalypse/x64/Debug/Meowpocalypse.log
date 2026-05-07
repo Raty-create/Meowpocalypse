@@ -1,4 +1,22 @@
-﻿  player.c
-C:\Users\user\source\repos\26WindowsProgrammingTermProject\Meowpocalypse\player\player.c(9,35): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\user\source\repos\26WindowsProgrammingTermProject\Meowpocalypse\player\player.c(10,36): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+﻿  boss.c
+C:\Users\user\source\repos\26WindowsProgrammingTermProject\Meowpocalypse\core\object.h(4,136): warning C4091: 'typedef ': 변수를 선언하지 않으면 '<unnamed-enum-MAP_WAITING>' 왼쪽은 무시됩니다.
+  (소스 파일 'enemy/boss.c'을(를) 컴파일하는 중)
+  
+  enemy.c
+C:\Users\user\source\repos\26WindowsProgrammingTermProject\Meowpocalypse\core\object.h(4,136): warning C4091: 'typedef ': 변수를 선언하지 않으면 '<unnamed-enum-MAP_WAITING>' 왼쪽은 무시됩니다.
+  (소스 파일 'enemy/enemy.c'을(를) 컴파일하는 중)
+  
+  game.c
+C:\Users\user\source\repos\26WindowsProgrammingTermProject\Meowpocalypse\core\object.h(4,136): warning C4091: 'typedef ': 변수를 선언하지 않으면 '<unnamed-enum-MAP_WAITING>' 왼쪽은 무시됩니다.
+  (소스 파일 'game.c'을(를) 컴파일하는 중)
+  
+  player.c
+C:\Users\user\source\repos\26WindowsProgrammingTermProject\Meowpocalypse\core\object.h(4,136): warning C4091: 'typedef ': 변수를 선언하지 않으면 '<unnamed-enum-MAP_WAITING>' 왼쪽은 무시됩니다.
+  (소스 파일 'player/player.c'을(를) 컴파일하는 중)
+  
+  render.c
+C:\Users\user\source\repos\26WindowsProgrammingTermProject\Meowpocalypse\core\object.h(4,136): warning C4091: 'typedef ': 변수를 선언하지 않으면 '<unnamed-enum-MAP_WAITING>' 왼쪽은 무시됩니다.
+  (소스 파일 'render/render.c'을(를) 컴파일하는 중)
+  
+  코드를 생성하고 있습니다...
   Meowpocalypse.vcxproj -> C:\Users\user\source\repos\26WindowsProgrammingTermProject\x64\Debug\Meowpocalypse.exe
