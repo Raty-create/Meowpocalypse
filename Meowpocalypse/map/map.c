@@ -19,10 +19,10 @@ void InitWaitingRoom() {
 			}
 		}
 	}
-	currentMap.tiles[4][29] = TILE_DOOR;
-	currentMap.tiles[4][30] = TILE_DOOR;
-	currentMap.tiles[5][29] = TILE_DOOR;
-	currentMap.tiles[5][30] = TILE_DOOR;
+	currentMap.tiles[16][45] = TILE_DOOR;
+	currentMap.tiles[16][46] = TILE_DOOR;
+	currentMap.tiles[17][45] = TILE_DOOR;
+	currentMap.tiles[17][46] = TILE_DOOR;
 }
 // 첫번째 복도
 void InitFirstHallWay() {
