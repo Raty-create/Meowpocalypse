@@ -20,13 +20,15 @@ void InitPlayer() {
 
 // 플레이어 - 벽 충돌 체크
 int IsTileWall(float x, float y) {
-	int col = (int)(x / TILE_SIZE);
-	int row = (int)(y / TILE_SIZE);
+	MAPDATA* m = &maps[currentMapType];
 
-	if (row < 0 || row >= WAITINGMAP_ROWS) return 1;
-	if (col < 0 || col >= WAITINGMAP_COLS) return 1;
+	int col = (int)((x - m->worldX) / TILE_SIZE);
+	int row = (int)((y - m->worldY) / TILE_SIZE);
 
-	return currentMap.tiles[row][col] == TILE_WALL;
+	if (row < 0 || row >= m->rows) return 1;
+	if (col < 0 || col >= m->cols) return 1;
+
+	return m->tiles[row][col] == TILE_WALL;
 }
 
 // 플레이어 업데이트
