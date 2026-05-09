@@ -32,10 +32,10 @@ static void InitWaitingMap(MAPDATA* m) {
 		}
 	}
 	// 문
-	AddDoor(m, 4, 29);
-	AddDoor(m, 5, 29);
-	AddDoor(m, 4, 30);
-	AddDoor(m, 5, 30);
+	InitDoor(m, 4, 29);
+	InitDoor(m, 5, 29);
+	InitDoor(m, 4, 30);
+	InitDoor(m, 5, 30);
 }
 
 // 첫번째 복도
@@ -60,8 +60,8 @@ static void InitFirstHallWay(MAPDATA* m) {
 			}
 		}
 	}
-	AddDoor(m, m->rows / 2, m->cols - 2);
-	AddDoor(m, m->rows / 2 + 1, m->cols - 2);
+	InitDoor(m, m->rows / 2, m->cols - 2);
+	InitDoor(m, m->rows / 2 + 1, m->cols - 2);
 }
 
 void InitMap(MAP_TYPE type) {
