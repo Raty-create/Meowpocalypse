@@ -5,18 +5,31 @@
 typedef enum { MAP_WAITING, MAP_FIRST_HALLWAY, MAP_FIRST_BOSS, MAP_SECOND_HALLWAY, MAP_SECOND_BOSS, MAP_THIRD_HALLWAY, MAP_THIRD_BOSS } MAP_TYPE;
 extern MAP_TYPE currentMapType;
 
-typedef struct {
-    int tiles[WAITINGMAP_ROWS][WAITINGMAP_COLS];
-    int width;
-    int height;
-} WAITINGMAP;
+typedef enum {
+    DOOR_CLOSE,
+    DOOR_OPEN
+} DOOR_STATE;
 
 typedef struct {
-    int tiles[FIRST_HALLWAYMAP_ROWS][FIRST_HALLWAYMAP_COLS];
-} FIRSTHALLWAYMAP;
+    int row;
+    int col;
+    DOOR_STATE state;
+} DOOR_INFO;
 
-extern WAITINGMAP currentMap;
-extern FIRSTHALLWAYMAP firsthallwayMap;
+typedef struct {
+    int tiles[MAX_MAP_ROWS][MAX_MAP_COLS];
+    int rows;
+    int cols;
+    int worldX;
+    int worldY;
+    DOOR_INFO doors[MAX_DOORS];
+    int doorCount;
+} MAPDATA;
 
-void InitWaitingRoom();
-void InitFirstHallWay();
+extern MAPDATA maps[7];
+
+void InitMap(MAP_TYPE type);
+void InitAllMap();
+
+void SetDoorState(MAP_TYPE type, DOOR_STATE state);
+void UpdateDoors(MAP_TYPE type, int allEnemiesDead);

@@ -60,7 +60,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 		mDC = CreateCompatibleDC(hDC);
 		hBitmap = CreateCompatibleBitmap(hDC, rt.right, rt.bottom);
 		oldBitMap = (HBITMAP)SelectObject(mDC, hBitmap);
-		FillRect(mDC, &rt, (HBRUSH)GetStockObject(WHITE_BRUSH));
+		FillRect(mDC, &rt, (HBRUSH)GetStockObject(BLACK_BRUSH));
 		
 		Render(mDC);
 
