@@ -4,7 +4,7 @@
 MAP_TYPE currentMapType = MAP_WAITING;
 MAPDATA maps[7];
 
-static void AddDoor(MAPDATA* m, int row, int col) {
+static void InitDoor(MAPDATA* m, int row, int col) {
 	if (m->doorCount >= MAX_DOORS) return;
 	m->tiles[row][col] = TILE_DOOR;
 	m->doors[m->doorCount].row = row;

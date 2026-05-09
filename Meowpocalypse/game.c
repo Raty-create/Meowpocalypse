@@ -23,7 +23,7 @@ void Update() {
 }
 
 void Render(HDC mDC) {
-	// 현재 맵만 랜더링
+	// 현재 맵만 렌더링
 	RenderCurrentMap(mDC);
 	// 플레이어
 	RenderPlayer(mDC);
