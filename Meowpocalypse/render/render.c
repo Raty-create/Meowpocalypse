@@ -7,8 +7,15 @@ HBRUSH hBrush, oldBrush;
 HPEN hPen, oldPen;
 COLORREF color;
 int screenX, screenY;
-
-// 맵
+//타일 색상
+static COLORREF TileColor(int tileType, DOOR_STATE doorState) {
+	switch (tileType) {
+	case TILE_FLOOR: return RGB(153, 76, 0);
+	case TILE_WALL: return RGB(0, 0, 0);
+	case TILE_DOOR: return(doorState == DOOR_OPEN) ? RGB(0, 200, 0) : RGB(139, 69, 0);
+	}
+}
+//타일 그리기
 void RenderTile(HDC mDC, int screenX, int screenY, COLORREF color) {
 	hBrush = CreateSolidBrush(color);
 	oldBrush = (HBRUSH)SelectObject(mDC, hBrush);
@@ -22,39 +29,31 @@ void RenderTile(HDC mDC, int screenX, int screenY, COLORREF color) {
 	SelectObject(mDC, oldPen);
 	DeleteObject(hPen);
 }
+// 맵 그리기
+void RenderCurrentMap(HDC mDC) {
+	MAPDATA* m = &maps[currentMapType];
+	for (int row = 0; row < m->rows; row++) {
+		for (int col = 0; col < m->cols; col++) {
 
-void RenderWaitingMap(HDC mDC) {
-	for (int row = 0; row < WAITINGMAP_ROWS; row++) {
-		for (int col = 0; col < WAITINGMAP_COLS; col++) {
-
-			screenX = col * TILE_SIZE - (int)camera.x;
-			screenY = row * TILE_SIZE - (int)camera.y;
-
-			if (screenX + TILE_SIZE < 0 || screenX > SCREEN_WIDTH) continue;
-			if (screenY + TILE_SIZE < 0 || screenY > SCREEN_HEIGHT) continue;
-
-			if (currentMap.tiles[row][col] == TILE_FLOOR) color = RGB(153, 76, 0);
-			else if (currentMap.tiles[row][col] == TILE_WALL) color = RGB(0, 0, 0);
-			else if (currentMap.tiles[row][col] == TILE_DOOR) color = RGB(0, 0, 255);
-
-			RenderTile(mDC, screenX, screenY, color);
-		}
-	}
-}
-
-void RenderFirstHallWayMap(HDC mDC) {
-	for (int row = 0; row < FIRST_HALLWAYMAP_ROWS; row++) {
-		for (int col = 0; col < FIRST_HALLWAYMAP_COLS; col++) {
-			screenX = FIRST_HALLWAYMAP_X + col * TILE_SIZE - (int)camera.x;
-			screenY = row * TILE_SIZE - (int)camera.y;
+			screenX = m->worldX + col * TILE_SIZE - (int)camera.x;
+			screenY = m->worldY + row * TILE_SIZE - (int)camera.y;
 
 			if (screenX + TILE_SIZE < 0 || screenX > SCREEN_WIDTH) continue;
 			if (screenY + TILE_SIZE < 0 || screenY > SCREEN_HEIGHT) continue;
 
-			if (firsthallwayMap.tiles[row][col] == TILE_WALL) color = RGB(0, 0, 0);
-			else if (firsthallwayMap.tiles[row][col] == TILE_FLOOR) color = RGB(153, 76, 0);
+			int tileType = m->tiles[row][col];
+			DOOR_STATE doorstate = DOOR_CLOSE;
 
-			RenderTile(mDC, screenX, screenY, color);
+			if (tileType == TILE_DOOR) {
+				for (int d = 0; d < m->doorCount; d++) {
+					if (m->doors[d].row == row && m->doors[d].col == col) {
+						doorstate = m->doors[d].state;
+						break;
+					}
+				}
+			}
+
+			RenderTile(mDC, screenX, screenY, TileColor(tileType, doorstate));
 		}
 	}
 }
