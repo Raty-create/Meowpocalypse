@@ -12,6 +12,7 @@ void InitGame() {
 	InitAllMap();
 	// 플레이어
 	InitPlayer();
+	SetDoorState(MAP_WAITING, DOOR_OPEN);
 }
 
 void Update() {
