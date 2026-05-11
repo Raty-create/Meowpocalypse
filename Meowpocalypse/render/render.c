@@ -2,13 +2,14 @@
 #include "player.h"
 #include "camera.h"
 #include "map.h"
+#include "enemy.h"
 
 HBRUSH hBrush, oldBrush;
 HPEN hPen, oldPen;
 COLORREF color;
 int screenX, screenY;
 //타일 색상
-static COLORREF TileColor(int tileType, DOOR_STATE doorState) {
+COLORREF TileColor(int tileType, DOOR_STATE doorState) {
 	switch (tileType) {
 	case TILE_FLOOR: return RGB(153, 76, 0);
 	case TILE_WALL: return RGB(0, 0, 0);
@@ -29,6 +30,7 @@ void RenderTile(HDC mDC, int screenX, int screenY, COLORREF color) {
 	SelectObject(mDC, oldPen);
 	DeleteObject(hPen);
 }
+
 // 맵 그리기
 void RenderCurrentMap(HDC mDC) {
 	MAPDATA* m = &maps[currentMapType];
@@ -55,6 +57,18 @@ void RenderCurrentMap(HDC mDC) {
 
 			RenderTile(mDC, screenX, screenY, TileColor(tileType, doorstate));
 		}
+	}
+}
+void RenderEnemy(HDC mDC) {
+	MAPDATA* m = &maps[currentMapType];
+	for (int i = 0; i < ENEMY_LIMIT; i++) {
+		if (!enemies[i].isActive) continue;
+
+		int screenX = (int)(enemies[i].base.x - camera.x);
+		int screenY = (int)(enemies[i].base.y - camera.y);
+
+		Rectangle(mDC, screenX - enemies[i].base.width / 2, screenY - enemies[i].base.height / 2,
+			screenX + enemies[i].base.width / 2, screenY + enemies[i].base.height / 2);
 	}
 }
 

@@ -31,9 +31,12 @@ extern MAPDATA maps[7];
 MAP_TYPE GetNextMap(MAP_TYPE type);
 
 void GetSpawnPos(MAP_TYPE type, float* outX, float* outY);
+void MapTransition();
 
 void InitMap(MAP_TYPE type);
 void InitAllMap();
 
 void SetDoorState(MAP_TYPE type, DOOR_STATE state);
 void UpdateDoors(MAP_TYPE type, int allEnemiesDead);
+
+void ClearEnemies();

@@ -9,3 +9,6 @@ void RenderCurrentMap(HDC mDC);
 
 // 플레이어
 void RenderPlayer(HDC mDC);
+
+// 잡몹
+void RenderEnemy(HDC mDC);

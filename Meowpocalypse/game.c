@@ -4,15 +4,16 @@
 #include "render.h"
 #include "camera.h"
 #include "map.h"
+#include "enemy.h"
 
 void InitGame() {
-	// 시작 맵 설정
-	currentMapType = MAP_WAITING;
 	// 맵
 	InitAllMap();
 	// 플레이어
 	InitPlayer();
 	SetDoorState(MAP_WAITING, DOOR_OPEN);
+	// 잡몹
+	InitEnemy();
 }
 
 void Update() {
@@ -28,4 +29,6 @@ void Render(HDC mDC) {
 	RenderCurrentMap(mDC);
 	// 플레이어
 	RenderPlayer(mDC);
+	// 잡몹
+	RenderEnemy(mDC);
 }
