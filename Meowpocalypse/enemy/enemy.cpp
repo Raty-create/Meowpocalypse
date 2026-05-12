@@ -1,13 +1,13 @@
 #include "enemy.h"
 #include "config.h"
 
-enum { DEACTIVATE, ACTIVE };
+enum { INACTIVE, ACTIVE };
 
 ENEMY enemies[ENEMY_LIMIT];
 
 void InitEnemy() {
 	for (int i = 0; i < ENEMY_LIMIT; i++) {
-		enemies[i].isActive = DEACTIVATE;
+		enemies[i].isActive = INACTIVE;
 	}
 }
 

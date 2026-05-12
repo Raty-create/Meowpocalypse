@@ -1,20 +1,25 @@
+#include <Windows.h>
 #include "render.h"
 #include "player.h"
 #include "camera.h"
 #include "map.h"
+#include "bullet.h"
 
 HBRUSH hBrush, oldBrush;
 HPEN hPen, oldPen;
 COLORREF color;
 int screenX, screenY;
+POINT pt;
+
 //타일 색상
-static COLORREF TileColor(int tileType, DOOR_STATE doorState) {
+COLORREF TileColor(int tileType, DOOR_STATE doorState) {
 	switch (tileType) {
 	case TILE_FLOOR: return RGB(153, 76, 0);
 	case TILE_WALL: return RGB(0, 0, 0);
 	case TILE_DOOR: return(doorState == DOOR_OPEN) ? RGB(0, 200, 0) : RGB(139, 69, 0);
 	}
 }
+
 //타일 그리기
 void RenderTile(HDC mDC, int screenX, int screenY, COLORREF color) {
 	hBrush = CreateSolidBrush(color);
@@ -29,6 +34,7 @@ void RenderTile(HDC mDC, int screenX, int screenY, COLORREF color) {
 	SelectObject(mDC, oldPen);
 	DeleteObject(hPen);
 }
+
 // 맵 그리기
 void RenderCurrentMap(HDC mDC) {
 	MAPDATA* m = &maps[currentMapType];
@@ -64,4 +70,16 @@ void RenderPlayer(HDC mDC) {
 	screenY = (int)(player.base.y - camera.y);
 
 	Rectangle(mDC, screenX - player.base.width / 2, screenY - player.base.height / 2, screenX + player.base.width / 2, screenY + player.base.height / 2);
+}
+
+// 총알
+void RenderBullets(HDC mDC) {
+	for (int i = 0; i < BULLET_MAX; i++) {
+		if (bullets[i].isActive == INACTIVE) continue;
+
+		screenX = (int)(bullets[i].x - camera.x);
+		screenY = (int)(bullets[i].y - camera.y);
+
+		Ellipse(mDC, screenX - bullets[i].width, screenY - bullets[i].height, screenX + bullets[i].width, screenY + bullets[i].height);
+	}
 }

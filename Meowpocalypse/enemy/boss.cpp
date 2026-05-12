@@ -1,12 +1,12 @@
 #include "boss.h"
 #include "config.h"
 
-enum { DEACTIVATE, ACTIVE };
+enum { INACTIVE, ACTIVE };
 
 BOSS boss;
 
 void InitBoss() {
-	boss.isActive = DEACTIVATE;
+	boss.isActive = INACTIVE;
 }
 
 void SpawnBoss() {

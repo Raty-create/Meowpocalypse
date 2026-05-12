@@ -15,7 +15,10 @@
 #define SCREEN_TILE_X (SCREEN_WIDTH / TILE_SIZE)
 #define SCREEN_TILE_Y (SCREEN_HEIGHT / TILE_SIZE)
 
-// -----------------MAP------------------------
+// PLAYER
+#define PLAYER_SPEED 4.8f
+
+// MAP
 #define TILE_FLOOR 0
 #define TILE_WALL 1
 #define TILE_DOOR 2
@@ -26,8 +29,8 @@
 #define HALLWAYMAP_ROWS (int)(WAITINGMAP_ROWS * 1.5f)
 #define HALLWAYMAP_COLS (int)(WAITINGMAP_COLS * 1.5f)
 
-#define BOSSMAP_ROWS ((SCREEN_HEIGHT / TILE_SIZE) - 2)
-#define BOSSMAP_COLS ((SCREEN_WIDTH / TILE_SIZE) - 2)
+#define BOSSMAP_ROWS (int)(WAITINGMAP_ROWS * 2.0f)
+#define BOSSMAP_COLS (int)(WAITINGMAP_COLS * 2.0f)
 
 #define WAITING_X   0
 #define HALLWAY1_X  (WAITINGMAP_COLS * TILE_SIZE)
@@ -37,6 +40,10 @@
 #define HALLWAY3_X  (BOSS2_X   + BOSSMAP_COLS    * TILE_SIZE)
 #define BOSS3_X     (HALLWAY3_X + HALLWAYMAP_COLS * TILE_SIZE)
 
-#define MAX_MAP_ROWS 64
-#define MAX_MAP_COLS 128
+#define MAX_MAP_ROWS 128
+#define MAX_MAP_COLS 256
 #define MAX_DOORS 16
+
+// BULLET
+#define BULLET_MAX 50
+#define BULLET_SPEED 8.0f

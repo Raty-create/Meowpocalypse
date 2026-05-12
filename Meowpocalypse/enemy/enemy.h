@@ -8,3 +8,6 @@ typedef struct {
 } ENEMY;
 
 extern ENEMY enemies[ENEMY_LIMIT];
+
+void InitEnemy();
+void SpawnEnemy();

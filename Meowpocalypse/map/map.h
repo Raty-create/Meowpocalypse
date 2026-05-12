@@ -30,6 +30,7 @@ extern MAPDATA maps[7];
 
 MAP_TYPE GetNextMap(MAP_TYPE type);
 
+void MapTransition();
 void GetSpawnPos(MAP_TYPE type, float* outX, float* outY);
 
 void InitMap(MAP_TYPE type);

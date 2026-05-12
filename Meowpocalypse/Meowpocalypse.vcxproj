@@ -105,7 +105,7 @@
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)core;$(ProjectDir)player;$(ProjectDir)enemy;$(ProjectDir)map;$(ProjectDir)camera;$(ProjectDir)render</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)core;$(ProjectDir)player;$(ProjectDir)enemy;$(ProjectDir)map;$(ProjectDir)camera;$(ProjectDir)render;$(ProjectDir)bullet</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -128,17 +128,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="bullet\bullet.c" />
-    <ClCompile Include="camera\camera.c" />
-    <ClCompile Include="core\collision.c" />
-    <ClCompile Include="core\input.c" />
-    <ClCompile Include="enemy\boss.c" />
-    <ClCompile Include="enemy\enemy.c" />
-    <ClCompile Include="game.c" />
-    <ClCompile Include="main.c" />
-    <ClCompile Include="map\map.c" />
-    <ClCompile Include="player\player.c" />
-    <ClCompile Include="render\render.c" />
+    <ClCompile Include="bullet\bullet.cpp" />
+    <ClCompile Include="camera\camera.cpp" />
+    <ClCompile Include="core\collision.cpp" />
+    <ClCompile Include="core\input.cpp" />
+    <ClCompile Include="enemy\boss.cpp" />
+    <ClCompile Include="enemy\enemy.cpp" />
+    <ClCompile Include="game.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="map\map.cpp" />
+    <ClCompile Include="player\player.cpp" />
+    <ClCompile Include="render\render.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bullet\bullet.h" />
