@@ -19,6 +19,8 @@ void InitGame() {
 void Update() {
 	// 플레이어
 	UpdatePlayer();
+	// 잡몹
+	UpdateEnemies();
 	// 카메라(현재 맵 크기를 카메라로 전달)
 	MAPDATA* m = &maps[currentMapType];
 	UpdateCamera(player.base.x, player.base.y, m->rows, m->cols);
@@ -30,5 +32,6 @@ void Render(HDC mDC) {
 	// 플레이어
 	RenderPlayer(mDC);
 	// 잡몹
-	RenderEnemy(mDC);
+	RenderEnemies(mDC);
+	RenderStones(mDC);
 }

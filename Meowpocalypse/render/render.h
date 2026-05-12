@@ -11,4 +11,7 @@ void RenderCurrentMap(HDC mDC);
 void RenderPlayer(HDC mDC);
 
 // 잡몹
-void RenderEnemy(HDC mDC);
+void RenderEnemies(HDC mDC);
+
+// 잡몹 공격
+void RenderStones(HDC mDC);

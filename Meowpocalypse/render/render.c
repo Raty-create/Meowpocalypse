@@ -59,17 +59,36 @@ void RenderCurrentMap(HDC mDC) {
 		}
 	}
 }
-void RenderEnemy(HDC mDC) {
-	MAPDATA* m = &maps[currentMapType];
+// 잡몹 그리기
+void RenderEnemies(HDC mDC) {
 	for (int i = 0; i < ENEMY_LIMIT; i++) {
 		if (!enemies[i].isActive) continue;
 
-		int screenX = (int)(enemies[i].base.x - camera.x);
-		int screenY = (int)(enemies[i].base.y - camera.y);
+		screenX = (int)(enemies[i].base.x - camera.x);
+		screenY = (int)(enemies[i].base.y - camera.y);
+
+		hBrush = CreateSolidBrush(enemies[i].state == ENEMY_CHASE ? RGB(200, 30, 0) : RGB(0, 30, 200));
+		oldBrush = (HBRUSH)SelectObject(mDC, hBrush);
 
 		Rectangle(mDC, screenX - enemies[i].base.width / 2, screenY - enemies[i].base.height / 2,
 			screenX + enemies[i].base.width / 2, screenY + enemies[i].base.height / 2);
+		SelectObject(mDC, oldBrush);
+		DeleteObject(hBrush);
 	}
+}
+// 잡몹 돌던지기 그리기
+void RenderStones(HDC mDC) {
+	hBrush = CreateSolidBrush(RGB(100, 100, 100));
+	oldBrush = (HBRUSH)SelectObject(mDC, hBrush);
+	for (int i = 0; i < STONE_LIMIT; i++) {
+		if (!stones[i].isActive) continue;
+		screenX = (int)(stones[i].x - camera.x);
+		screenY = (int)(stones[i].y - camera.y);
+		Ellipse(mDC, screenX - STONE_SIZE / 2, screenY - STONE_SIZE / 2,
+			screenX + STONE_SIZE / 2, screenY + STONE_SIZE / 2);
+	}
+	SelectObject(mDC, oldBrush);
+	DeleteObject(hBrush);
 }
 
 // 플레이어

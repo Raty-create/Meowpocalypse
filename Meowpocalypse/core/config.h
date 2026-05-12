@@ -15,7 +15,7 @@
 #define SCREEN_TILE_X (SCREEN_WIDTH / TILE_SIZE)
 #define SCREEN_TILE_Y (SCREEN_HEIGHT / TILE_SIZE)
 
-// -----------------MAP------------------------
+// MAP
 #define TILE_FLOOR 0
 #define TILE_WALL 1
 #define TILE_DOOR 2
@@ -40,3 +40,15 @@
 #define MAX_MAP_ROWS 128
 #define MAX_MAP_COLS 256
 #define MAX_DOORS 16
+
+// ENEMY
+#define ENEMY_COLS_SPAWN_MARGIN 20
+#define ENEMY_ROWS_SPAWN_MARGIN 5
+
+#define ENEMY_CHASE_RANGE 200.0f
+#define ENEMY_SPEED 2.0f
+
+#define STONE_SIZE 10
+#define STONE_SPEED 5.0f
+#define STONE_LIMIT (ENEMY_LIMIT * 2)
+#define STONE_INTERVAL 180
