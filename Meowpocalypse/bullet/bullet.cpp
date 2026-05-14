@@ -17,6 +17,7 @@ void InitBullet() {
 	}
 }
 
+// 총알 발사
 void ShootBullet(HWND hWnd) {
 	static BOOL prevPressed = FALSE;
 
@@ -54,6 +55,7 @@ void ShootBullet(HWND hWnd) {
 	prevPressed = currPressed;
 }
 
+// 총알 업데이트
 void UpdateBullet() {
 	for (int i = 0; i < BULLET_MAX; i++) {
 		if (bullets[i].isActive == INACTIVE) continue;
