@@ -4,6 +4,7 @@
 #include "render.h"
 #include "camera.h"
 #include "map.h"
+#include "enemy.h"
 #include "bullet.h"
 
 void InitGame() {
@@ -17,6 +18,9 @@ void InitGame() {
 	InitPlayer();
 	// 총알
 	InitBullet();
+	SetDoorState(MAP_WAITING, DOOR_OPEN);
+	// 잡몹
+	InitEnemy();
 }
 
 void Update(HWND hWnd) {
@@ -26,6 +30,8 @@ void Update(HWND hWnd) {
 	ShootBullet(hWnd);
 	// 총알
 	UpdateBullet();
+	// 잡몹
+	UpdateEnemies();
 	// 카메라(현재 맵 크기를 카메라로 전달)
 	MAPDATA* m = &maps[currentMapType];
 	UpdateCamera(player.base.x, player.base.y, m->rows, m->cols);
@@ -38,4 +44,7 @@ void Render(HDC mDC) {
 	RenderPlayer(mDC);
 	// 총알
 	RenderBullets(mDC);
+	// 잡몹
+	RenderEnemies(mDC);
+	RenderCatPaw(mDC);
 }

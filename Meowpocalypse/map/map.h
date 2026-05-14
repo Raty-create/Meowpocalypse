@@ -1,14 +1,9 @@
 #pragma once
 
 #include "config.h"
+#include "enum.h"
 
-typedef enum { MAP_WAITING, MAP_FIRST_HALLWAY, MAP_FIRST_BOSS, MAP_SECOND_HALLWAY, MAP_SECOND_BOSS, MAP_THIRD_HALLWAY, MAP_THIRD_BOSS } MAP_TYPE;
 extern MAP_TYPE currentMapType;
-
-typedef enum {
-    DOOR_CLOSE,
-    DOOR_OPEN
-} DOOR_STATE;
 
 typedef struct {
     int row;
@@ -30,11 +25,13 @@ extern MAPDATA maps[7];
 
 MAP_TYPE GetNextMap(MAP_TYPE type);
 
-void MapTransition();
 void GetSpawnPos(MAP_TYPE type, float* outX, float* outY);
+void MapTransition();
 
 void InitMap(MAP_TYPE type);
 void InitAllMap();
 
 void SetDoorState(MAP_TYPE type, DOOR_STATE state);
 void UpdateDoors(MAP_TYPE type, int allEnemiesDead);
+
+void ClearEnemies();

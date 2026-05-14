@@ -1,8 +1,9 @@
 #include "map.h"
 #include "config.h"
 #include "player.h"
-#include "collision.h"
+#include "enemy.h"
 #include "camera.h"
+#include "collision.h"
 
 MAP_TYPE currentMapType = MAP_WAITING;
 MAPDATA maps[7];
@@ -38,9 +39,9 @@ void InitWaitingMap(MAPDATA* m) {
 	int doorRow = m->rows / 2;
 	int doorCol = m->cols - 16;
 
-	m->tiles[doorRow][doorCol + 1] = TILE_DOOR;
+	m->tiles[doorRow][doorCol+1] = TILE_DOOR;
 	m->tiles[doorRow + 1][doorCol + 1] = TILE_DOOR;
-
+	
 	InitDoor(m, doorRow, doorCol);
 	InitDoor(m, doorRow + 1, doorCol);
 }
@@ -171,6 +172,15 @@ void MapTransition() {
 
 	MAPDATA* m = &maps[currentMapType];
 	UpdateCamera(player.base.x, player.base.y, m->rows, m->cols);
+
+	ClearEnemies();
+	int spawnCount = 0;
+	switch (currentMapType) {
+	case MAP_FIRST_HALLWAY: spawnCount = 15; break;
+	case MAP_SECOND_HALLWAY: spawnCount = 20; break;
+	case MAP_THIRD_HALLWAY: spawnCount = 25; break;
+	}
+	SpawnEnemy(currentMapType, spawnCount);
 }
 
 void GetSpawnPos(MAP_TYPE type, float* outX, float* outY) {

@@ -1,13 +1,11 @@
 #pragma once
 #include "config.h"
 
-typedef enum { INACTIVE, ACTIVE } BULLET_STATE;
-
 typedef struct {
 	float x, y;
 	float dx, dy;
 	int width, height;
-	BULLET_STATE isActive;
+	int isActive;
 } BULLET;
 
 extern BULLET bullets[BULLET_MAX];

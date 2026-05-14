@@ -1,8 +1,10 @@
 #include <Windows.h>
 #include "render.h"
 #include "player.h"
+#include "enemy.h"
 #include "camera.h"
 #include "map.h"
+#include "boss.h"
 #include "bullet.h"
 
 HBRUSH hBrush, oldBrush;
@@ -63,13 +65,36 @@ void RenderCurrentMap(HDC mDC) {
 		}
 	}
 }
+// 잡몹 그리기
+void RenderEnemies(HDC mDC) {
+	for (int i = 0; i < ENEMY_LIMIT; i++) {
+		if (!enemies[i].isActive) continue;
 
-// 플레이어
-void RenderPlayer(HDC mDC) {
-	screenX = (int)(player.base.x - camera.x);
-	screenY = (int)(player.base.y - camera.y);
+		screenX = (int)(enemies[i].base.x - camera.x);
+		screenY = (int)(enemies[i].base.y - camera.y);
 
-	Rectangle(mDC, screenX - player.base.width / 2, screenY - player.base.height / 2, screenX + player.base.width / 2, screenY + player.base.height / 2);
+		hBrush = CreateSolidBrush(enemies[i].base.state == ENEMY_CHASE ? RGB(200, 30, 0) : RGB(0, 30, 200));
+		oldBrush = (HBRUSH)SelectObject(mDC, hBrush);
+
+		Rectangle(mDC, screenX - enemies[i].base.width / 2, screenY - enemies[i].base.height / 2,
+			screenX + enemies[i].base.width / 2, screenY + enemies[i].base.height / 2);
+		SelectObject(mDC, oldBrush);
+		DeleteObject(hBrush);
+	}
+}
+// 잡몹 돌던지기 그리기
+void RenderCatPaw(HDC mDC) {
+	hBrush = CreateSolidBrush(RGB(255, 0, 0));
+	oldBrush = (HBRUSH)SelectObject(mDC, hBrush);
+	for (int i = 0; i < CAT_PAW_LIMIT; i++) {
+		if (!catpaw[i].isActive) continue;
+		screenX = (int)(catpaw[i].x - camera.x);
+		screenY = (int)(catpaw[i].y - camera.y);
+		Ellipse(mDC, screenX - CAT_PAW_SIZE / 2, screenY - CAT_PAW_SIZE / 2,
+			screenX + CAT_PAW_SIZE / 2, screenY + CAT_PAW_SIZE / 2);
+	}
+	SelectObject(mDC, oldBrush);
+	DeleteObject(hBrush);
 }
 
 // 총알
@@ -82,4 +107,12 @@ void RenderBullets(HDC mDC) {
 
 		Ellipse(mDC, screenX - bullets[i].width, screenY - bullets[i].height, screenX + bullets[i].width, screenY + bullets[i].height);
 	}
+}
+
+// 플레이어
+void RenderPlayer(HDC mDC) {
+	screenX = (int)(player.base.x - camera.x);
+	screenY = (int)(player.base.y - camera.y);
+
+	Rectangle(mDC, screenX - player.base.width / 2, screenY - player.base.height / 2, screenX + player.base.width / 2, screenY + player.base.height / 2);
 }

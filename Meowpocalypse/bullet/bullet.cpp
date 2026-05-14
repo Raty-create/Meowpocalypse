@@ -6,6 +6,7 @@
 #include "player.h"
 #include "camera.h"
 #include "collision.h"
+#include "enum.h"
 
 BULLET bullets[BULLET_MAX];
 
@@ -63,8 +64,8 @@ void UpdateBullet() {
 		bullets[i].x += bullets[i].dx;
 		bullets[i].y += bullets[i].dy;
 
-		int bulletNextX = bullets[i].x + bullets[i].dx;
-		int bulletNextY = bullets[i].y + bullets[i].dy;
+		float bulletNextX = bullets[i].x + bullets[i].dx;
+		float bulletNextY = bullets[i].y + bullets[i].dy;
 
 		if (IsTileWall(bulletNextX, bullets[i].y) ||
 			IsTileWall(bulletNextX, bullets[i].y) ||

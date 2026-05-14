@@ -105,7 +105,9 @@
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)core;$(ProjectDir)player;$(ProjectDir)enemy;$(ProjectDir)map;$(ProjectDir)camera;$(ProjectDir)render;$(ProjectDir)bullet</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)core;$(ProjectDir)player;$(ProjectDir)enemy;$(ProjectDir)map;$(ProjectDir)camera;$(ProjectDir)render;$(ProjectDir)bullet;$(ProjectDir)enum</AdditionalIncludeDirectories>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -149,8 +151,10 @@
     <ClInclude Include="core\object.h" />
     <ClInclude Include="enemy\boss.h" />
     <ClInclude Include="enemy\enemy.h" />
+    <ClInclude Include="enum.h" />
     <ClInclude Include="game.h" />
     <ClInclude Include="map\map.h" />
+    <ClInclude Include="pch.h" />
     <ClInclude Include="player\player.h" />
     <ClInclude Include="render\render.h" />
   </ItemGroup>
