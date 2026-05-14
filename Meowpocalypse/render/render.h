@@ -14,4 +14,7 @@ void RenderPlayer(HDC mDC);
 void RenderEnemies(HDC mDC);
 
 // 잡몹 공격
-void RenderStones(HDC mDC);
+void RenderCatPaw(HDC mDC);
+
+// 보스
+void RenderBoss(HDC mDC);

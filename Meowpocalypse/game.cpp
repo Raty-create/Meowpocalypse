@@ -5,6 +5,7 @@
 #include "camera.h"
 #include "map.h"
 #include "enemy.h"
+#include "boss.h"
 
 void InitGame() {
 	// 맵
@@ -14,6 +15,8 @@ void InitGame() {
 	SetDoorState(MAP_WAITING, DOOR_OPEN);
 	// 잡몹
 	InitEnemy();
+	// 보스
+	InitBoss();
 }
 
 void Update() {
@@ -33,5 +36,7 @@ void Render(HDC mDC) {
 	RenderPlayer(mDC);
 	// 잡몹
 	RenderEnemies(mDC);
-	RenderStones(mDC);
+	RenderCatPaw(mDC);
+	// 보스
+	RenderBoss(mDC);
 }

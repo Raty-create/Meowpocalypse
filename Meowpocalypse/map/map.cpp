@@ -2,6 +2,8 @@
 #include "config.h"
 #include "player.h"
 #include "enemy.h"
+#include "camera.h"
+#include "collision.h"
 
 MAP_TYPE currentMapType = MAP_WAITING;
 MAPDATA maps[7];
