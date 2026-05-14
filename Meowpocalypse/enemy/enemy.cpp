@@ -49,7 +49,7 @@ void SpawnEnemy(MAP_TYPE type, int count) {
 	int spawned = 0;
 	int attempts = 0;
 
-	while(spawned < count && attempts < 1000){
+	while (spawned < count && attempts < 1000) {
 		attempts++;
 		int spawnX = m->worldX + (rand() % (m->cols - ENEMY_COLS_SPAWN_MARGIN) + ENEMY_COLS_SPAWN_MARGIN) * TILE_SIZE;
 		int spawnY = m->worldY + (rand() % (m->rows - ENEMY_ROWS_SPAWN_MARGIN) + ENEMY_ROWS_SPAWN_MARGIN) * TILE_SIZE;

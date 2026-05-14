@@ -1,14 +1,9 @@
 #pragma once
 
 #include "config.h"
+#include "enum.h"
 
-typedef enum { MAP_WAITING, MAP_FIRST_HALLWAY, MAP_FIRST_BOSS, MAP_SECOND_HALLWAY, MAP_SECOND_BOSS, MAP_THIRD_HALLWAY, MAP_THIRD_BOSS } MAP_TYPE;
 extern MAP_TYPE currentMapType;
-
-typedef enum {
-    DOOR_CLOSE,
-    DOOR_OPEN
-} DOOR_STATE;
 
 typedef struct {
     int row;

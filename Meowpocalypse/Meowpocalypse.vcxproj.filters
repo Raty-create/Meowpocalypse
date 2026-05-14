@@ -78,37 +78,37 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="game.c">
+    <ClCompile Include="game.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="main.c">
+    <ClCompile Include="main.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="player\player.c">
+    <ClCompile Include="player\player.cpp">
       <Filter>player\소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="render\render.c">
+    <ClCompile Include="render\render.cpp">
       <Filter>render\소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="core\input.c">
+    <ClCompile Include="core\input.cpp">
       <Filter>core\소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="core\collision.c">
+    <ClCompile Include="core\collision.cpp">
       <Filter>core\소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="enemy\enemy.c">
+    <ClCompile Include="enemy\enemy.cpp">
       <Filter>enemy\소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="enemy\boss.c">
+    <ClCompile Include="enemy\boss.cpp">
       <Filter>enemy\소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="bullet\bullet.c">
+    <ClCompile Include="bullet\bullet.cpp">
       <Filter>bullet\소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="map\map.c">
+    <ClCompile Include="map\map.cpp">
       <Filter>map\소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="camera\camera.c">
+    <ClCompile Include="camera\camera.cpp">
       <Filter>camera\소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

@@ -46,6 +46,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	RECT rt;
 	GetClientRect(hWnd, &rt);
 
+	static int mx, my;
+
 	switch (uMsg) {
 	case WM_CREATE:
 		srand((unsigned int)time(NULL));
@@ -54,7 +56,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
 		break;
 	case WM_TIMER:
-		Update();
+		Update(hWnd);
 
 		InvalidateRect(hWnd, NULL, FALSE);
 		break;
