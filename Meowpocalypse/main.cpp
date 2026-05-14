@@ -1,4 +1,6 @@
 #include <windows.h>
+#include<stdlib.h>
+#include <time.h>
 #include "game.h"
 
 HINSTANCE g_hInst;
@@ -46,6 +48,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
 	switch (uMsg) {
 	case WM_CREATE:
+		srand((unsigned int)time(NULL));
 		InitGame();
 		SetTimer(hWnd, 1, 6, NULL);
 

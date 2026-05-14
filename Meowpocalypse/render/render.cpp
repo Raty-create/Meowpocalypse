@@ -3,6 +3,7 @@
 #include "camera.h"
 #include "map.h"
 #include "enemy.h"
+#include "boss.h"
 
 HBRUSH hBrush, oldBrush;
 HPEN hPen, oldPen;
@@ -67,7 +68,7 @@ void RenderEnemies(HDC mDC) {
 		screenX = (int)(enemies[i].base.x - camera.x);
 		screenY = (int)(enemies[i].base.y - camera.y);
 
-		hBrush = CreateSolidBrush(enemies[i].state == ENEMY_CHASE ? RGB(200, 30, 0) : RGB(0, 30, 200));
+		hBrush = CreateSolidBrush(enemies[i].base.state == ENEMY_CHASE ? RGB(200, 30, 0) : RGB(0, 30, 200));
 		oldBrush = (HBRUSH)SelectObject(mDC, hBrush);
 
 		Rectangle(mDC, screenX - enemies[i].base.width / 2, screenY - enemies[i].base.height / 2,
@@ -77,16 +78,28 @@ void RenderEnemies(HDC mDC) {
 	}
 }
 // 잡몹 돌던지기 그리기
-void RenderStones(HDC mDC) {
-	hBrush = CreateSolidBrush(RGB(100, 100, 100));
+void RenderCatPaw(HDC mDC) {
+	hBrush = CreateSolidBrush(RGB(255, 0, 0));
 	oldBrush = (HBRUSH)SelectObject(mDC, hBrush);
-	for (int i = 0; i < STONE_LIMIT; i++) {
-		if (!stones[i].isActive) continue;
-		screenX = (int)(stones[i].x - camera.x);
-		screenY = (int)(stones[i].y - camera.y);
-		Ellipse(mDC, screenX - STONE_SIZE / 2, screenY - STONE_SIZE / 2,
-			screenX + STONE_SIZE / 2, screenY + STONE_SIZE / 2);
+	for (int i = 0; i < CAT_PAW_LIMIT; i++) {
+		if (!catpaw[i].isActive) continue;
+		screenX = (int)(catpaw[i].x - camera.x);
+		screenY = (int)(catpaw[i].y - camera.y);
+		Ellipse(mDC, screenX - CAT_PAW_SIZE / 2, screenY - CAT_PAW_SIZE / 2,
+			screenX + CAT_PAW_SIZE / 2, screenY + CAT_PAW_SIZE / 2);
 	}
+	SelectObject(mDC, oldBrush);
+	DeleteObject(hBrush);
+}
+
+void RenderBoss(HDC mDC) {
+	hBrush = CreateSolidBrush(RGB(0, 255, 0));
+	oldBrush = (HBRUSH)SelectObject(mDC, hBrush);
+	screenX = (int)(boss.base.x - camera.x);
+	screenY = (int)(boss.base.y - camera.y);
+
+	Rectangle(mDC, screenX - boss.base.width / 2, screenY - boss.base.height / 2, screenX + boss.base.width / 2, screenY + boss.base.height / 2);
+
 	SelectObject(mDC, oldBrush);
 	DeleteObject(hBrush);
 }
