@@ -10,3 +10,4 @@ extern PLAYER player;
 
 void InitPlayer();
 void UpdatePlayer();
+void MapTransition();

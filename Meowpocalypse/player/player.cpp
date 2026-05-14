@@ -25,10 +25,10 @@ void UpdatePlayer() {
 	player.base.dx = 0;
 	player.base.dy = 0;
 
-	if (GetAsyncKeyState('a') || GetAsyncKeyState('A')) player.base.dx = -15.8f;
-	if (GetAsyncKeyState('d') || GetAsyncKeyState('D')) player.base.dx = 15.8f;
-	if (GetAsyncKeyState('w') || GetAsyncKeyState('W')) player.base.dy = -15.8f;
-	if (GetAsyncKeyState('s') || GetAsyncKeyState('S')) player.base.dy = 15.8f;
+	if (GetAsyncKeyState('a') || GetAsyncKeyState('A')) player.base.dx = -PLAYER_SPEED;
+	if (GetAsyncKeyState('d') || GetAsyncKeyState('D')) player.base.dx = PLAYER_SPEED;
+	if (GetAsyncKeyState('w') || GetAsyncKeyState('W')) player.base.dy = -PLAYER_SPEED;
+	if (GetAsyncKeyState('s') || GetAsyncKeyState('S')) player.base.dy = PLAYER_SPEED;
 
 	float playerNextX = player.base.x + player.base.dx;
 	float playerNextY = player.base.y + player.base.dy;
