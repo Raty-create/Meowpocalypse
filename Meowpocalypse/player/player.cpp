@@ -6,6 +6,7 @@
 #include "map.h"
 #include "camera.h"
 #include "collision.h"
+#include "bullet.h"
 
 PLAYER player;
 

@@ -1,7 +1,7 @@
 #include "map.h"
 #include "config.h"
-#include "player.h"
 #include "collision.h"
+#include "player.h"
 #include "enemy.h"
 
 #include <math.h>
@@ -19,6 +19,7 @@ int IsTileWall(float x, float y) {
 	int tile = m->tiles[row][col];
 	return tile == TILE_WALL;
 }
+
 // 플레이어 - 문
 int IsPlayerOnDoor() {
 	MAPDATA* m = &maps[currentMapType];

@@ -2,5 +2,5 @@
 #include <windows.h>
 
 void InitGame();
-void Update();
+void Update(HWND hWnd);
 void Render(HDC mDC);

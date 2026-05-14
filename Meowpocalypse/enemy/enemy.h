@@ -2,24 +2,23 @@
 #include "object.h"
 #include "config.h"
 #include "map.h"
-
-typedef enum{ ENEMY_IDLE, ENEMY_CHASE, ENEMY_RANGED} ENEMY_STATE;
-
-typedef struct {
-	float x, y;
-	float dx, dy;
-	int isActive;
-}STONE;
+#include "enum.h"
 
 typedef struct {
-	OBJECT base;
-	int isActive;
-	ENEMY_STATE state;
-	int shootTimer;
+    float x, y;
+    float dx, dy;
+    int isActive;
+} CATPAW;
+
+typedef struct {
+    OBJECT base;
+    int isActive;
+    int shootTimer;
+    int moveTimer;
 } ENEMY;
 
 extern ENEMY enemies[ENEMY_LIMIT];
-extern STONE stones[STONE_LIMIT];
+extern CATPAW catpaw[CAT_PAW_LIMIT];
 
 void InitEnemy();
 void ClearEnemies();
