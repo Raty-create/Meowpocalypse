@@ -2,6 +2,9 @@
 #include "config.h"
 #include "player.h"
 #include "collision.h"
+#include "enemy.h"
+
+#include <math.h>
 
 // 플레이어 - 벽 충돌 체크
 int IsTileWall(float x, float y) {
@@ -39,6 +42,17 @@ int IsPlayerOnDoor() {
 				return 1;
 			}
 		}
+	}
+	return 0;
+}
+
+// 잡몹 충돌 처리
+int IsOverlapWithEnemy(float x, float y) {
+	for (int j = 0; j < ENEMY_LIMIT; j++) {
+		if (!enemies[j].isActive) continue;
+		float dx = enemies[j].base.x - x;
+		float dy = enemies[j].base.y - y;
+		if (sqrtf(dx * dx + dy * dy) < ENEMY_SIZE) return 1;
 	}
 	return 0;
 }

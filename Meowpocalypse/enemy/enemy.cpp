@@ -37,17 +37,6 @@ void ClearEnemies() {
 	}
 }
 
-// 잡몹 충돌 처리
-int IsOverlapWithEnemy(float x, float y) {
-	for (int j = 0; j < ENEMY_LIMIT; j++) {
-		if (!enemies[j].isActive) continue;
-		float dx = enemies[j].base.x - x;
-		float dy = enemies[j].base.y - y;
-		if (sqrtf(dx * dx + dy * dy) < ENEMY_SIZE) return 1;
-	}
-	return 0;
-}
-
 // 잡몹 스폰
 void SpawnEnemy(MAP_TYPE type, int count) {
 	if (type == MAP_WAITING ||
@@ -75,7 +64,7 @@ void SpawnEnemy(MAP_TYPE type, int count) {
 				enemies[i].base.y = spawnY;
 				enemies[i].base.state = ENEMY_IDLE;
 				enemies[i].shootTimer = rand() % CAT_PAW_INTERVAL;
-				enemies[i].moveTimer = rand() % 120;
+				enemies[i].moveTimer = rand() % ENEMY_MOVE;
 				enemies[i].base.dx = 0;
 				enemies[i].base.dy = 0;
 				spawned++;
