@@ -29,8 +29,8 @@ void SpawnBoss(MAP_TYPE type) {
 
 	MAPDATA* m = &maps[type];
 
-	int spawnX = m->worldX + 60 * TILE_SIZE;
-	int spawnY = m->worldY + 32 * TILE_SIZE;
+	float spawnX = m->worldX + (BOSSMAP_COLS / 2) * TILE_SIZE;
+	float spawnY = m->worldY + (BOSSMAP_ROWS / 2) * TILE_SIZE;
 
 	if (type == MAP_FIRST_BOSS && boss.base.hp == BOSS_HP) {
 
