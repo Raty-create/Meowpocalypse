@@ -19,6 +19,7 @@ COLORREF TileColor(int tileType, DOOR_STATE doorState) {
 	case TILE_FLOOR: return RGB(153, 76, 0);
 	case TILE_WALL: return RGB(0, 0, 0);
 	case TILE_DOOR: return(doorState == DOOR_OPEN) ? RGB(0, 200, 0) : RGB(139, 69, 0);
+	default: return RGB(0, 0, 0);
 	}
 }
 
@@ -43,8 +44,8 @@ void RenderCurrentMap(HDC mDC) {
 	for (int row = 0; row < m->rows; row++) {
 		for (int col = 0; col < m->cols; col++) {
 
-			screenX = m->worldX + col * TILE_SIZE - (int)camera.x;
-			screenY = m->worldY + row * TILE_SIZE - (int)camera.y;
+			screenX = (int)(m->worldX + col * TILE_SIZE - camera.x);
+			screenY = (int)(m->worldY + row * TILE_SIZE - camera.y);
 
 			if (screenX + TILE_SIZE < 0 || screenX > SCREEN_WIDTH) continue;
 			if (screenY + TILE_SIZE < 0 || screenY > SCREEN_HEIGHT) continue;

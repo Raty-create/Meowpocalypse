@@ -47,7 +47,7 @@ int IsPlayerOnDoor() {
 	return 0;
 }
 
-// 잡몹-잡몹 충돌 처리
+// 잡몹 - 잡몹 충돌 체크
 int IsOverlapWithEnemy(float x, float y) {
 	for (int j = 0; j < ENEMY_LIMIT; j++) {
 		if (!enemies[j].isActive) continue;
@@ -58,6 +58,7 @@ int IsOverlapWithEnemy(float x, float y) {
 	return 0;
 }
 
+// AABB 충돌 체크
 int IsObjectCollision(float ax, float ay, int aw, int ah, float bx, float by, int bw, int bh) {
 	return (ax - aw / 2 < bx + bw / 2 &&
 		ax + aw / 2 > bx - bw / 2 &&
@@ -65,6 +66,7 @@ int IsObjectCollision(float ax, float ay, int aw, int ah, float bx, float by, in
 		ay + ah / 2 > by - bh / 2);
 }
 
+// 총알 - 적 충돌 처리
 int HandleBulletEnemyCollision(BULLET* bullet, ENEMY* enemy) {
 	if (!bullet->isActive || !enemy->isActive) return 0;
 
@@ -90,6 +92,7 @@ int HandleBulletEnemyCollision(BULLET* bullet, ENEMY* enemy) {
 	return 0;
 }
 
+// 적 공격 - 플레이어 충돌 처리
 int HandleCatPawPlayerCollision(CATPAW* cp, PLAYER* p) {
 	if (!cp->isActive || p->invincibleTimer > 0) return 0;
 

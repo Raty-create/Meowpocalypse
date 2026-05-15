@@ -54,8 +54,8 @@ void SpawnEnemy(MAP_TYPE type, int count) {
 
 	while (spawned < count && attempts < 1000) {
 		attempts++;
-		int spawnX = m->worldX + (rand() % (m->cols - ENEMY_COLS_SPAWN_MARGIN) + ENEMY_COLS_SPAWN_MARGIN) * TILE_SIZE;
-		int spawnY = m->worldY + (rand() % (m->rows - ENEMY_ROWS_SPAWN_MARGIN) + ENEMY_ROWS_SPAWN_MARGIN) * TILE_SIZE;
+		float spawnX = m->worldX + (rand() % (m->cols - ENEMY_COLS_SPAWN_MARGIN) + ENEMY_COLS_SPAWN_MARGIN) * TILE_SIZE;
+		float spawnY = m->worldY + (rand() % (m->rows - ENEMY_ROWS_SPAWN_MARGIN) + ENEMY_ROWS_SPAWN_MARGIN) * TILE_SIZE;
 
 		if (IsTileWall(spawnX, spawnY)) continue;
 		if (IsOverlapWithEnemy(spawnX, spawnY)) continue;

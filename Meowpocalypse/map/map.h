@@ -15,8 +15,8 @@ typedef struct {
     int tiles[MAX_MAP_ROWS][MAX_MAP_COLS];
     int rows;
     int cols;
-    int worldX;
-    int worldY;
+    float worldX;
+    float worldY;
     DOOR_INFO doors[MAX_DOORS];
     int doorCount;
 } MAPDATA;
