@@ -47,13 +47,73 @@ int IsPlayerOnDoor() {
 	return 0;
 }
 
-// 잡몹 충돌 처리
+// 잡몹 - 잡몹 충돌 체크
 int IsOverlapWithEnemy(float x, float y) {
 	for (int j = 0; j < ENEMY_LIMIT; j++) {
 		if (!enemies[j].isActive) continue;
 		float dx = enemies[j].base.x - x;
 		float dy = enemies[j].base.y - y;
 		if (sqrtf(dx * dx + dy * dy) < ENEMY_SIZE) return 1;
+	}
+	return 0;
+}
+
+// AABB 충돌 체크
+int IsObjectCollision(float ax, float ay, int aw, int ah, float bx, float by, int bw, int bh) {
+	return (ax - aw / 2 < bx + bw / 2 &&
+		ax + aw / 2 > bx - bw / 2 &&
+		ay - ah / 2 < by + bh / 2 &&
+		ay + ah / 2 > by - bh / 2);
+}
+
+// 총알 - 적 충돌 처리
+int HandleBulletEnemyCollision(BULLET* bullet, ENEMY* enemy) {
+	if (!bullet->isActive || !enemy->isActive) return 0;
+
+	if (IsObjectCollision(bullet->x, bullet->y, bullet->width, bullet->height,
+		enemy->base.hitBoxX, enemy->base.hitBoxY, enemy->base.hitBoxW, enemy->base.hitBoxH)) {
+
+		bullet->isActive = INACTIVE;
+		enemy->base.hp -= BULLET_DAMAGE;
+
+		// 넉백 적용: 총알의 이동 방향으로 밀려남
+		float dist = sqrtf(bullet->dx * bullet->dx + bullet->dy * bullet->dy);
+		if (dist > 0) {
+			enemy->base.kx = (bullet->dx / dist) * KNOCKBACK_FORCE;
+			enemy->base.ky = (bullet->dy / dist) * KNOCKBACK_FORCE;
+			enemy->base.kTimer = KNOCKBACK_TIME;
+		}
+
+		if (enemy->base.hp <= 0) {
+			enemy->isActive = INACTIVE;
+		}
+		return 1;
+	}
+	return 0;
+}
+
+// 적 공격 - 플레이어 충돌 처리
+int HandleCatPawPlayerCollision(CATPAW* cp, PLAYER* p) {
+	if (!cp->isActive || p->invincibleTimer > 0) return 0;
+
+	// CatPaw의 크기는 설정값 사용
+	if (IsObjectCollision(cp->x, cp->y, CAT_PAW_SIZE, CAT_PAW_SIZE,
+		p->base.hitBoxX, p->base.hitBoxY, p->base.hitBoxW, p->base.hitBoxH)) {
+
+		cp->isActive = INACTIVE;
+		p->base.hp -= CAT_PAW_DAMAGE;
+		p->invincibleTimer = PLAYER_INVINCIBLE_TIME;
+
+		// 넉백 적용: 투사체의 이동 방향으로 밀려남
+		float dist = sqrtf(cp->dx * cp->dx + cp->dy * cp->dy);
+		if (dist > 0) {
+			p->base.kx = (cp->dx / dist) * KNOCKBACK_FORCE;
+			p->base.ky = (cp->dy / dist) * KNOCKBACK_FORCE;
+			p->base.kTimer = KNOCKBACK_TIME;
+		}
+
+		if (p->base.hp < 0) p->base.hp = 0;
+		return 1;
 	}
 	return 0;
 }

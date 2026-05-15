@@ -9,9 +9,11 @@ void RenderCurrentMap(HDC mDC);
 
 // 플레이어
 void RenderPlayer(HDC mDC);
+void RenderPlayerHitBox(HDC mDC);
 
 // 잡몹
 void RenderEnemies(HDC mDC);
+void RenderEnemiesHitBox(HDC mDC);
 // 잡몹 공격
 void RenderCatPaw(HDC mDC);
 

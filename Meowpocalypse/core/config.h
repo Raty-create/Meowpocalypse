@@ -2,13 +2,6 @@
 
 #define TILE_SIZE 32
 
-#define PLAYER_SIZE 32
-
-#define ENEMY_SIZE 32
-#define ENEMY_LIMIT 60
-
-#define BOSS_SIZE (TILE_SIZE * 6)
-
 #define SCREEN_WIDTH 1920
 #define SCREEN_HEIGHT 1080
 
@@ -42,9 +35,17 @@
 #define MAX_DOORS 16
 
 // PLAYER
-#define PLAYER_SPEED 14.8f
+#define PLAYER_SIZE 32
+#define PLAYER_HITBOX_SIZE 28
+#define PLAYER_SPEED 4.8f
+#define PLAYER_INVINCIBLE_TIME 60
 
 // ENEMY
+#define ENEMY_SIZE 32
+#define ENEMY_HITBOX_SIZE 28
+#define ENEMY_HP 30
+#define ENEMY_LIMIT 60
+
 #define ENEMY_COLS_SPAWN_MARGIN 20
 #define ENEMY_ROWS_SPAWN_MARGIN 5
 
@@ -55,14 +56,18 @@
 
 #define CAT_PAW_SIZE 25
 #define CAT_PAW_SPEED 5.0f
+#define CAT_PAW_DAMAGE 10
 #define CAT_PAW_LIMIT (ENEMY_LIMIT * 2)
 #define CAT_PAW_INTERVAL 180
-#define HALLWAYMAP_ROWS (int)(WAITINGMAP_ROWS * 1.5f)
-#define HALLWAYMAP_COLS (int)(WAITINGMAP_COLS * 1.5f)
+
+// BOSS
+#define BOSS_SIZE (TILE_SIZE * 6)
+#define BOSS_HP 500
 
 // BULLET
 #define BULLET_MAX 50
 #define BULLET_SPEED 8.0f
-
-// BOSS
-#define BOSS_HP 500
+#define BULLET_DAMAGE 10
+#define KNOCKBACK_FORCE 6.0f
+#define KNOCKBACK_TIME 10
+#define BULLET_SPEED 8.0f

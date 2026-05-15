@@ -133,12 +133,13 @@ void SetDoorState(MAP_TYPE type, DOOR_STATE state) {
 void InitAllMap() {
 	for (int i = 0; i < 7; i++) {
 		InitMap((MAP_TYPE)i);
+		// 대기방 외에는 문을 닫아둠
+		if (i != MAP_WAITING) {
+			SetDoorState((MAP_TYPE)i, DOOR_CLOSE);
+		}
 	}
 
-	// 일단 모든 문 OPEN해놓음
-	for (int i = 0; i < 7; i++) {
-		SetDoorState((MAP_TYPE)i, DOOR_OPEN);
-	}
+	SetDoorState(MAP_WAITING, DOOR_OPEN);
 }
 
 void UpdateDoors(MAP_TYPE type, int allEnemiesDead) {
@@ -153,6 +154,7 @@ MAP_TYPE GetNextMap(MAP_TYPE type) {
 	case MAP_SECOND_HALLWAY: return MAP_SECOND_BOSS; break;
 	case MAP_SECOND_BOSS: return MAP_THIRD_HALLWAY; break;
 	case MAP_THIRD_HALLWAY: return MAP_THIRD_BOSS; break;
+	default: return type;
 	}
 }
 
@@ -165,13 +167,19 @@ void MapTransition() {
 
 	currentMapType = nextMap;
 
+	// 새 맵으로 갈 때 문을 일단 닫음 (대기방 제외)
+	if (currentMapType != MAP_WAITING) {
+		SetDoorState(currentMapType, DOOR_CLOSE);
+	}
+
 	float spawnX, spawnY;
 	GetSpawnPos(nextMap, &spawnX, &spawnY);
-	player.base.x = spawnX;
-	player.base.y = spawnY;
+	player.base.x = player.base.hitBoxX = spawnX;
+	player.base.y = player.base.hitBoxY = spawnY;
 
 	MAPDATA* m = &maps[currentMapType];
 	UpdateCamera(player.base.x, player.base.y, m->rows, m->cols);
+	UpdateCamera(player.base.hitBoxX, player.base.hitBoxY, m->rows, m->cols);
 
 	ClearEnemies();
 	int spawnCount = 0;
