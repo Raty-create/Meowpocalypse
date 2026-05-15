@@ -42,7 +42,7 @@
 #define MAX_DOORS 16
 
 // PLAYER
-#define PLAYER_SPEED 4.8f
+#define PLAYER_SPEED 14.8f
 
 // ENEMY
 #define ENEMY_COLS_SPAWN_MARGIN 20
@@ -78,3 +78,6 @@
 // BULLET
 #define BULLET_MAX 50
 #define BULLET_SPEED 8.0f
+
+// BOSS
+#define BOSS_HP 500
