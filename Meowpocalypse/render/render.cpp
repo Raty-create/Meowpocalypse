@@ -6,6 +6,7 @@
 #include "map.h"
 #include "boss.h"
 #include "bullet.h"
+#include "enum.h"
 
 HBRUSH hBrush, oldBrush;
 HPEN hPen, oldPen;
@@ -145,6 +146,21 @@ void RenderCatPaw(HDC mDC) {
 		Ellipse(mDC, screenX - CAT_PAW_SIZE / 2, screenY - CAT_PAW_SIZE / 2,
 			screenX + CAT_PAW_SIZE / 2, screenY + CAT_PAW_SIZE / 2);
 	}
+	SelectObject(mDC, oldBrush);
+	DeleteObject(hBrush);
+}
+
+// 보스
+void RenderBoss(HDC mDC) {
+	if (!boss.isActive) return;
+	hBrush = CreateSolidBrush(RGB(0, 255, 0));
+	oldBrush = (HBRUSH)SelectObject(mDC, hBrush);
+	
+	screenX = (int)(boss.base.x - camera.x);
+	screenY = (int)(boss.base.y - camera.y);
+
+	Rectangle(mDC, screenX - BOSS_SIZE / 2, screenY - BOSS_SIZE / 2, screenX + BOSS_SIZE / 2, screenY + BOSS_SIZE / 2);
+
 	SelectObject(mDC, oldBrush);
 	DeleteObject(hBrush);
 }

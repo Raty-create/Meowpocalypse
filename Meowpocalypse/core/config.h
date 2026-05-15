@@ -61,7 +61,8 @@
 #define CAT_PAW_INTERVAL 180
 
 // BOSS
-#define BOSS_SIZE (TILE_SIZE * 3)
+#define BOSS_SIZE (TILE_SIZE * 6)
+#define BOSS_HP 500
 
 // BULLET
 #define BULLET_MAX 50
@@ -69,3 +70,4 @@
 #define BULLET_DAMAGE 10
 #define KNOCKBACK_FORCE 6.0f
 #define KNOCKBACK_TIME 10
+#define BULLET_SPEED 8.0f

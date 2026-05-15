@@ -17,5 +17,8 @@ void RenderEnemiesHitBox(HDC mDC);
 // 잡몹 공격
 void RenderCatPaw(HDC mDC);
 
+// 보스
+void RenderBoss(HDC mDC);
+
 // 총알
 void RenderBullets(HDC mDC);

@@ -25,3 +25,4 @@ x86/
 
 # External / Local configuration
 .env
+/Meowpocalypse/game.cpp
