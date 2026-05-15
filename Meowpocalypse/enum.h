@@ -1,6 +1,6 @@
 #pragma once
 
-enum { STOP, MOVE };
+enum { STOP, MOVE, HIT };
 enum { INACTIVE, ACTIVE };
 
 // MAP

@@ -5,6 +5,7 @@
 typedef struct {
 	OBJECT base;
 	int mp;
+	int invincibleTimer;
 } PLAYER;
 
 extern PLAYER player;

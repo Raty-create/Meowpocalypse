@@ -42,9 +42,11 @@ void Render(HDC mDC) {
 	RenderCurrentMap(mDC);
 	// 플레이어
 	RenderPlayer(mDC);
+	RenderPlayerHitBox(mDC);
 	// 총알
 	RenderBullets(mDC);
 	// 잡몹
 	RenderEnemies(mDC);
+	RenderEnemiesHitBox(mDC);
 	RenderCatPaw(mDC);
 }

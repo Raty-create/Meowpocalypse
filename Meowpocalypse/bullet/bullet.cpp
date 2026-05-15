@@ -64,19 +64,26 @@ void UpdateBullet() {
 		bullets[i].x += bullets[i].dx;
 		bullets[i].y += bullets[i].dy;
 
+		// 적과의 충돌 체크
+		for (int j = 0; j < ENEMY_LIMIT; j++) {
+			if (enemies[j].isActive == ACTIVE) {
+				if (HandleBulletEnemyCollision(&bullets[i], &enemies[j])) {
+					// 충돌 시 해당 총알은 더 이상 처리할 필요 없음
+					break;
+				}
+			}
+		}
+
+		// 이미 적과 충돌하여 비활성화되었다면 벽 충돌 체크는 건너뜀
+		if (bullets[i].isActive == INACTIVE) continue;
+
 		float bulletNextX = bullets[i].x + bullets[i].dx;
 		float bulletNextY = bullets[i].y + bullets[i].dy;
 
-		if (IsTileWall(bulletNextX, bullets[i].y) ||
-			IsTileWall(bulletNextX, bullets[i].y) ||
-			IsTileWall(bulletNextX, bullets[i].y) ||
-			IsTileWall(bulletNextX, bullets[i].y))
+		if (IsTileWall(bulletNextX, bullets[i].y))
 			bullets[i].isActive = INACTIVE;
 
-		if (IsTileWall(bullets[i].x, bulletNextY) ||
-			IsTileWall(bullets[i].x, bulletNextY) ||
-			IsTileWall(bullets[i].x, bulletNextY) ||
-			IsTileWall(bullets[i].x, bulletNextY))
+		if (IsTileWall(bullets[i].x, bulletNextY))
 			bullets[i].isActive = INACTIVE;
 	}
 }

@@ -65,6 +65,34 @@ void RenderCurrentMap(HDC mDC) {
 		}
 	}
 }
+
+// 플레이어
+void RenderPlayer(HDC mDC) {
+	// 무적 상태일 때 깜빡임 효과
+	if (player.invincibleTimer > 0 && (player.invincibleTimer / 5) % 2 == 0) return;
+
+	screenX = (int)(player.base.x - camera.x);
+	screenY = (int)(player.base.y - camera.y);
+
+	Rectangle(mDC, screenX - player.base.width / 2, screenY - player.base.height / 2, screenX + player.base.width / 2, screenY + player.base.height / 2);
+}
+
+// 플레이어 hitBox
+void RenderPlayerHitBox(HDC mDC) {
+	screenX = (int)(player.base.hitBoxX - camera.x);
+	screenY = (int)(player.base.hitBoxY - camera.y);
+
+	hPen = CreatePen(PS_SOLID, 1, RGB(255, 0, 0));
+	oldPen = (HPEN)SelectObject(mDC, hPen);
+	oldBrush = (HBRUSH)SelectObject(mDC, GetStockObject(NULL_BRUSH));
+
+	Rectangle(mDC, screenX - player.base.hitBoxW / 2, screenY - player.base.hitBoxH / 2, screenX + player.base.hitBoxW / 2, screenY + player.base.hitBoxH / 2);
+
+	SelectObject(mDC, oldPen);
+	SelectObject(mDC, oldBrush);
+	DeleteObject(hPen);
+}
+
 // 잡몹 그리기
 void RenderEnemies(HDC mDC) {
 	for (int i = 0; i < ENEMY_LIMIT; i++) {
@@ -78,10 +106,33 @@ void RenderEnemies(HDC mDC) {
 
 		Rectangle(mDC, screenX - enemies[i].base.width / 2, screenY - enemies[i].base.height / 2,
 			screenX + enemies[i].base.width / 2, screenY + enemies[i].base.height / 2);
+
 		SelectObject(mDC, oldBrush);
 		DeleteObject(hBrush);
 	}
 }
+
+// 잡몹 hitBox 그리기
+void RenderEnemiesHitBox(HDC mDC) {
+	for (int i = 0; i < ENEMY_LIMIT; i++) {
+		if (!enemies[i].isActive) continue;
+
+		screenX = (int)(enemies[i].base.hitBoxX - camera.x);
+		screenY = (int)(enemies[i].base.hitBoxY - camera.y);
+
+		hPen = CreatePen(PS_SOLID, 1, RGB(255, 0, 0));
+		oldPen = (HPEN)SelectObject(mDC, hPen);
+		oldBrush = (HBRUSH)SelectObject(mDC, GetStockObject(NULL_BRUSH));
+
+		Rectangle(mDC, screenX - enemies[i].base.hitBoxW / 2, screenY - enemies[i].base.hitBoxH / 2,
+			screenX + enemies[i].base.hitBoxW / 2, screenY + enemies[i].base.hitBoxH / 2);
+
+		SelectObject(mDC, oldPen);
+		SelectObject(mDC, oldBrush);
+		DeleteObject(hPen);
+	}
+}
+
 // 잡몹 돌던지기 그리기
 void RenderCatPaw(HDC mDC) {
 	hBrush = CreateSolidBrush(RGB(255, 0, 0));
@@ -107,12 +158,4 @@ void RenderBullets(HDC mDC) {
 
 		Ellipse(mDC, screenX - bullets[i].width, screenY - bullets[i].height, screenX + bullets[i].width, screenY + bullets[i].height);
 	}
-}
-
-// 플레이어
-void RenderPlayer(HDC mDC) {
-	screenX = (int)(player.base.x - camera.x);
-	screenY = (int)(player.base.y - camera.y);
-
-	Rectangle(mDC, screenX - player.base.width / 2, screenY - player.base.height / 2, screenX + player.base.width / 2, screenY + player.base.height / 2);
 }
