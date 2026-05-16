@@ -15,6 +15,7 @@ typedef struct {
     int isActive;
     int shootTimer;
     int moveTimer;
+    int deathTimer; // 사망 애니메이션용 타이머
 } ENEMY;
 
 extern ENEMY enemies[ENEMY_LIMIT];

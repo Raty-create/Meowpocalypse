@@ -76,6 +76,15 @@ int HandleBulletEnemyCollision(BULLET* bullet, ENEMY* enemy) {
 		bullet->isActive = INACTIVE;
 		enemy->base.hp -= BULLET_DAMAGE;
 
+		if (enemy->base.hp <= 0) {
+			enemy->base.hp = 0;
+			enemy->base.state = ENEMY_DEAD;
+			enemy->deathTimer = 60; // 60프레임 동안 사망 상태 유지 (애니메이션용)
+		}
+		else {
+			enemy->base.state = ENEMY_HIT;
+		}
+
 		// 넉백 적용: 총알의 이동 방향으로 밀려남
 		float dist = sqrtf(bullet->dx * bullet->dx + bullet->dy * bullet->dy);
 		if (dist > 0) {
@@ -84,9 +93,6 @@ int HandleBulletEnemyCollision(BULLET* bullet, ENEMY* enemy) {
 			enemy->base.kTimer = KNOCKBACK_TIME;
 		}
 
-		if (enemy->base.hp <= 0) {
-			enemy->isActive = INACTIVE;
-		}
 		return 1;
 	}
 	return 0;
@@ -104,11 +110,54 @@ int HandleCatPawPlayerCollision(CATPAW* cp, PLAYER* p) {
 		p->base.hp -= CAT_PAW_DAMAGE;
 		p->invincibleTimer = PLAYER_INVINCIBLE_TIME;
 
+		if (p->base.hp <= 0) {
+			p->base.hp = 0;
+			p->base.state = PLAYER_DEAD;
+		}
+		else {
+			p->base.state = PLAYER_HIT;
+		}
+
 		// 넉백 적용: 투사체의 이동 방향으로 밀려남
 		float dist = sqrtf(cp->dx * cp->dx + cp->dy * cp->dy);
 		if (dist > 0) {
 			p->base.kx = (cp->dx / dist) * KNOCKBACK_FORCE;
 			p->base.ky = (cp->dy / dist) * KNOCKBACK_FORCE;
+			p->base.kTimer = KNOCKBACK_TIME;
+		}
+
+		if (p->base.hp < 0) p->base.hp = 0;
+		return 1;
+	}
+	return 0;
+}
+
+// 적 - 플레이어 충돌 처리 (근접 데미지)
+int HandleEnemyPlayerCollision(ENEMY* enemy, PLAYER* p) {
+	if (!enemy->isActive || p->invincibleTimer > 0) return 0;
+
+	if (IsObjectCollision(enemy->base.hitBoxX, enemy->base.hitBoxY, enemy->base.hitBoxW, enemy->base.hitBoxH,
+		p->base.hitBoxX, p->base.hitBoxY, p->base.hitBoxW, p->base.hitBoxH)) {
+
+		p->base.hp -= ENEMY_CONTACT_DAMAGE;
+		p->invincibleTimer = PLAYER_INVINCIBLE_TIME;
+
+		if (p->base.hp <= 0) {
+			p->base.hp = 0;
+			p->base.state = PLAYER_DEAD;
+		}
+		else {
+			p->base.state = PLAYER_HIT;
+		}
+
+		// 넉백 적용: 적 -> 플레이어 방향으로 밀려남
+		float dx = p->base.x - enemy->base.x;
+		float dy = p->base.y - enemy->base.y;
+		float dist = sqrtf(dx * dx + dy * dy);
+
+		if (dist > 0) {
+			p->base.kx = (dx / dist) * KNOCKBACK_FORCE;
+			p->base.ky = (dy / dist) * KNOCKBACK_FORCE;
 			p->base.kTimer = KNOCKBACK_TIME;
 		}
 
