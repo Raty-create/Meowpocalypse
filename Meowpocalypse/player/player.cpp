@@ -19,6 +19,7 @@ void InitPlayer() {
 	player.base.hp = 200;
 	player.mp = 100;
 	player.invincibleTimer = 0;
+	player.base.direction = DIR_DOWN;
 	player.base.kx = player.base.ky = 0;
 	player.base.kTimer = 0;
 }
@@ -52,13 +53,22 @@ void UpdatePlayer() {
 		player.base.dx = player.base.kx;
 		player.base.dy = player.base.ky;
 		player.base.kTimer--;
+
+		// 넉백 시에는 공격이 온 방향(넉백의 반대 방향)을 바라봄
+		if (fabsf(player.base.kx) > fabsf(player.base.ky)) {
+			if (player.base.kx > 0) player.base.direction = DIR_LEFT;
+			else player.base.direction = DIR_RIGHT;
+		}
+		else {
+			if (player.base.ky > 0) player.base.direction = DIR_UP;
+			else player.base.direction = DIR_DOWN;
+		}
 	}
 	else {
-		// 정상 이동 시 상태 결정
-		if (GetAsyncKeyState('a') || GetAsyncKeyState('A')) player.base.dx = -PLAYER_SPEED;
-		if (GetAsyncKeyState('d') || GetAsyncKeyState('D')) player.base.dx = PLAYER_SPEED;
-		if (GetAsyncKeyState('w') || GetAsyncKeyState('W')) player.base.dy = -PLAYER_SPEED;
-		if (GetAsyncKeyState('s') || GetAsyncKeyState('S')) player.base.dy = PLAYER_SPEED;
+		if (GetAsyncKeyState('a') || GetAsyncKeyState('A')) { player.base.dx = -PLAYER_SPEED; player.base.direction = DIR_LEFT; }
+		if (GetAsyncKeyState('d') || GetAsyncKeyState('D')) { player.base.dx = PLAYER_SPEED; player.base.direction = DIR_RIGHT; }
+		if (GetAsyncKeyState('w') || GetAsyncKeyState('W')) { player.base.dy = -PLAYER_SPEED; player.base.direction = DIR_UP; }
+		if (GetAsyncKeyState('s') || GetAsyncKeyState('S')) { player.base.dy = PLAYER_SPEED; player.base.direction = DIR_DOWN; }
 
 		if (player.base.dx != 0 || player.base.dy != 0) {
 			player.base.state = PLAYER_MOVE;
