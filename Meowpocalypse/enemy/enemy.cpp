@@ -18,6 +18,7 @@ void InitEnemy() {
 		enemies[i].base.width = enemies[i].base.height = ENEMY_SIZE;
 		enemies[i].base.hitBoxW = enemies[i].base.hitBoxH = ENEMY_HITBOX_SIZE;
 		enemies[i].base.state = ENEMY_IDLE;
+		enemies[i].base.direction = DIR_DOWN;
 		enemies[i].shootTimer = 0;
 		enemies[i].moveTimer = 0;
 		enemies[i].base.dx = 0;
@@ -66,6 +67,7 @@ void SpawnEnemy(MAP_TYPE type, int count) {
 				enemies[i].base.x = enemies[i].base.hitBoxX = spawnX;
 				enemies[i].base.y = enemies[i].base.hitBoxY = spawnY;
 				enemies[i].base.state = ENEMY_IDLE;
+				enemies[i].base.direction = DIR_DOWN;
 				enemies[i].shootTimer = rand() % CAT_PAW_INTERVAL;
 				enemies[i].moveTimer = rand() % ENEMY_MOVE;
 				enemies[i].base.dx = 0;
@@ -122,6 +124,19 @@ void UpdateEnemies() {
 			float nextY = ey + enemies[i].base.ky;
 			int half = ENEMY_SIZE / 2;
 
+			// 넉백 중에는 플레이어(공격자) 쪽을 바라봄
+			float toPlayerX = player.base.x - ex;
+			float toPlayerY = player.base.y - ey;
+
+			if (fabsf(toPlayerX) > fabsf(toPlayerY)) {
+				if (toPlayerX > 0) enemies[i].base.direction = DIR_RIGHT;
+				else enemies[i].base.direction = DIR_LEFT;
+			}
+			else {
+				if (toPlayerY > 0) enemies[i].base.direction = DIR_DOWN;
+				else enemies[i].base.direction = DIR_UP;
+			}
+
 			if (!IsTileWall(nextX - half, ey - half) &&
 				!IsTileWall(nextX + half, ey - half) &&
 				!IsTileWall(nextX - half, ey + half) &&
@@ -146,7 +161,12 @@ void UpdateEnemies() {
 
 		if (dist < ENEMY_CHASE_RANGE) {
 			// 잡몹 - 플레이어 근접
-			enemies[i].base.state = ENEMY_CHASE;
+			if (dist < ENEMY_STOP_DISTANCE + 5.0f) {
+				enemies[i].base.state = ENEMY_MELEE;
+			}
+			else {
+				enemies[i].base.state = ENEMY_CHASE;
+			}
 			enemies[i].shootTimer = 0;
 
 			// 플레이어와 충돌 체크 (근접 데미지)
@@ -185,6 +205,22 @@ void UpdateEnemies() {
 				float finalNX = nx + sepX;
 				float finalNY = ny + sepY;
 
+				// 방향 업데이트
+				if (finalNX > 0) {
+					if (finalNY > 0) enemies[i].base.direction = DIR_DOWN_RIGHT;
+					else if (finalNY < 0) enemies[i].base.direction = DIR_UP_RIGHT;
+					else enemies[i].base.direction = DIR_RIGHT;
+				}
+				else if (finalNX < 0) {
+					if (finalNY > 0) enemies[i].base.direction = DIR_DOWN_LEFT;
+					else if (finalNY < 0) enemies[i].base.direction = DIR_UP_LEFT;
+					else enemies[i].base.direction = DIR_LEFT;
+				}
+				else {
+					if (finalNY > 0) enemies[i].base.direction = DIR_DOWN;
+					else if (finalNY < 0) enemies[i].base.direction = DIR_UP;
+				}
+
 				int half = ENEMY_SIZE / 2;
 				float nextX = ex + finalNX;
 				float nextY = ey + finalNY;
@@ -214,10 +250,10 @@ void UpdateEnemies() {
 
 				int dir = rand() % 4;
 				switch (dir) {
-				case 0: enemies[i].base.dx = ENEMY_SPEED; enemies[i].base.dy = 0; break;
-				case 1: enemies[i].base.dx = -ENEMY_SPEED; enemies[i].base.dy = 0;  break;
-				case 2: enemies[i].base.dx = 0; enemies[i].base.dy = ENEMY_SPEED; break;
-				case 3: enemies[i].base.dx = 0; enemies[i].base.dy = -ENEMY_SPEED; break;
+				case 0: enemies[i].base.dx = ENEMY_SPEED; enemies[i].base.dy = 0; enemies[i].base.direction = DIR_RIGHT; break;
+				case 1: enemies[i].base.dx = -ENEMY_SPEED; enemies[i].base.dy = 0; enemies[i].base.direction = DIR_LEFT; break;
+				case 2: enemies[i].base.dx = 0; enemies[i].base.dy = ENEMY_SPEED; enemies[i].base.direction = DIR_DOWN; break;
+				case 3: enemies[i].base.dx = 0; enemies[i].base.dy = -ENEMY_SPEED; enemies[i].base.direction = DIR_UP; break;
 				}
 			}
 

@@ -19,6 +19,7 @@ void InitPlayer() {
 	player.base.hp = 200;
 	player.mp = 100;
 	player.invincibleTimer = 0;
+	player.base.direction = DIR_DOWN;
 	player.base.kx = player.base.ky = 0;
 	player.base.kTimer = 0;
 }
@@ -52,18 +53,49 @@ void UpdatePlayer() {
 		player.base.dx = player.base.kx;
 		player.base.dy = player.base.ky;
 		player.base.kTimer--;
+
+		// 넉백 시에는 공격이 온 방향(넉백의 반대 방향)을 바라봄
+		if (fabsf(player.base.kx) > fabsf(player.base.ky)) {
+			if (player.base.kx > 0) player.base.direction = DIR_LEFT;
+			else player.base.direction = DIR_RIGHT;
+		}
+		else {
+			if (player.base.ky > 0) player.base.direction = DIR_UP;
+			else player.base.direction = DIR_DOWN;
+		}
 	}
 	else {
-		// 정상 이동 시 상태 결정
-		if (GetAsyncKeyState('a') || GetAsyncKeyState('A')) player.base.dx = -PLAYER_SPEED;
-		if (GetAsyncKeyState('d') || GetAsyncKeyState('D')) player.base.dx = PLAYER_SPEED;
-		if (GetAsyncKeyState('w') || GetAsyncKeyState('W')) player.base.dy = -PLAYER_SPEED;
-		if (GetAsyncKeyState('s') || GetAsyncKeyState('S')) player.base.dy = PLAYER_SPEED;
+		float moveX = 0, moveY = 0;
+		if (GetAsyncKeyState('a') || GetAsyncKeyState('A')) moveX -= 1.0f;
+		if (GetAsyncKeyState('d') || GetAsyncKeyState('D')) moveX += 1.0f;
+		if (GetAsyncKeyState('w') || GetAsyncKeyState('W')) moveY -= 1.0f;
+		if (GetAsyncKeyState('s') || GetAsyncKeyState('S')) moveY += 1.0f;
 
-		if (player.base.dx != 0 || player.base.dy != 0) {
+		if (moveX != 0 || moveY != 0) {
+			float length = sqrtf(moveX * moveX + moveY * moveY);
+			player.base.dx = (moveX / length) * PLAYER_SPEED;
+			player.base.dy = (moveY / length) * PLAYER_SPEED;
+
+			if (moveX > 0) {
+				if (moveY > 0) player.base.direction = DIR_DOWN_RIGHT;
+				else if (moveY < 0) player.base.direction = DIR_UP_RIGHT;
+				else player.base.direction = DIR_RIGHT;
+			}
+			else if (moveX < 0) {
+				if (moveY > 0) player.base.direction = DIR_DOWN_LEFT;
+				else if (moveY < 0) player.base.direction = DIR_UP_LEFT;
+				else player.base.direction = DIR_LEFT;
+			}
+			else {
+				if (moveY > 0) player.base.direction = DIR_DOWN;
+				else if (moveY < 0) player.base.direction = DIR_UP;
+			}
+
 			player.base.state = PLAYER_MOVE;
 		}
 		else {
+			player.base.dx = 0;
+			player.base.dy = 0;
 			player.base.state = PLAYER_IDLE;
 		}
 	}

@@ -50,7 +50,7 @@ void InitWaitingMap(MAPDATA* m) {
 void InitHallWayMap(MAPDATA* m, int worldX) {
 	m->rows = HALLWAYMAP_ROWS;
 	m->cols = HALLWAYMAP_COLS;
-	m->worldX = worldX;
+	m->worldX = (float)worldX;
 	m->worldY = 0;
 	m->doorCount = 0;
 
@@ -83,7 +83,7 @@ void InitHallWayMap(MAPDATA* m, int worldX) {
 void InitBossMap(MAPDATA* m, int worldX) {
 	m->rows = BOSSMAP_ROWS;
 	m->cols = BOSSMAP_COLS;
-	m->worldX = worldX;
+	m->worldX = (float)worldX;
 	m->worldY = 0;
 	m->doorCount = 0;
 
