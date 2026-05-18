@@ -1,7 +1,8 @@
 #include <windows.h>
-#include<stdlib.h>
+#include <stdlib.h>
 #include <time.h>
 #include "game.h"
+#include "config.h"
 
 HINSTANCE g_hInst;
 LPCTSTR lpszClass = L"My Window Class";
@@ -9,8 +10,8 @@ LPCTSTR lpszWindowName = L"windows program 1";
 LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam);
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdParam, int nCmdShow)
 {
-	int screenW = GetSystemMetrics(SM_CXSCREEN);
-	int screenH = GetSystemMetrics(SM_CYSCREEN);
+	SCREEN_WIDTH = GetSystemMetrics(SM_CXSCREEN);
+	SCREEN_HEIGHT = GetSystemMetrics(SM_CYSCREEN);
 
 	HWND hWnd;
 	MSG Message;
@@ -30,7 +31,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdPa
 	WndClass.lpszClassName = lpszClass;
 	WndClass.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
 	RegisterClassEx(&WndClass);
-	hWnd = CreateWindow(lpszClass, lpszWindowName, WS_POPUP | WS_VISIBLE, 0, 0, screenW, screenH, NULL, (HMENU)NULL, hInstance, NULL);
+	hWnd = CreateWindow(lpszClass, lpszWindowName, WS_POPUP | WS_VISIBLE, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, NULL, (HMENU)NULL, hInstance, NULL);
 	ShowWindow(hWnd, nCmdShow);
 	UpdateWindow(hWnd);
 	while (GetMessage(&Message, 0, 0, 0)) {
@@ -55,6 +56,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 		InitGame();
 		SetTimer(hWnd, 1, 6, NULL);
 
+		break;
+
+	case WM_SIZE:
+		SCREEN_WIDTH = LOWORD(lParam);
+		SCREEN_HEIGHT = HIWORD(lParam);
 		break;
 
 	case WM_KEYDOWN:
