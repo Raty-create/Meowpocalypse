@@ -206,11 +206,17 @@ void UpdateEnemies() {
 				float finalNY = ny + sepY;
 
 				// 방향 업데이트
-				if (fabsf(finalNX) > fabsf(finalNY)) {
-					if (finalNX > 0) enemies[i].base.direction = DIR_RIGHT;
-					else if (finalNX < 0) enemies[i].base.direction = DIR_LEFT;
+				if (finalNX > 0) {
+					if (finalNY > 0) enemies[i].base.direction = DIR_DOWN_RIGHT;
+					else if (finalNY < 0) enemies[i].base.direction = DIR_UP_RIGHT;
+					else enemies[i].base.direction = DIR_RIGHT;
 				}
-				else if (fabsf(finalNY) > 0) {
+				else if (finalNX < 0) {
+					if (finalNY > 0) enemies[i].base.direction = DIR_DOWN_LEFT;
+					else if (finalNY < 0) enemies[i].base.direction = DIR_UP_LEFT;
+					else enemies[i].base.direction = DIR_LEFT;
+				}
+				else {
 					if (finalNY > 0) enemies[i].base.direction = DIR_DOWN;
 					else if (finalNY < 0) enemies[i].base.direction = DIR_UP;
 				}

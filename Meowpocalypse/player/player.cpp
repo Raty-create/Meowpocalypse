@@ -65,15 +65,37 @@ void UpdatePlayer() {
 		}
 	}
 	else {
-		if (GetAsyncKeyState('a') || GetAsyncKeyState('A')) { player.base.dx = -PLAYER_SPEED; player.base.direction = DIR_LEFT; }
-		if (GetAsyncKeyState('d') || GetAsyncKeyState('D')) { player.base.dx = PLAYER_SPEED; player.base.direction = DIR_RIGHT; }
-		if (GetAsyncKeyState('w') || GetAsyncKeyState('W')) { player.base.dy = -PLAYER_SPEED; player.base.direction = DIR_UP; }
-		if (GetAsyncKeyState('s') || GetAsyncKeyState('S')) { player.base.dy = PLAYER_SPEED; player.base.direction = DIR_DOWN; }
+		float moveX = 0, moveY = 0;
+		if (GetAsyncKeyState('a') || GetAsyncKeyState('A')) moveX -= 1.0f;
+		if (GetAsyncKeyState('d') || GetAsyncKeyState('D')) moveX += 1.0f;
+		if (GetAsyncKeyState('w') || GetAsyncKeyState('W')) moveY -= 1.0f;
+		if (GetAsyncKeyState('s') || GetAsyncKeyState('S')) moveY += 1.0f;
 
-		if (player.base.dx != 0 || player.base.dy != 0) {
+		if (moveX != 0 || moveY != 0) {
+			float length = sqrtf(moveX * moveX + moveY * moveY);
+			player.base.dx = (moveX / length) * PLAYER_SPEED;
+			player.base.dy = (moveY / length) * PLAYER_SPEED;
+
+			if (moveX > 0) {
+				if (moveY > 0) player.base.direction = DIR_DOWN_RIGHT;
+				else if (moveY < 0) player.base.direction = DIR_UP_RIGHT;
+				else player.base.direction = DIR_RIGHT;
+			}
+			else if (moveX < 0) {
+				if (moveY > 0) player.base.direction = DIR_DOWN_LEFT;
+				else if (moveY < 0) player.base.direction = DIR_UP_LEFT;
+				else player.base.direction = DIR_LEFT;
+			}
+			else {
+				if (moveY > 0) player.base.direction = DIR_DOWN;
+				else if (moveY < 0) player.base.direction = DIR_UP;
+			}
+
 			player.base.state = PLAYER_MOVE;
 		}
 		else {
+			player.base.dx = 0;
+			player.base.dy = 0;
 			player.base.state = PLAYER_IDLE;
 		}
 	}
