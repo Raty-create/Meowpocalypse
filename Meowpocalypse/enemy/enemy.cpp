@@ -18,6 +18,7 @@ void InitEnemy() {
 		enemies[i].base.width = enemies[i].base.height = ENEMY_SIZE;
 		enemies[i].base.hitBoxW = enemies[i].base.hitBoxH = ENEMY_HITBOX_SIZE;
 		enemies[i].base.state = ENEMY_IDLE;
+		enemies[i].base.direction = DIR_DOWN;
 		enemies[i].shootTimer = 0;
 		enemies[i].moveTimer = 0;
 		enemies[i].base.dx = 0;
@@ -66,6 +67,7 @@ void SpawnEnemy(MAP_TYPE type, int count) {
 				enemies[i].base.x = enemies[i].base.hitBoxX = spawnX;
 				enemies[i].base.y = enemies[i].base.hitBoxY = spawnY;
 				enemies[i].base.state = ENEMY_IDLE;
+				enemies[i].base.direction = DIR_DOWN;
 				enemies[i].shootTimer = rand() % CAT_PAW_INTERVAL;
 				enemies[i].moveTimer = rand() % ENEMY_MOVE;
 				enemies[i].base.dx = 0;
@@ -102,14 +104,38 @@ void UpdateEnemies() {
 	for (int i = 0; i < ENEMY_LIMIT; i++) {
 		if (!enemies[i].isActive) continue;
 
+		// 사망 상태 처리
+		if (enemies[i].base.state == ENEMY_DEAD) {
+			enemies[i].deathTimer--;
+			if (enemies[i].deathTimer <= 0) {
+				enemies[i].isActive = INACTIVE;
+			}
+			continue; // 사망 중에는 이동/공격 안함
+		}
+
 		float ex = enemies[i].base.x;
 		float ey = enemies[i].base.y;
 
-		// 넉백 처리
+		// 넉백 및 히트 상태 처리
 		if (enemies[i].base.kTimer > 0) {
+			enemies[i].base.state = ENEMY_HIT; // 넉백 중에는 HIT 상태
+
 			float nextX = ex + enemies[i].base.kx;
 			float nextY = ey + enemies[i].base.ky;
 			int half = ENEMY_SIZE / 2;
+
+			// 넉백 중에는 플레이어(공격자) 쪽을 바라봄
+			float toPlayerX = player.base.x - ex;
+			float toPlayerY = player.base.y - ey;
+
+			if (fabsf(toPlayerX) > fabsf(toPlayerY)) {
+				if (toPlayerX > 0) enemies[i].base.direction = DIR_RIGHT;
+				else enemies[i].base.direction = DIR_LEFT;
+			}
+			else {
+				if (toPlayerY > 0) enemies[i].base.direction = DIR_DOWN;
+				else enemies[i].base.direction = DIR_UP;
+			}
 
 			if (!IsTileWall(nextX - half, ey - half) &&
 				!IsTileWall(nextX + half, ey - half) &&
@@ -135,16 +161,70 @@ void UpdateEnemies() {
 
 		if (dist < ENEMY_CHASE_RANGE) {
 			// 잡몹 - 플레이어 근접
-			enemies[i].base.state = ENEMY_CHASE;
+			if (dist < ENEMY_STOP_DISTANCE + 5.0f) {
+				enemies[i].base.state = ENEMY_MELEE;
+			}
+			else {
+				enemies[i].base.state = ENEMY_CHASE;
+			}
 			enemies[i].shootTimer = 0;
 
-			if (dist > 0) {
-				float nx = (dx / dist) * (ENEMY_SPEED * 1.5f);
-				float ny = (dy / dist) * (ENEMY_SPEED * 1.5f);
-				int half = ENEMY_SIZE / 2;
+			// 플레이어와 충돌 체크 (근접 데미지)
+			HandleEnemyPlayerCollision(&enemies[i], &player);
 
-				float nextX = ex + nx;
-				float nextY = ey + ny;
+			if (dist > 0) {
+				// 플레이어를 향한 기본 추격 벡터 (일정 거리 유지)
+				float nx = 0, ny = 0;
+				if (dist > ENEMY_STOP_DISTANCE) {
+					nx = (dx / dist) * (ENEMY_SPEED * 1.5f);
+					ny = (dy / dist) * (ENEMY_SPEED * 1.5f);
+				}
+				else if (dist < ENEMY_STOP_DISTANCE - 5.0f) {
+					nx = -(dx / dist) * (ENEMY_SPEED * 0.5f);
+					ny = -(dy / dist) * (ENEMY_SPEED * 0.5f);
+				}
+
+				// 다른 적들과의 겹침 방지 (Separation)
+				float sepX = 0, sepY = 0;
+				for (int j = 0; j < ENEMY_LIMIT; j++) {
+					if (i == j || !enemies[j].isActive) continue;
+
+					float diffX = ex - enemies[j].base.x;
+					float diffY = ey - enemies[j].base.y;
+					float eDist = sqrtf(diffX * diffX + diffY * diffY);
+
+					// 적들끼리 일정 거리보다 가까워지면 반발력 발생
+					if (eDist < ENEMY_SIZE && eDist > 0) {
+						float force = (ENEMY_SIZE - eDist) / ENEMY_SIZE;
+						sepX += (diffX / eDist) * force * ENEMY_SPEED;
+						sepY += (diffY / eDist) * force * ENEMY_SPEED;
+					}
+				}
+
+				// 최종 이동 벡터 합산
+				float finalNX = nx + sepX;
+				float finalNY = ny + sepY;
+
+				// 방향 업데이트
+				if (finalNX > 0) {
+					if (finalNY > 0) enemies[i].base.direction = DIR_DOWN_RIGHT;
+					else if (finalNY < 0) enemies[i].base.direction = DIR_UP_RIGHT;
+					else enemies[i].base.direction = DIR_RIGHT;
+				}
+				else if (finalNX < 0) {
+					if (finalNY > 0) enemies[i].base.direction = DIR_DOWN_LEFT;
+					else if (finalNY < 0) enemies[i].base.direction = DIR_UP_LEFT;
+					else enemies[i].base.direction = DIR_LEFT;
+				}
+				else {
+					if (finalNY > 0) enemies[i].base.direction = DIR_DOWN;
+					else if (finalNY < 0) enemies[i].base.direction = DIR_UP;
+				}
+
+				int half = ENEMY_SIZE / 2;
+				float nextX = ex + finalNX;
+				float nextY = ey + finalNY;
+
 				if (!IsTileWall(nextX - half, ey - half) &&
 					!IsTileWall(nextX + half, ey - half) &&
 					!IsTileWall(nextX - half, ey + half) &&
@@ -170,10 +250,10 @@ void UpdateEnemies() {
 
 				int dir = rand() % 4;
 				switch (dir) {
-				case 0: enemies[i].base.dx = ENEMY_SPEED; enemies[i].base.dy = 0; break;
-				case 1: enemies[i].base.dx = -ENEMY_SPEED; enemies[i].base.dy = 0;  break;
-				case 2: enemies[i].base.dx = 0; enemies[i].base.dy = ENEMY_SPEED; break;
-				case 3: enemies[i].base.dx = 0; enemies[i].base.dy = -ENEMY_SPEED; break;
+				case 0: enemies[i].base.dx = ENEMY_SPEED; enemies[i].base.dy = 0; enemies[i].base.direction = DIR_RIGHT; break;
+				case 1: enemies[i].base.dx = -ENEMY_SPEED; enemies[i].base.dy = 0; enemies[i].base.direction = DIR_LEFT; break;
+				case 2: enemies[i].base.dx = 0; enemies[i].base.dy = ENEMY_SPEED; enemies[i].base.direction = DIR_DOWN; break;
+				case 3: enemies[i].base.dx = 0; enemies[i].base.dy = -ENEMY_SPEED; enemies[i].base.direction = DIR_UP; break;
 				}
 			}
 

@@ -103,7 +103,12 @@ void RenderEnemies(HDC mDC) {
 		screenX = (int)(enemies[i].base.x - camera.x);
 		screenY = (int)(enemies[i].base.y - camera.y);
 
-		hBrush = CreateSolidBrush(enemies[i].base.state == ENEMY_CHASE ? RGB(200, 30, 0) : RGB(0, 30, 200));
+		COLORREF enemyColor;
+		if (enemies[i].base.state == ENEMY_MELEE) enemyColor = RGB(255, 0, 0);
+		else if (enemies[i].base.state == ENEMY_CHASE) enemyColor = RGB(200, 30, 0);
+		else enemyColor = RGB(0, 30, 200);
+
+		hBrush = CreateSolidBrush(enemyColor);
 		oldBrush = (HBRUSH)SelectObject(mDC, hBrush);
 
 		Rectangle(mDC, screenX - enemies[i].base.width / 2, screenY - enemies[i].base.height / 2,

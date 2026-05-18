@@ -53,6 +53,8 @@
 
 #define ENEMY_CHASE_RANGE 200.0f
 #define ENEMY_SPEED 2.5f
+#define ENEMY_CONTACT_DAMAGE 5
+#define ENEMY_STOP_DISTANCE 30.0f
 
 #define CAT_PAW_SIZE 25
 #define CAT_PAW_SPEED 5.0f

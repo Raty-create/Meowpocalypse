@@ -9,6 +9,9 @@ LPCTSTR lpszWindowName = L"windows program 1";
 LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam);
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdParam, int nCmdShow)
 {
+	int screenW = GetSystemMetrics(SM_CXSCREEN);
+	int screenH = GetSystemMetrics(SM_CYSCREEN);
+
 	HWND hWnd;
 	MSG Message;
 	WNDCLASSEX WndClass;
@@ -27,7 +30,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdPa
 	WndClass.lpszClassName = lpszClass;
 	WndClass.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
 	RegisterClassEx(&WndClass);
-	hWnd = CreateWindow(lpszClass, lpszWindowName, WS_OVERLAPPEDWINDOW, 0, 0, 1920, 1080, NULL, (HMENU)NULL, hInstance, NULL);
+	hWnd = CreateWindow(lpszClass, lpszWindowName, WS_POPUP | WS_VISIBLE, 0, 0, screenW, screenH, NULL, (HMENU)NULL, hInstance, NULL);
 	ShowWindow(hWnd, nCmdShow);
 	UpdateWindow(hWnd);
 	while (GetMessage(&Message, 0, 0, 0)) {
@@ -46,8 +49,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	RECT rt;
 	GetClientRect(hWnd, &rt);
 
-	static int mx, my;
-
 	switch (uMsg) {
 	case WM_CREATE:
 		srand((unsigned int)time(NULL));
@@ -55,11 +56,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 		SetTimer(hWnd, 1, 6, NULL);
 
 		break;
+
+	case WM_KEYDOWN:
+		switch (wParam) {
+		case VK_ESCAPE: DestroyWindow(hWnd); break;
+		}
+		break;
+
 	case WM_TIMER:
 		Update(hWnd);
 
 		InvalidateRect(hWnd, NULL, FALSE);
 		break;
+
 	case WM_PAINT:
 		hDC = BeginPaint(hWnd, &ps);
 		mDC = CreateCompatibleDC(hDC);
@@ -77,6 +86,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
 		EndPaint(hWnd, &ps);
 		break;
+
 	case WM_DESTROY:
 		KillTimer(hWnd, 1);
 		PostQuitMessage(0);
