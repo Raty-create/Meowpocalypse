@@ -150,10 +150,55 @@ void RenderCatPaw(HDC mDC) {
 	DeleteObject(hBrush);
 }
 
+//보스 대시 경고 - Polygon으로 경고 영역 한 번에 그리기
+void RenderDashWarning(HDC mDC) {
+	if (dashWarn.isActive == INACTIVE) return;
+
+	// 깜빡임: 10프레임 단위로 켜짐/꺼짐
+	if ((dashWarn.timer / 10) % 2 == 0) return;
+
+	int half = BOSS_SIZE / 2;
+
+	// 경고 영역의 꼭짓점 4개 계산 (월드 → 화면 좌표)
+	// 끝점 중심
+	float ex = dashWarn.startX + dashWarn.dirX * dashWarn.stopDist;
+	float ey = dashWarn.startY + dashWarn.dirY * dashWarn.stopDist;
+
+	POINT pts[4];
+	// P0: 시작 왼쪽 위
+	pts[0].x = (int)(dashWarn.startX + dashWarn.perpX * half - camera.x);
+	pts[0].y = (int)(dashWarn.startY + dashWarn.perpY * half - camera.y);
+	// P1: 끝   왼쪽 위
+	pts[1].x = (int)(ex + dashWarn.perpX * half - camera.x);
+	pts[1].y = (int)(ey + dashWarn.perpY * half - camera.y);
+	// P2: 끝   오른쪽 아래
+	pts[2].x = (int)(ex - dashWarn.perpX * half - camera.x);
+	pts[2].y = (int)(ey - dashWarn.perpY * half - camera.y);
+	// P3: 시작 오른쪽 아래
+	pts[3].x = (int)(dashWarn.startX - dashWarn.perpX * half - camera.x);
+	pts[3].y = (int)(dashWarn.startY - dashWarn.perpY * half - camera.y);
+
+	hBrush = CreateSolidBrush(RGB(255, 40, 40));
+	oldBrush = (HBRUSH)SelectObject(mDC, hBrush);
+	hPen = CreatePen(PS_NULL, 0, 0); // 테두리 없음
+	oldPen = (HPEN)SelectObject(mDC, hPen);
+
+	Polygon(mDC, pts, 4); // 꼭짓점 4개로 경고 영역 한 번에 그리기
+
+	SelectObject(mDC, oldPen);
+	SelectObject(mDC, oldBrush);
+	DeleteObject(hPen);
+	DeleteObject(hBrush);
+}
+
 // 보스
 void RenderBoss(HDC mDC) {
 	if (!boss.isActive) return;
-	hBrush = CreateSolidBrush(RGB(0, 255, 0));
+
+	RenderDashWarning(mDC);
+
+	COLORREF bossColor = boss.isDashing ? RGB(255, 220, 0) : RGB(0, 255, 0);
+	hBrush = CreateSolidBrush(bossColor);
 	oldBrush = (HBRUSH)SelectObject(mDC, hBrush);
 	
 	screenX = (int)(boss.base.x - camera.x);
@@ -161,6 +206,23 @@ void RenderBoss(HDC mDC) {
 
 	Rectangle(mDC, screenX - BOSS_SIZE / 2, screenY - BOSS_SIZE / 2, screenX + BOSS_SIZE / 2, screenY + BOSS_SIZE / 2);
 
+	SelectObject(mDC, oldBrush);
+	DeleteObject(hBrush);
+}
+
+//보스 CAT_PAW
+void RenderBossPaws(HDC mDC) {
+	hBrush = CreateSolidBrush(RGB(255, 140, 0));  // 주황색으로 잡몹 PAW와 구분
+	oldBrush = (HBRUSH)SelectObject(mDC, hBrush);
+
+	for (int i = 0; i < BOSS_PAW_LIMIT; i++) {
+		if (bossPaws[i].isActive == INACTIVE) continue;
+		screenX = (int)(bossPaws[i].x - camera.x);
+		screenY = (int)(bossPaws[i].y - camera.y);
+		Ellipse(mDC,
+			screenX - BOSS_PAW_SIZE / 2, screenY - BOSS_PAW_SIZE / 2,
+			screenX + BOSS_PAW_SIZE / 2, screenY + BOSS_PAW_SIZE / 2);
+	}
 	SelectObject(mDC, oldBrush);
 	DeleteObject(hBrush);
 }

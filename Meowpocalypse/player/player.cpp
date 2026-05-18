@@ -21,7 +21,6 @@ void InitPlayer() {
 	player.invincibleTimer = 0;
 	player.base.kx = player.base.ky = 0;
 	player.base.kTimer = 0;
-	player.base.state = STOP;
 }
 
 // 플레이어 업데이트

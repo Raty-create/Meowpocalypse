@@ -19,6 +19,7 @@ void RenderCatPaw(HDC mDC);
 
 // 보스
 void RenderBoss(HDC mDC);
+void RenderBossPaws(HDC mDC);
 
 // 총알
 void RenderBullets(HDC mDC);

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "enum.h"
+
 typedef struct {
 	float x, y;
 	float dx, dy;
@@ -8,6 +10,7 @@ typedef struct {
 	int hitBoxW, hitBoxH;
 	int hp;
 	int state;
+	DIRECTION direction;
 	float kx, ky; // knockback direction/force
 	int kTimer;   // knockback timer
 } OBJECT;
