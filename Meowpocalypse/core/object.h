@@ -1,6 +1,8 @@
 #pragma once
 #include "enum.h"
 
+#include "enum.h"
+
 typedef struct {
 	float x, y;
 	float dx, dy;
