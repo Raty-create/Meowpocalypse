@@ -1,4 +1,5 @@
 #pragma once
+
 #include "object.h"
 #include "config.h"
 #include "map.h"
@@ -25,3 +26,11 @@ void InitEnemy();
 void ClearEnemies();
 void SpawnEnemy(MAP_TYPE type, int count);
 void UpdateEnemies();
+
+// 적 업데이트 관련 내부 함수
+void UpdateEnemyState(int index);
+void HandleEnemyKnockback(int index);
+void HandleEnemyChase(int index, float dx, float dy, float dist);
+void HandleEnemyPatrol(int index);
+void HandleEnemyAggro(int index, float tx, float ty);
+void UpdateCatPaws();

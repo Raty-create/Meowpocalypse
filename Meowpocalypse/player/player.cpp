@@ -7,25 +7,59 @@
 #include "camera.h"
 #include "collision.h"
 #include "bullet.h"
+#include "input.h"
 
 PLAYER player;
 
 // 초기 설정
 void InitPlayer() {
-	player.base.x = player.base.hitBoxX = SCREEN_WIDTH / 2;
-	player.base.y = player.base.hitBoxY = SCREEN_HEIGHT / 2;
+	player.base.x = player.base.hitBoxX = (float)SCREEN_WIDTH / 2;
+	player.base.y = player.base.hitBoxY = (float)SCREEN_HEIGHT / 2;
 	player.base.width = player.base.height = PLAYER_SIZE;
 	player.base.hitBoxW = player.base.hitBoxH = PLAYER_HITBOX_SIZE;
 	player.base.hp = 200;
 	player.mp = 100;
+
 	player.invincibleTimer = 0;
+
+	player.skillQCooldown = 0;
+	player.skillRCooldown = 0;
+
+	player.boostTimer = 0;
+	player.boostCooldown = 0;
+	player.fireTimer = 0;
+
 	player.base.direction = DIR_DOWN;
+
 	player.base.kx = player.base.ky = 0;
 	player.base.kTimer = 0;
 }
 
+// MP를 소모하고 성공 여부를 반환하는 함수
+BOOL ConsumeMP(int amount) {
+	if (player.mp >= amount) {
+		player.mp -= amount;
+		return TRUE;	// 소모 성공
+	}
+
+	return FALSE;	// 소모 실패
+}
+
 // 플레이어 업데이트
 void UpdatePlayer() {
+	UpdatePlayerStatus();
+	if (player.base.state == PLAYER_DEAD) return;
+
+	UpdatePlayerTimers();
+	HandlePlayerInput();
+	HandlePlayerMovement();
+	HandlePlayerCollision();
+
+	MapTransition();
+}
+
+// 사망 여부 및 HP 확인
+void UpdatePlayerStatus() {
 	// 이미 죽은 상태면 업데이트 중단
 	if (player.base.state == PLAYER_DEAD) return;
 
@@ -38,7 +72,10 @@ void UpdatePlayer() {
 
 	player.base.dx = 0;
 	player.base.dy = 0;
+}
 
+// 무적 시간, 스킬 쿨타임 등 타이머 갱신
+void UpdatePlayerTimers() {
 	// 무적 타이머 감소
 	if (player.invincibleTimer > 0) {
 		player.invincibleTimer--;
@@ -48,6 +85,45 @@ void UpdatePlayer() {
 		}
 	}
 
+	// Q 스킬 - 쿨타임 타이머 감소
+	if (player.skillQCooldown > 0) {
+		player.skillQCooldown--;
+	}
+
+	// E 스킬 - 부스트 타이머 감소
+	if (player.boostTimer > 0) {
+		player.boostTimer--;
+	}
+
+	// E 스킬 - 쿨타임 타이머 감소
+	if (player.boostCooldown > 0) {
+		player.boostCooldown--;
+	}
+
+	// E 스킬 - 발사 타이머 감소
+	if (player.fireTimer > 0) {
+		player.fireTimer--;
+	}
+
+	// R 스킬 - 쿨타임 타이머 감소
+	if (player.skillRCooldown > 0) {
+		player.skillRCooldown--;
+	}
+}
+
+// 스킬 입력 처리
+void HandlePlayerInput() {
+	// E 스킬 - 부스트 활성화 (쿨타임이 0일 때만 가능)
+	if (g_Input.isEPressed && player.boostTimer <= 0 && player.boostCooldown <= 0) {
+		if (ConsumeMP(SKILL_E_MP)) {
+			player.boostTimer = BOOST_DURATION;
+			player.boostCooldown = BOOST_DURATION + BOOST_COOLDOWN; // 지속시간 + 쿨타임만큼 설정
+		}
+	}
+}
+
+// 넉백 및 방향 키에 따른 이동 로직 처리
+void HandlePlayerMovement() {
 	// 넉백 처리
 	if (player.base.kTimer > 0) {
 		player.base.dx = player.base.kx;
@@ -65,16 +141,20 @@ void UpdatePlayer() {
 		}
 	}
 	else {
-		float moveX = 0, moveY = 0;
-		if (GetAsyncKeyState('a') || GetAsyncKeyState('A')) moveX -= 1.0f;
-		if (GetAsyncKeyState('d') || GetAsyncKeyState('D')) moveX += 1.0f;
-		if (GetAsyncKeyState('w') || GetAsyncKeyState('W')) moveY -= 1.0f;
-		if (GetAsyncKeyState('s') || GetAsyncKeyState('S')) moveY += 1.0f;
+		float moveX = g_Input.moveX;
+		float moveY = g_Input.moveY;
 
 		if (moveX != 0 || moveY != 0) {
 			float length = sqrtf(moveX * moveX + moveY * moveY);
-			player.base.dx = (moveX / length) * PLAYER_SPEED;
-			player.base.dy = (moveY / length) * PLAYER_SPEED;
+			float speed = PLAYER_SPEED;
+
+			// 부스트 상태일 때 속도 증가
+			if (player.boostTimer > 0) {
+				speed *= BOOST_SPEED_MULTIPLIER;
+			}
+
+			player.base.dx = (moveX / length) * speed;
+			player.base.dy = (moveY / length) * speed;
 
 			if (moveX > 0) {
 				if (moveY > 0) player.base.direction = DIR_DOWN_RIGHT;
@@ -99,22 +179,4 @@ void UpdatePlayer() {
 			player.base.state = PLAYER_IDLE;
 		}
 	}
-
-	float playerNextX = player.base.x + player.base.dx;
-	float playerNextY = player.base.y + player.base.dy;
-
-	int playerSizeHalf = PLAYER_SIZE / 2;
-	if (!IsTileWall(playerNextX - playerSizeHalf, player.base.y - playerSizeHalf) &&
-		!IsTileWall(playerNextX + playerSizeHalf, player.base.y - playerSizeHalf) &&
-		!IsTileWall(playerNextX - playerSizeHalf, player.base.y + playerSizeHalf) &&
-		!IsTileWall(playerNextX + playerSizeHalf, player.base.y + playerSizeHalf))
-		player.base.x = player.base.hitBoxX = playerNextX;
-
-	if (!IsTileWall(player.base.x - playerSizeHalf, playerNextY - playerSizeHalf) &&
-		!IsTileWall(player.base.x + playerSizeHalf, playerNextY - playerSizeHalf) &&
-		!IsTileWall(player.base.x - playerSizeHalf, playerNextY + playerSizeHalf) &&
-		!IsTileWall(player.base.x + playerSizeHalf, playerNextY + playerSizeHalf))
-		player.base.y = player.base.hitBoxY = playerNextY;
-
-	MapTransition();
 }

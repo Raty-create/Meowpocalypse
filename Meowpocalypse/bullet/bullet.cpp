@@ -7,8 +7,10 @@
 #include "camera.h"
 #include "collision.h"
 #include "enum.h"
+#include "input.h"
 
 BULLET bullets[BULLET_MAX];
+CHURU churues[CHURU_MAX];
 
 void InitBullet() {
 	for (int i = 0; i < BULLET_MAX; i++) {
@@ -16,44 +18,6 @@ void InitBullet() {
 		bullets[i].width = TILE_SIZE / 3;
 		bullets[i].height = TILE_SIZE / 3;
 	}
-}
-
-// 총알 발사
-void ShootBullet(HWND hWnd) {
-	static BOOL prevPressed = FALSE;
-
-	BOOL currPressed = (GetAsyncKeyState(VK_LBUTTON) & 0x8000) != 0;
-
-	if (!prevPressed && currPressed) {
-		for (int i = 0; i < BULLET_MAX; i++) {
-			if (bullets[i].isActive == INACTIVE) {
-
-				POINT pt;
-				GetCursorPos(&pt);
-				ScreenToClient(hWnd, &pt);
-
-				// 플레이어의 스크린 좌표
-				float playerScreenX = player.base.x - camera.x;
-				float playerScreenY = player.base.y - camera.y;
-
-				// 마우스 방향 벡터
-				float dirX = pt.x - playerScreenX;
-				float dirY = pt.y - playerScreenY;
-
-				float length = sqrtf(dirX * dirX + dirY * dirY);
-				if (length == 0) return;
-
-				bullets[i].x = player.base.x;
-				bullets[i].y = player.base.y;
-				bullets[i].dx = (dirX / length) * BULLET_SPEED;
-				bullets[i].dy = (dirY / length) * BULLET_SPEED;
-				bullets[i].isActive = ACTIVE;
-				break;
-			}
-		}
-	}
-
-	prevPressed = currPressed;
 }
 
 // 총알 업데이트
@@ -80,10 +44,176 @@ void UpdateBullet() {
 		float bulletNextX = bullets[i].x + bullets[i].dx;
 		float bulletNextY = bullets[i].y + bullets[i].dy;
 
-		if (IsTileWall(bulletNextX, bullets[i].y))
+		if (IsTileWall(bulletNextX, bullets[i].y) || IsTileWall(bullets[i].x, bulletNextY))
 			bullets[i].isActive = INACTIVE;
+	}
+}
 
-		if (IsTileWall(bullets[i].x, bulletNextY))
-			bullets[i].isActive = INACTIVE;
+// 총알 발사
+void ShootBullet() {
+	// 발사 쿨타임 체크
+	if (player.fireTimer > 0) return;
+
+	// 마우스 왼쪽 버튼이 눌려 있을 때 발사 (isLButtonDown으로 변경하여 자동 연사 지원)
+	if (g_Input.isLButtonDown) {
+		for (int i = 0; i < BULLET_MAX; i++) {
+			if (bullets[i].isActive == INACTIVE) {
+
+				POINT pt = g_Input.mousePos;
+
+				// 플레이어의 스크린 좌표
+				float playerScreenX = player.base.x - camera.x;
+				float playerScreenY = player.base.y - camera.y;
+
+				// 마우스 방향 벡터
+				float dirX = pt.x - playerScreenX;
+				float dirY = pt.y - playerScreenY;
+
+				float length = sqrtf(dirX * dirX + dirY * dirY);
+				if (length == 0) return;
+
+				bullets[i].x = player.base.x;
+				bullets[i].y = player.base.y;
+				bullets[i].dx = (dirX / length) * BULLET_SPEED;
+				bullets[i].dy = (dirY / length) * BULLET_SPEED;
+				bullets[i].isActive = ACTIVE;
+
+				// 발사 쿨타임 설정
+				float cooldown = PLAYER_FIRE_COOLDOWN;
+				if (player.boostTimer > 0) {
+					cooldown *= BOOST_FIRE_RATE_MULTIPLIER;
+				}
+				player.fireTimer = (int)cooldown;
+
+				break;
+			}
+		}
+	}
+}
+
+// 플레이어 Q 입력 시 세 방향 총알 발사
+void ShootSkillQ() {
+	if (!g_Input.isQPressed) return;
+
+	// Q 스킬 - 쿨타임이 0일 때만 가능
+	if (g_Input.isQPressed && player.skillQCooldown <= 0) {
+		if (ConsumeMP(SKILL_Q_MP)) {
+			int bulletFired = 0;
+			float spreadAngle = DEG_TO_RAD(15.0f);
+
+			POINT pt = g_Input.mousePos;
+			float playerScreenX = player.base.x - camera.x;
+			float playerScreenY = player.base.y - camera.y;
+
+			float baseDirX = pt.x - playerScreenX;
+			float baseDirY = pt.y - playerScreenY;
+			float baseAngle = (float)atan2(baseDirY, baseDirX);
+
+			for (int i = 0; i < BULLET_MAX && bulletFired < 3; i++) {
+				if (bullets[i].isActive == INACTIVE) {
+					float currAngle = baseAngle + (bulletFired - 1) * spreadAngle;
+
+					bullets[i].x = player.base.x;
+					bullets[i].y = player.base.y;
+
+					bullets[i].dx = cosf(currAngle) * BULLET_SPEED;
+					bullets[i].dy = sinf(currAngle) * BULLET_SPEED;
+
+					bullets[i].isActive = ACTIVE;
+					bullets[i].damage = BULLET_DAMAGE;
+
+					bulletFired++;
+				}
+			}
+
+			player.skillQCooldown = SKILL_Q_COOLDOWN;
+		}
+	}
+}
+
+// 플레이어 R 입력 시 츄르 던지기
+void InitChuru() {
+	for (int i = 0; i < CHURU_MAX; i++) {
+		churues[i].isActive = INACTIVE;
+		churues[i].width = TILE_SIZE / 2;
+		churues[i].height = TILE_SIZE / 2;
+	}
+}
+
+void UpdateChuru() {
+	for (int i = 0; i < CHURU_MAX; i++) {
+		if (churues[i].isActive == INACTIVE) continue;
+
+		if (churues[i].isDropped == AIRBORNE) {
+			float nextX = churues[i].x + churues[i].dx;
+			float nextY = churues[i].y + churues[i].dy;
+
+			float margin = 5.0f;
+			int hw = (int)(churues[i].width / 2 + margin);
+			int hh = (int)(churues[i].height / 2 + margin);
+			BOOL hitWall = FALSE;
+
+			if (IsTileWall(nextX - hw, nextY - hh) || IsTileWall(nextX + hw, nextY - hh) ||
+				IsTileWall(nextX - hw, nextY + hh) || IsTileWall(nextX + hw, nextY + hh)) {
+				hitWall = TRUE;
+			}
+
+			// 최대 거리에 도달하거나 벽에 충돌 시 바닥에 떨어뜨림
+			float distX = nextX - churues[i].startX;
+			float distY = nextY - churues[i].startY;
+			float dest = sqrtf(distX * distX + distY * distY);
+
+			if (dest >= CHURU_MAX_DIST || hitWall) {
+				churues[i].dx = 0;
+				churues[i].dy = 0;
+				churues[i].isDropped = DROPPED;
+				churues[i].activeTimer = CHURU_DURATION;
+			}
+			else {
+				churues[i].x = nextX;
+				churues[i].y = nextY;
+			}
+		}
+		else {
+			churues[i].activeTimer--;
+
+			if (churues[i].activeTimer <= 0)
+				churues[i].isActive = INACTIVE;
+		}
+	}
+}
+
+void ShootSkillR() {
+	if (!g_Input.isRPressed || (player.skillRCooldown > 0)) return;
+
+	// R 스킬 - 쿨타임이 0일 때만 가능
+	if (ConsumeMP(SKILL_R_MP)) {
+		for (int i = 0; i < CHURU_MAX; i++) {
+			if (churues[i].isActive == INACTIVE) {
+				POINT pt = g_Input.mousePos;
+
+				float playerScreenX = player.base.x - camera.x;
+				float playerScreenY = player.base.y - camera.y;
+
+				float dirX = pt.x - playerScreenX;
+				float dirY = pt.y - playerScreenY;
+
+				float length = sqrtf(dirX * dirX + dirY * dirY);
+				if (length == 0) return;
+
+				churues[i].x = player.base.x;
+				churues[i].y = player.base.y;
+				churues[i].startX = player.base.x;
+				churues[i].startY = player.base.y;
+				churues[i].dx = (dirX / length) * CHURU_SPEED;
+				churues[i].dy = (dirY / length) * CHURU_SPEED;
+				churues[i].isActive = ACTIVE;
+				churues[i].isDropped = AIRBORNE;
+
+				player.skillRCooldown = SKILL_R_COOLDOWN;
+
+				break;
+			}
+		}
 	}
 }

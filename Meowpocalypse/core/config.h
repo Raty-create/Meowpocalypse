@@ -1,5 +1,8 @@
 #pragma once
 
+#define PI 3.141592f
+#define DEG_TO_RAD(deg) (deg * (PI / 180.0f))
+
 #define TILE_SIZE 32
 
 extern int SCREEN_WIDTH;
@@ -37,14 +40,14 @@ extern int SCREEN_HEIGHT;
 // PLAYER
 #define PLAYER_SIZE 32
 #define PLAYER_HITBOX_SIZE 28
-#define PLAYER_SPEED 14.8f
+#define PLAYER_SPEED 4.8f
 #define PLAYER_INVINCIBLE_TIME 60
 
 // ENEMY
 #define ENEMY_SIZE 32
 #define ENEMY_HITBOX_SIZE 28
 #define ENEMY_HP 30
-#define ENEMY_LIMIT 1
+#define ENEMY_LIMIT 50
 
 #define ENEMY_COLS_SPAWN_MARGIN 20
 #define ENEMY_ROWS_SPAWN_MARGIN 5
@@ -86,4 +89,23 @@ extern int SCREEN_HEIGHT;
 #define BULLET_DAMAGE 10
 #define KNOCKBACK_FORCE 6.0f
 #define KNOCKBACK_TIME 10
-#define BULLET_SPEED 8.0f
+
+// PLAYER SKILL & FIRE RATE
+#define PLAYER_FIRE_COOLDOWN 15				// 기본 발사 쿨타임 (프레임)
+
+#define SKILL_Q_MP 20
+#define SKILL_Q_COOLDOWN 300				// Q 스킬 쿨타임 (5초)
+
+#define SKILL_E_MP 10
+#define BOOST_DURATION 300					// 부스트 지속 시간 (5초)
+#define BOOST_COOLDOWN 600					// 부스트 쿨타임 (10초)
+#define BOOST_FIRE_RATE_MULTIPLIER 0.5f		// 부스트 시 공격 쿨타임 배율 (낮을수록 빠름)
+#define BOOST_SPEED_MULTIPLIER 1.5f			// 부스트 시 이동속도 배율
+
+#define SKILL_R_MP 30
+#define SKILL_R_COOLDOWN 480				// R 스킬 쿨타임 (8초)
+#define CHURU_SPEED 10.0f
+#define CHURU_MAX_DIST 300.0f
+#define CHURU_DURATION 300					// 바닥에 머무는 시간 (5초)
+#define CHURU_AGGRO_RANGE 400.0f			// 어그로 범위
+#define CHURU_MAX 5

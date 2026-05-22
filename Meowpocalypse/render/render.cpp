@@ -25,22 +25,22 @@ COLORREF TileColor(int tileType, DOOR_STATE doorState) {
 }
 
 //타일 그리기
-void RenderTile(HDC mDC, int screenX, int screenY, COLORREF color) {
+void RenderTile(HDC hDC, int screenX, int screenY, COLORREF color) {
 	hBrush = CreateSolidBrush(color);
-	oldBrush = (HBRUSH)SelectObject(mDC, hBrush);
+	oldBrush = (HBRUSH)SelectObject(hDC, hBrush);
 	hPen = CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
-	oldPen = (HPEN)SelectObject(mDC, hPen);
+	oldPen = (HPEN)SelectObject(hDC, hPen);
 
-	Rectangle(mDC, screenX, screenY, screenX + TILE_SIZE, screenY + TILE_SIZE);
+	Rectangle(hDC, screenX, screenY, screenX + TILE_SIZE, screenY + TILE_SIZE);
 
-	SelectObject(mDC, oldBrush);
+	SelectObject(hDC, oldBrush);
 	DeleteObject(hBrush);
-	SelectObject(mDC, oldPen);
+	SelectObject(hDC, oldPen);
 	DeleteObject(hPen);
 }
 
 // 맵 그리기
-void RenderCurrentMap(HDC mDC) {
+void RenderCurrentMap(HDC hDC) {
 	MAPDATA* m = &maps[currentMapType];
 	for (int row = 0; row < m->rows; row++) {
 		for (int col = 0; col < m->cols; col++) {
@@ -63,40 +63,40 @@ void RenderCurrentMap(HDC mDC) {
 				}
 			}
 
-			RenderTile(mDC, screenX, screenY, TileColor(tileType, doorstate));
+			RenderTile(hDC, screenX, screenY, TileColor(tileType, doorstate));
 		}
 	}
 }
 
 // 플레이어
-void RenderPlayer(HDC mDC) {
+void RenderPlayer(HDC hDC) {
 	// 무적 상태일 때 깜빡임 효과
 	if (player.invincibleTimer > 0 && (player.invincibleTimer / 5) % 2 == 0) return;
 
 	screenX = (int)(player.base.x - camera.x);
 	screenY = (int)(player.base.y - camera.y);
 
-	Rectangle(mDC, screenX - player.base.width / 2, screenY - player.base.height / 2, screenX + player.base.width / 2, screenY + player.base.height / 2);
+	Rectangle(hDC, screenX - player.base.width / 2, screenY - player.base.height / 2, screenX + player.base.width / 2, screenY + player.base.height / 2);
 }
 
 // 플레이어 hitBox
-void RenderPlayerHitBox(HDC mDC) {
+void RenderPlayerHitBox(HDC hDC) {
 	screenX = (int)(player.base.hitBoxX - camera.x);
 	screenY = (int)(player.base.hitBoxY - camera.y);
 
 	hPen = CreatePen(PS_SOLID, 1, RGB(255, 0, 0));
-	oldPen = (HPEN)SelectObject(mDC, hPen);
-	oldBrush = (HBRUSH)SelectObject(mDC, GetStockObject(NULL_BRUSH));
+	oldPen = (HPEN)SelectObject(hDC, hPen);
+	oldBrush = (HBRUSH)SelectObject(hDC, GetStockObject(NULL_BRUSH));
 
-	Rectangle(mDC, screenX - player.base.hitBoxW / 2, screenY - player.base.hitBoxH / 2, screenX + player.base.hitBoxW / 2, screenY + player.base.hitBoxH / 2);
+	Rectangle(hDC, screenX - player.base.hitBoxW / 2, screenY - player.base.hitBoxH / 2, screenX + player.base.hitBoxW / 2, screenY + player.base.hitBoxH / 2);
 
-	SelectObject(mDC, oldPen);
-	SelectObject(mDC, oldBrush);
+	SelectObject(hDC, oldPen);
+	SelectObject(hDC, oldBrush);
 	DeleteObject(hPen);
 }
 
 // 잡몹 그리기
-void RenderEnemies(HDC mDC) {
+void RenderEnemies(HDC hDC) {
 	for (int i = 0; i < ENEMY_LIMIT; i++) {
 		if (!enemies[i].isActive) continue;
 
@@ -109,18 +109,18 @@ void RenderEnemies(HDC mDC) {
 		else enemyColor = RGB(0, 30, 200);
 
 		hBrush = CreateSolidBrush(enemyColor);
-		oldBrush = (HBRUSH)SelectObject(mDC, hBrush);
+		oldBrush = (HBRUSH)SelectObject(hDC, hBrush);
 
-		Rectangle(mDC, screenX - enemies[i].base.width / 2, screenY - enemies[i].base.height / 2,
+		Rectangle(hDC, screenX - enemies[i].base.width / 2, screenY - enemies[i].base.height / 2,
 			screenX + enemies[i].base.width / 2, screenY + enemies[i].base.height / 2);
 
-		SelectObject(mDC, oldBrush);
+		SelectObject(hDC, oldBrush);
 		DeleteObject(hBrush);
 	}
 }
 
 // 잡몹 hitBox 그리기
-void RenderEnemiesHitBox(HDC mDC) {
+void RenderEnemiesHitBox(HDC hDC) {
 	for (int i = 0; i < ENEMY_LIMIT; i++) {
 		if (!enemies[i].isActive) continue;
 
@@ -128,35 +128,35 @@ void RenderEnemiesHitBox(HDC mDC) {
 		screenY = (int)(enemies[i].base.hitBoxY - camera.y);
 
 		hPen = CreatePen(PS_SOLID, 1, RGB(255, 0, 0));
-		oldPen = (HPEN)SelectObject(mDC, hPen);
-		oldBrush = (HBRUSH)SelectObject(mDC, GetStockObject(NULL_BRUSH));
+		oldPen = (HPEN)SelectObject(hDC, hPen);
+		oldBrush = (HBRUSH)SelectObject(hDC, GetStockObject(NULL_BRUSH));
 
-		Rectangle(mDC, screenX - enemies[i].base.hitBoxW / 2, screenY - enemies[i].base.hitBoxH / 2,
+		Rectangle(hDC, screenX - enemies[i].base.hitBoxW / 2, screenY - enemies[i].base.hitBoxH / 2,
 			screenX + enemies[i].base.hitBoxW / 2, screenY + enemies[i].base.hitBoxH / 2);
 
-		SelectObject(mDC, oldPen);
-		SelectObject(mDC, oldBrush);
+		SelectObject(hDC, oldPen);
+		SelectObject(hDC, oldBrush);
 		DeleteObject(hPen);
 	}
 }
 
 // 잡몹 돌던지기 그리기
-void RenderCatPaw(HDC mDC) {
+void RenderCatPaw(HDC hDC) {
 	hBrush = CreateSolidBrush(RGB(255, 0, 0));
-	oldBrush = (HBRUSH)SelectObject(mDC, hBrush);
+	oldBrush = (HBRUSH)SelectObject(hDC, hBrush);
 	for (int i = 0; i < CAT_PAW_LIMIT; i++) {
 		if (!catpaw[i].isActive) continue;
 		screenX = (int)(catpaw[i].x - camera.x);
 		screenY = (int)(catpaw[i].y - camera.y);
-		Ellipse(mDC, screenX - CAT_PAW_SIZE / 2, screenY - CAT_PAW_SIZE / 2,
+		Ellipse(hDC, screenX - CAT_PAW_SIZE / 2, screenY - CAT_PAW_SIZE / 2,
 			screenX + CAT_PAW_SIZE / 2, screenY + CAT_PAW_SIZE / 2);
 	}
-	SelectObject(mDC, oldBrush);
+	SelectObject(hDC, oldBrush);
 	DeleteObject(hBrush);
 }
 
 //보스 대시 경고 - Polygon으로 경고 영역 한 번에 그리기
-void RenderDashWarning(HDC mDC) {
+void RenderDashWarning(HDC hDC) {
 	if (dashWarn.isActive == INACTIVE) return;
 
 	// 깜빡임: 10프레임 단위로 켜짐/꺼짐
@@ -184,62 +184,74 @@ void RenderDashWarning(HDC mDC) {
 	pts[3].y = (int)(dashWarn.startY - dashWarn.perpY * half - camera.y);
 
 	hBrush = CreateSolidBrush(RGB(255, 40, 40));
-	oldBrush = (HBRUSH)SelectObject(mDC, hBrush);
+	oldBrush = (HBRUSH)SelectObject(hDC, hBrush);
 	hPen = CreatePen(PS_NULL, 0, 0); // 테두리 없음
-	oldPen = (HPEN)SelectObject(mDC, hPen);
+	oldPen = (HPEN)SelectObject(hDC, hPen);
 
-	Polygon(mDC, pts, 4); // 꼭짓점 4개로 경고 영역 한 번에 그리기
+	Polygon(hDC, pts, 4); // 꼭짓점 4개로 경고 영역 한 번에 그리기
 
-	SelectObject(mDC, oldPen);
-	SelectObject(mDC, oldBrush);
+	SelectObject(hDC, oldPen);
+	SelectObject(hDC, oldBrush);
 	DeleteObject(hPen);
 	DeleteObject(hBrush);
 }
 
 // 보스
-void RenderBoss(HDC mDC) {
+void RenderBoss(HDC hDC) {
 	if (!boss.isActive) return;
 
-	RenderDashWarning(mDC);
+	RenderDashWarning(hDC);
 
 	COLORREF bossColor = boss.isDashing ? RGB(255, 220, 0) : RGB(0, 255, 0);
 	hBrush = CreateSolidBrush(bossColor);
-	oldBrush = (HBRUSH)SelectObject(mDC, hBrush);
+	oldBrush = (HBRUSH)SelectObject(hDC, hBrush);
 	
 	screenX = (int)(boss.base.x - camera.x);
 	screenY = (int)(boss.base.y - camera.y);
 
-	Rectangle(mDC, screenX - BOSS_SIZE / 2, screenY - BOSS_SIZE / 2, screenX + BOSS_SIZE / 2, screenY + BOSS_SIZE / 2);
+	Rectangle(hDC, screenX - BOSS_SIZE / 2, screenY - BOSS_SIZE / 2, screenX + BOSS_SIZE / 2, screenY + BOSS_SIZE / 2);
 
-	SelectObject(mDC, oldBrush);
+	SelectObject(hDC, oldBrush);
 	DeleteObject(hBrush);
 }
 
 //보스 CAT_PAW
-void RenderBossPaws(HDC mDC) {
+void RenderBossPaws(HDC hDC) {
 	hBrush = CreateSolidBrush(RGB(255, 140, 0));  // 주황색으로 잡몹 PAW와 구분
-	oldBrush = (HBRUSH)SelectObject(mDC, hBrush);
+	oldBrush = (HBRUSH)SelectObject(hDC, hBrush);
 
 	for (int i = 0; i < BOSS_PAW_LIMIT; i++) {
 		if (bossPaws[i].isActive == INACTIVE) continue;
 		screenX = (int)(bossPaws[i].x - camera.x);
 		screenY = (int)(bossPaws[i].y - camera.y);
-		Ellipse(mDC,
+		Ellipse(hDC,
 			screenX - BOSS_PAW_SIZE / 2, screenY - BOSS_PAW_SIZE / 2,
 			screenX + BOSS_PAW_SIZE / 2, screenY + BOSS_PAW_SIZE / 2);
 	}
-	SelectObject(mDC, oldBrush);
+	SelectObject(hDC, oldBrush);
 	DeleteObject(hBrush);
 }
 
 // 총알
-void RenderBullets(HDC mDC) {
+void RenderBullets(HDC hDC) {
 	for (int i = 0; i < BULLET_MAX; i++) {
 		if (bullets[i].isActive == INACTIVE) continue;
 
 		screenX = (int)(bullets[i].x - camera.x);
 		screenY = (int)(bullets[i].y - camera.y);
 
-		Ellipse(mDC, screenX - bullets[i].width, screenY - bullets[i].height, screenX + bullets[i].width, screenY + bullets[i].height);
+		Ellipse(hDC, screenX - bullets[i].width, screenY - bullets[i].height, screenX + bullets[i].width, screenY + bullets[i].height);
+	}
+}
+
+// 츄르
+void RenderChuru(HDC hDC) {
+	for (int i = 0; i < CHURU_MAX; i++) {
+		if (churues[i].isActive == INACTIVE) continue;
+
+		screenX = (int)(churues[i].x - camera.x);
+		screenY = (int)(churues[i].y - camera.y);
+
+		Ellipse(hDC, screenX - churues[i].width, screenY - churues[i].height, screenX + churues[i].width, screenY + churues[i].height);
 	}
 }

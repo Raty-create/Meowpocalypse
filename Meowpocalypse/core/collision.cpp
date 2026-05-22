@@ -47,6 +47,25 @@ int IsPlayerOnDoor() {
 	return 0;
 }
 
+// 플레이어 - 벽과의 충돌 처리
+void HandlePlayerCollision() {
+	float playerNextX = player.base.x + player.base.dx;
+	float playerNextY = player.base.y + player.base.dy;
+
+	int playerSizeHalf = PLAYER_SIZE / 2;
+	if (!IsTileWall(playerNextX - playerSizeHalf, player.base.y - playerSizeHalf) &&
+		!IsTileWall(playerNextX + playerSizeHalf, player.base.y - playerSizeHalf) &&
+		!IsTileWall(playerNextX - playerSizeHalf, player.base.y + playerSizeHalf) &&
+		!IsTileWall(playerNextX + playerSizeHalf, player.base.y + playerSizeHalf))
+		player.base.x = player.base.hitBoxX = playerNextX;
+
+	if (!IsTileWall(player.base.x - playerSizeHalf, playerNextY - playerSizeHalf) &&
+		!IsTileWall(player.base.x + playerSizeHalf, playerNextY - playerSizeHalf) &&
+		!IsTileWall(player.base.x - playerSizeHalf, playerNextY + playerSizeHalf) &&
+		!IsTileWall(player.base.x + playerSizeHalf, playerNextY + playerSizeHalf))
+		player.base.y = player.base.hitBoxY = playerNextY;
+}
+
 // 잡몹 - 잡몹 충돌 체크
 int IsOverlapWithEnemy(float x, float y) {
 	for (int j = 0; j < ENEMY_LIMIT; j++) {
