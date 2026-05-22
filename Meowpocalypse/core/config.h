@@ -3,6 +3,8 @@
 #define PI 3.141592f
 #define DEG_TO_RAD(deg) (deg * (PI / 180.0f))
 
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
+
 #define TILE_SIZE 32
 
 extern int SCREEN_WIDTH;
@@ -33,21 +35,21 @@ extern int SCREEN_HEIGHT;
 #define HALLWAY3_X  (BOSS2_X   + BOSSMAP_COLS    * TILE_SIZE)
 #define BOSS3_X     (HALLWAY3_X + HALLWAYMAP_COLS * TILE_SIZE)
 
-#define MAX_MAP_ROWS 128
-#define MAX_MAP_COLS 256
+#define MAX_MAP_ROWS 512
+#define MAX_MAP_COLS 512
 #define MAX_DOORS 16
 
 // PLAYER
 #define PLAYER_SIZE 32
 #define PLAYER_HITBOX_SIZE 28
-#define PLAYER_SPEED 4.8f
+#define PLAYER_SPEED 14.8f
 #define PLAYER_INVINCIBLE_TIME 60
 
 // ENEMY
 #define ENEMY_SIZE 32
 #define ENEMY_HITBOX_SIZE 28
 #define ENEMY_HP 30
-#define ENEMY_LIMIT 50
+#define ENEMY_LIMIT 1
 
 #define ENEMY_COLS_SPAWN_MARGIN 20
 #define ENEMY_ROWS_SPAWN_MARGIN 5
@@ -73,6 +75,7 @@ extern int SCREEN_HEIGHT;
 #define BOSS_PAW_SPEED 10.0f
 #define BOSS_PAW_INTERVAL 180
 #define BOSS_PAW_LIMIT 50
+#define BOSS_CIRCULARPAWS_COUNT 32		// 원형 탄막 개수
 
 #define DASH_WARN_TILES 100
 #define DASH_WARN_INTERVAL 100
@@ -84,7 +87,7 @@ extern int SCREEN_HEIGHT;
 #define BOSS_MOVE_SPEED 3.0f
 #define BOSS_MOVE_INTERVAL 180
 
-#define BOSS_CHASE_SPEED 5.0f;
+#define BOSS_CHASE_SPEED 5.0f
 
 #define BOSS_JUMP_WARN_INTERVAL 100
 #define BOSS_JUMP_LAND_SIZE (BOSS_SIZE * 2)

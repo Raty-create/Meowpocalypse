@@ -10,16 +10,19 @@ MAPDATA maps[7];
 
 void InitDoor(MAPDATA* m, int row, int col) {
 	if (m->doorCount >= MAX_DOORS) return;
+	if (row < 0 || row >= MAX_MAP_ROWS || col < 0 || col >= MAX_MAP_COLS) return;
+
 	m->tiles[row][col] = TILE_DOOR;
 	m->doors[m->doorCount].row = row;
 	m->doors[m->doorCount].col = col;
 	m->doors[m->doorCount].state = DOOR_CLOSE;
 	m->doorCount++;
 }
+
 // 대기방
 void InitWaitingMap(MAPDATA* m) {
-	m->rows = WAITINGMAP_ROWS;
-	m->cols = WAITINGMAP_COLS;
+	m->rows = MIN(WAITINGMAP_ROWS, MAX_MAP_ROWS);
+	m->cols = MIN(WAITINGMAP_COLS, MAX_MAP_COLS);
 	m->worldX = WAITING_X;
 	m->worldY = 0;
 	m->doorCount = 0;
@@ -39,8 +42,10 @@ void InitWaitingMap(MAPDATA* m) {
 	int doorRow = m->rows / 2;
 	int doorCol = m->cols - 16;
 
-	m->tiles[doorRow][doorCol+1] = TILE_DOOR;
-	m->tiles[doorRow + 1][doorCol + 1] = TILE_DOOR;
+	if (doorRow >= 0 && doorRow + 1 < MAX_MAP_ROWS && doorCol + 1 >= 0 && doorCol + 1 < MAX_MAP_COLS) {
+		m->tiles[doorRow][doorCol] = TILE_DOOR;
+		m->tiles[doorRow + 1][doorCol] = TILE_DOOR;
+	}
 	
 	InitDoor(m, doorRow, doorCol);
 	InitDoor(m, doorRow + 1, doorCol);
@@ -48,8 +53,8 @@ void InitWaitingMap(MAPDATA* m) {
 
 // 복도맵
 void InitHallWayMap(MAPDATA* m, int worldX) {
-	m->rows = HALLWAYMAP_ROWS;
-	m->cols = HALLWAYMAP_COLS;
+	m->rows = MIN(HALLWAYMAP_ROWS, MAX_MAP_ROWS);
+	m->cols = MIN(HALLWAYMAP_COLS, MAX_MAP_COLS);
 	m->worldX = (float)worldX;
 	m->worldY = 0;
 	m->doorCount = 0;
@@ -72,8 +77,10 @@ void InitHallWayMap(MAPDATA* m, int worldX) {
 	int doorRow = m->rows / 2;
 	int doorCol = m->cols - 11;
 
-	m->tiles[doorRow][doorCol + 1] = TILE_DOOR;
-	m->tiles[doorRow + 1][doorCol + 1] = TILE_DOOR;
+	if (doorRow >= 0 && doorRow + 1 < MAX_MAP_ROWS && doorCol + 1 >= 0 && doorCol + 1 < MAX_MAP_COLS) {
+		m->tiles[doorRow][doorCol] = TILE_DOOR;
+		m->tiles[doorRow + 1][doorCol] = TILE_DOOR;
+	}
 
 	InitDoor(m, doorRow, doorCol);
 	InitDoor(m, doorRow + 1, doorCol);
@@ -81,8 +88,8 @@ void InitHallWayMap(MAPDATA* m, int worldX) {
 
 // 보스맵
 void InitBossMap(MAPDATA* m, int worldX) {
-	m->rows = BOSSMAP_ROWS;
-	m->cols = BOSSMAP_COLS;
+	m->rows = MIN(BOSSMAP_ROWS, MAX_MAP_ROWS);
+	m->cols = MIN(BOSSMAP_COLS, MAX_MAP_COLS);
 	m->worldX = (float)worldX;
 	m->worldY = 0;
 	m->doorCount = 0;
@@ -102,8 +109,10 @@ void InitBossMap(MAPDATA* m, int worldX) {
 	int doorRow = m->rows / 2;
 	int doorCol = m->cols - 11;
 
-	m->tiles[doorRow][doorCol + 1] = TILE_DOOR;
-	m->tiles[doorRow + 1][doorCol + 1] = TILE_DOOR;
+	if (doorRow >= 0 && doorRow + 1 < MAX_MAP_ROWS && doorCol + 1 >= 0 && doorCol + 1 < MAX_MAP_COLS) {
+		m->tiles[doorRow][doorCol] = TILE_DOOR;
+		m->tiles[doorRow + 1][doorCol] = TILE_DOOR;
+	}
 
 	InitDoor(m, doorRow, doorCol);
 	InitDoor(m, doorRow + 1, doorCol);

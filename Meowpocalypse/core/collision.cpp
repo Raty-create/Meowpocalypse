@@ -25,11 +25,13 @@ int IsTileWall(float x, float y) {
 int IsPlayerOnDoor() {
 	MAPDATA* m = &maps[currentMapType];
 
+	// 플레이어의 4개 모서리 체크
+	float half = PLAYER_SIZE / 2.0f;
 	float point[4][2] = {
-		{player.base.x - PLAYER_SIZE / 2 + 1, player.base.y - PLAYER_SIZE / 2 + 1},
-		{player.base.x - PLAYER_SIZE / 2 - 1, player.base.y - PLAYER_SIZE / 2 + 1},
-		{player.base.x - PLAYER_SIZE / 2 + 1, player.base.y - PLAYER_SIZE / 2 - 1},
-		{player.base.x - PLAYER_SIZE / 2 - 1, player.base.y - PLAYER_SIZE / 2 - 1}
+		{player.base.x - half + 1, player.base.y - half + 1},
+		{player.base.x + half - 1, player.base.y - half + 1},
+		{player.base.x - half + 1, player.base.y + half - 1},
+		{player.base.x + half - 1, player.base.y + half - 1}
 	};
 
 	for (int p = 0; p < 4; p++) {
@@ -187,7 +189,7 @@ int HandleEnemyPlayerCollision(ENEMY* enemy, PLAYER* p) {
 	return 0;
 }
 
-// 총알 - 보스 충돌 처리 (넉백 없음, 무적타이머 적용)
+// 총알 - 보스 충돌 처리 (넉백 없음)
 int HandleBulletBossCollision(BULLET* bullet, BOSS* boss) {
 	if (!bullet->isActive || boss->isActive == INACTIVE) return 0;
 

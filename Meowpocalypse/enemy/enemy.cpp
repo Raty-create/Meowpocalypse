@@ -109,7 +109,10 @@ void UpdateEnemies() {
 	UpdateCatPaws();
 
 	// 모든 적이 죽었는지 체크하여 문 열기
-	if (currentMapType != MAP_WAITING) {
+	if (currentMapType != MAP_WAITING &&
+		currentMapType != MAP_FIRST_BOSS &&
+		currentMapType != MAP_SECOND_BOSS &&
+		currentMapType != MAP_THIRD_BOSS) {
 		int activeEnemyCount = 0;
 		for (int i = 0; i < ENEMY_LIMIT; i++) {
 			if (enemies[i].isActive) {
@@ -415,22 +418,5 @@ void UpdateCatPaws() {
 		}
 
 		HandleCatPawPlayerCollision(&catpaw[i], &player);
-	}
-
-	// 모든 적이 죽었는지 체크하여 문 열기
-	if (currentMapType != MAP_WAITING &&
-		currentMapType != MAP_FIRST_BOSS &&
-		currentMapType != MAP_SECOND_BOSS &&
-		currentMapType != MAP_THIRD_BOSS) {
-		int activeEnemyCount = 0;
-		for (int i = 0; i < ENEMY_LIMIT; i++) {
-			if (enemies[i].isActive) {
-				activeEnemyCount++;
-			}
-		}
-
-		if (activeEnemyCount == 0) {
-			SetDoorState(currentMapType, DOOR_OPEN);
-		}
 	}
 }
