@@ -16,43 +16,43 @@ DASH_WARNING dashWarn;
 JUMP_WARNING jumpWarn;
 
 void InitBoss() {
-		boss.isActive = INACTIVE;
-		boss.base.width = BOSS_SIZE;
-		boss.base.height = BOSS_SIZE;
-		boss.base.state = BOSS_IDLE;
-		boss.base.dx = 0;
-		boss.base.dy = 0;
-		boss.base.hp = BOSS_HP;
+	boss.isActive = INACTIVE;
+	boss.base.width = BOSS_SIZE;
+	boss.base.height = BOSS_SIZE;
+	boss.base.state = BOSS_IDLE;
+	boss.base.dx = 0;
+	boss.base.dy = 0;
+	boss.base.hp = BOSS_HP;
 
-		boss.base.hitBoxW = boss.base.hitBoxH = BOSS_HITBOX_SIZE;
-		boss.invincibleTimer = 0;
+	boss.base.hitBoxW = boss.base.hitBoxH = BOSS_HITBOX_SIZE;
+	boss.invincibleTimer = 0;
 
-		boss.attackTimer = BOSS_ATTACK_INTERVAL;
-		boss.pawTimer = 0;
+	boss.attackTimer = BOSS_ATTACK_INTERVAL;
+	boss.pawTimer = 0;
 
-		boss.dashTimer = 0;
-		boss.isDashing = 0;
-		boss.dashDirX = 0;
-		boss.dashDirY = 0;
+	boss.dashTimer = 0;
+	boss.isDashing = 0;
+	boss.dashDirX = 0;
+	boss.dashDirY = 0;
 
-		boss.moveTimer = BOSS_MOVE_INTERVAL;
-		boss.moveDirX = 0;
-		boss.moveDirY = 0;
+	boss.moveTimer = BOSS_MOVE_INTERVAL;
+	boss.moveDirX = 0;
+	boss.moveDirY = 0;
 
-		boss.isJumping = 0;
-		boss.jumpTimer = 0;
-		boss.jumpDirX = 0;
-		boss.jumpDirY = 0;
+	boss.isJumping = 0;
+	boss.jumpTimer = 0;
+	boss.jumpDirX = 0;
+	boss.jumpDirY = 0;
 
-		for (int i = 0; i < BOSS_PAW_LIMIT; i++) {
-			bossPaws[i].isActive = INACTIVE;
-		}
+	for (int i = 0; i < BOSS_PAW_LIMIT; i++) {
+		bossPaws[i].isActive = INACTIVE;
+	}
 
-		dashWarn.isActive = INACTIVE;
-		dashWarn.timer = 0;
+	dashWarn.isActive = INACTIVE;
+	dashWarn.timer = 0;
 
-		jumpWarn.isActive = INACTIVE;
-		jumpWarn.timer = 0;
+	jumpWarn.isActive = INACTIVE;
+	jumpWarn.timer = 0;
 }
 
 void SpawnBoss(MAP_TYPE type) {
@@ -66,21 +66,23 @@ void SpawnBoss(MAP_TYPE type) {
 	float spawnX = m->worldX + (BOSSMAP_COLS / 2) * TILE_SIZE;
 	float spawnY = m->worldY + (BOSSMAP_ROWS / 2) * TILE_SIZE;
 
-	// 1페이즈
-	if (type == MAP_FIRST_BOSS && boss.base.hp == BOSS_HP) {
+	// 죽은 상태라면 스폰하지 않음
+	if (boss.base.state == BOSS_DEAD) return;
 
+	// 1페이즈: 체력이 250 초과일 때만 MAP_FIRST_BOSS에서 스폰
+	if (type == MAP_FIRST_BOSS && boss.base.hp > BOSS_HP / 2) {
 		if (boss.isActive == INACTIVE) {
 			boss.isActive = ACTIVE;
 			boss.base.x = spawnX;
 			boss.base.y = spawnY;
 			boss.base.state = BOSS_IDLE;
 			boss.base.dx = 0;
-			boss.base.dy = 0;			
+			boss.base.dy = 0;
 		}
 	}
 
-	// 2페이즈
-	else if (type == MAP_SECOND_BOSS && boss.base.hp <= BOSS_HP / 2) {
+	// 2페이즈: 체력이 125 초과, 250 이하일 때만 MAP_SECOND_BOSS에서 스폰
+	else if (type == MAP_SECOND_BOSS && boss.base.hp <= BOSS_HP / 2 && boss.base.hp > (BOSS_HP / 2) / 2) {
 
 		if (boss.isActive == INACTIVE) {
 			boss.isActive = ACTIVE;
@@ -90,7 +92,7 @@ void SpawnBoss(MAP_TYPE type) {
 			boss.base.dx = 0;
 			boss.base.dy = 0;
 
-			// 1페이즈에서 사용했으니 다시 초기화
+			// 상태 초기화
 			boss.moveTimer = BOSS_MOVE_INTERVAL;
 			boss.attackTimer = BOSS_ATTACK_INTERVAL;
 			boss.isDashing = 0;
@@ -104,7 +106,7 @@ void SpawnBoss(MAP_TYPE type) {
 		}
 	}
 
-	// 3페이즈
+	// 3페이즈: 체력이 125 이하일 때 MAP_THIRD_BOSS에서 스폰
 	else if (type == MAP_THIRD_BOSS && boss.base.hp <= (BOSS_HP / 2) / 2) {
 
 		if (boss.isActive == INACTIVE) {
@@ -121,11 +123,11 @@ void SpawnBoss(MAP_TYPE type) {
 // 보스 스킬(3방향 발바닥)
 void SpawnBossPaws() {
 
-	boss.isActive = BOSS_THREE_WAY_CATPAW;
+	boss.isActive = ACTIVE;
 	float dx = player.base.x - boss.base.x;
 	float dy = player.base.y - boss.base.y;
 	float len = sqrtf(dx * dx + dy * dy);
-	
+
 	if (len == 0) return;
 	dx /= len;
 	dy /= len;
@@ -150,30 +152,23 @@ void SpawnBossPaws() {
 	}
 }
 
-// 보스 스킬(8방향 발바닥)
+// 보스 스킬(원형 탄막)
 void SpawnCircularPaws() {
+	boss.isActive = ACTIVE;
 
-	boss.isActive = BOSS_CIRCULAR_CATPAW;
-	float angles[8] = {
-		0.0f,
-		0.7854f,
-		1.5708f,
-		2.3562f,
-		3.1416f,
-		3.9270f,
-		4.7124f,
-		5.4978f
-	};
-	for (int i = 0; i < 8; i++) {
-		float vx = cosf(angles[i]);
-		float vy = sinf(angles[i]);
+	int count = BOSS_CIRCULARPAWS_COUNT;
+	float angleStep = (2.0f * PI) / count;
+
+	for (int i = 0; i < count; i++) {
+		float currAngle = i * angleStep;
+
 		for (int j = 0; j < BOSS_PAW_LIMIT; j++) {
 			if (bossPaws[j].isActive == INACTIVE) {
 				bossPaws[j].isActive = ACTIVE;
 				bossPaws[j].x = boss.base.x;
 				bossPaws[j].y = boss.base.y;
-				bossPaws[j].dx = vx * BOSS_PAW_SPEED;
-				bossPaws[j].dy = vy * BOSS_PAW_SPEED;
+				bossPaws[j].dx = cosf(currAngle) * BOSS_PAW_SPEED;
+				bossPaws[j].dy = sinf(currAngle) * BOSS_PAW_SPEED;
 				break;
 			}
 		}
@@ -302,7 +297,7 @@ void UpdateBossChase() {
 	float len = sqrtf(dx * dx + dy * dy);
 	if (len == 0) return;
 
-	float nx = (dx / len) * BOSS_CHASE_SPEED; 
+	float nx = (dx / len) * BOSS_CHASE_SPEED;
 	float ny = (dy / len) * BOSS_CHASE_SPEED;
 
 	float nextX = boss.base.x + nx;
@@ -318,7 +313,7 @@ void UpdateBossChase() {
 	if (!IsTileWall(boss.base.x - half, nextY - half) &&
 		!IsTileWall(boss.base.x + half, nextY - half) &&
 		!IsTileWall(boss.base.x - half, nextY + half) &&
-		!IsTileWall(boss.base.x + half, nextY + half)){
+		!IsTileWall(boss.base.x + half, nextY + half)) {
 		boss.base.y = nextY;
 		boss.base.hitBoxY = nextY;
 	}
@@ -353,13 +348,21 @@ static void UpdateBossPaws() {
 	}
 }
 
-// 페이즈 전환
+// 페이즈 전환 및 보스 사망 처리
 static int CheckPhaseTransition() {
 	if (currentMapType == MAP_FIRST_BOSS && boss.base.hp <= BOSS_HP / 2) {
 		boss.isActive = INACTIVE;
 		dashWarn.isActive = INACTIVE;
 		jumpWarn.isActive = INACTIVE;
 		SetDoorState(MAP_FIRST_BOSS, DOOR_OPEN);
+		return 1;
+	}
+
+	if (currentMapType == MAP_SECOND_BOSS && boss.base.hp <= (BOSS_HP / 2) / 2) {
+		boss.isActive = INACTIVE;
+		dashWarn.isActive = INACTIVE;
+		jumpWarn.isActive = INACTIVE;
+		SetDoorState(MAP_SECOND_BOSS, DOOR_OPEN);
 		return 1;
 	}
 	return 0;
