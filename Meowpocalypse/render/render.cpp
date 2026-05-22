@@ -196,11 +196,38 @@ void RenderDashWarning(HDC mDC) {
 	DeleteObject(hBrush);
 }
 
+// 보스 점프 착지 경고 - 원형 표시
+void RenderJumpWarning(HDC mDC) {
+	if (jumpWarn.isActive == INACTIVE) return;
+
+	// 깜빡임: 10프레임 단위
+	if ((jumpWarn.timer / 10) % 2 == 0) return;
+
+	int r = BOSS_JUMP_LAND_SIZE / 2;
+	int sx = (int)(jumpWarn.targetX - camera.x);
+	int sy = (int)(jumpWarn.targetY - camera.y);
+
+	hBrush = CreateSolidBrush(RGB(255, 40, 40));
+	oldBrush = (HBRUSH)SelectObject(mDC, hBrush);
+	hPen = CreatePen(PS_NULL, 0, 0);
+	oldPen = (HPEN)SelectObject(mDC, hPen);
+
+	Ellipse(mDC, sx - r, sy - r, sx + r, sy + r);
+
+	SelectObject(mDC, oldPen);
+	SelectObject(mDC, oldBrush);
+	DeleteObject(hPen);
+	DeleteObject(hBrush);
+}
+
 // 보스
 void RenderBoss(HDC mDC) {
 	if (!boss.isActive) return;
 
 	RenderDashWarning(mDC);
+	RenderJumpWarning(mDC);
+
+	if (boss.isJumping == ACTIVE) return;
 
 	COLORREF bossColor = boss.isDashing ? RGB(255, 220, 0) : RGB(0, 255, 0);
 	hBrush = CreateSolidBrush(bossColor);
@@ -213,6 +240,25 @@ void RenderBoss(HDC mDC) {
 
 	SelectObject(mDC, oldBrush);
 	DeleteObject(hBrush);
+}
+
+void RenderBossHitBox(HDC mDC) {
+
+	if (!boss.isActive) return;
+	if (boss.isJumping == ACTIVE) return;
+
+	screenX = (int)(boss.base.hitBoxX - camera.x);
+	screenY = (int)(boss.base.hitBoxY - camera.y);
+
+	hPen = CreatePen(PS_SOLID, 1, RGB(255, 0, 0));
+	oldPen = (HPEN)SelectObject(mDC, hPen);
+	oldBrush = (HBRUSH)SelectObject(mDC, GetStockObject(NULL_BRUSH));
+
+	Rectangle(mDC, screenX - boss.base.hitBoxW / 2, screenY - boss.base.hitBoxH / 2, screenX + boss.base.hitBoxW / 2, screenY + boss.base.hitBoxH / 2);
+
+	SelectObject(mDC, oldPen);
+	SelectObject(mDC, oldBrush);
+	DeleteObject(hPen);
 }
 
 //보스 CAT_PAW

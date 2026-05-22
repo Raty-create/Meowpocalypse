@@ -3,6 +3,7 @@
 #include "collision.h"
 #include "player.h"
 #include "enemy.h"
+#include "boss.h"
 
 #include <math.h>
 
@@ -160,6 +161,144 @@ int HandleEnemyPlayerCollision(ENEMY* enemy, PLAYER* p) {
 			p->base.ky = (dy / dist) * KNOCKBACK_FORCE;
 			p->base.kTimer = KNOCKBACK_TIME;
 		}
+
+		if (p->base.hp < 0) p->base.hp = 0;
+		return 1;
+	}
+	return 0;
+}
+
+// 총알 - 보스 충돌 처리 (넉백 없음, 무적타이머 적용)
+int HandleBulletBossCollision(BULLET* bullet, BOSS* boss) {
+	if (!bullet->isActive || boss->isActive == INACTIVE) return 0;
+
+	// 보스 히트박스 = base.x/y 기준 BOSS_SIZE 크기
+	if (IsObjectCollision(bullet->x, bullet->y, bullet->width, bullet->height,
+		boss->base.hitBoxX, boss->base.hitBoxY, boss->base.hitBoxW, boss->base.hitBoxH)) {
+
+		bullet->isActive = INACTIVE;
+		boss->base.hp -= BULLET_DAMAGE;
+
+		if (boss->base.hp <= 0) {
+			boss->base.hp = 0;
+			boss->base.state = BOSS_DEAD;
+		}
+		return 1;
+	}
+	return 0;
+}
+
+// 보스 PAW - 플레이어 충돌 처리 (catpaw와 동일 방식)
+int HandleBossPawPlayerCollision(BOSS_PAW* bp, PLAYER* p) {
+	if (!bp->isActive || p->invincibleTimer > 0) return 0;
+
+	if (IsObjectCollision(bp->x, bp->y, BOSS_PAW_SIZE, BOSS_PAW_SIZE,
+		p->base.hitBoxX, p->base.hitBoxY, p->base.hitBoxW, p->base.hitBoxH)) {
+
+		bp->isActive = INACTIVE;
+		p->base.hp -= CAT_PAW_DAMAGE;
+		p->invincibleTimer = PLAYER_INVINCIBLE_TIME;
+
+		if (p->base.hp <= 0) {
+			p->base.hp = 0;
+			p->base.state = PLAYER_DEAD;
+		}
+		else {
+			p->base.state = PLAYER_HIT;
+		}
+
+		// 넉백: 발사체 방향으로 밀려남
+		float dist = sqrtf(bp->dx * bp->dx + bp->dy * bp->dy);
+		if (dist > 0) {
+			p->base.kx = (bp->dx / dist) * KNOCKBACK_FORCE;
+			p->base.ky = (bp->dy / dist) * KNOCKBACK_FORCE;
+			p->base.kTimer = KNOCKBACK_TIME;
+		}
+
+		if (p->base.hp < 0) p->base.hp = 0;
+		return 1;
+	}
+	return 0;
+}
+
+// 보스 - 플레이어 일반 충돌 (반대 방향 넉백)
+int HandleBossPlayerCollision(PLAYER* p) {
+	if (boss.isActive == INACTIVE || p->invincibleTimer > 0) return 0;
+
+	if (IsObjectCollision(boss.base.hitBoxX, boss.base.hitBoxY, boss.base.hitBoxW, boss.base.hitBoxH,
+		p->base.hitBoxX, p->base.hitBoxY, p->base.hitBoxW, p->base.hitBoxH)) {
+
+		p->base.hp -= BOSS_CONTACT_DAMAGE;
+		p->invincibleTimer = PLAYER_INVINCIBLE_TIME;
+
+		if (p->base.hp <= 0) { p->base.hp = 0; p->base.state = PLAYER_DEAD; }
+		else p->base.state = PLAYER_HIT;
+
+		// 보스 → 플레이어 방향의 반대로 밀려남
+		float dx = p->base.x - boss.base.x;
+		float dy = p->base.y - boss.base.y;
+		float dist = sqrtf(dx * dx + dy * dy);
+		if (dist > 0) {
+			p->base.kx = (dx / dist) * BOSS_NORMAL_KNOCKBACK;
+			p->base.ky = (dy / dist) * BOSS_NORMAL_KNOCKBACK;
+			p->base.kTimer = KNOCKBACK_TIME;
+		}
+
+		if (p->base.hp < 0) p->base.hp = 0;
+		return 1;
+	}
+	return 0;
+}
+
+// 보스 대시 중 - 플레이어 충돌 (대시 방향으로 넉백, 보스는 계속 진행)
+int HandleBossDashPlayerCollision(PLAYER* p) {
+	if (boss.isActive == INACTIVE || p->invincibleTimer > 0) return 0;
+
+	if (IsObjectCollision(boss.base.hitBoxX, boss.base.hitBoxY, boss.base.hitBoxW, boss.base.hitBoxH,
+		p->base.hitBoxX, p->base.hitBoxY, p->base.hitBoxW, p->base.hitBoxH)) {
+
+		p->base.hp -= BOSS_CONTACT_DAMAGE;
+		p->invincibleTimer = PLAYER_INVINCIBLE_TIME;
+
+		if (p->base.hp <= 0) { p->base.hp = 0; p->base.state = PLAYER_DEAD; }
+		else p->base.state = PLAYER_HIT;
+
+		// 대시 방향으로 강하게 밀려남 (보스는 계속 진행 - 넉백 적용 없음)
+		p->base.kx = boss.dashDirX * BOSS_DASH_KNOCKBACK;
+		p->base.ky = boss.dashDirY * BOSS_DASH_KNOCKBACK;
+		p->base.kTimer = KNOCKBACK_TIME;
+
+		if (p->base.hp < 0) p->base.hp = 0;
+		return 1;
+	}
+	return 0;
+}
+
+// 보스 점프 착지 - 플레이어 충돌 (랜덤 4방향 넉백)
+int HandleBossJumpPlayerCollision(PLAYER* p) {
+	if (boss.isActive == INACTIVE || p->invincibleTimer > 0) return 0;
+
+	// 착지 범위: BOSS_JUMP_LAND_SIZE 크기의 원형 영역
+	float dx = p->base.x - boss.base.x;
+	float dy = p->base.y - boss.base.y;
+	float dist = sqrtf(dx * dx + dy * dy);
+
+	if (dist < BOSS_JUMP_LAND_SIZE / 2) {
+		p->base.hp -= BOSS_CONTACT_DAMAGE;
+		p->invincibleTimer = PLAYER_INVINCIBLE_TIME;
+
+		if (p->base.hp <= 0) { p->base.hp = 0; p->base.state = PLAYER_DEAD; }
+		else p->base.state = PLAYER_HIT;
+
+		// 랜덤 4방향 넉백
+		int dir = rand() % 4;
+		switch (dir) {
+		case 0: p->base.kx = BOSS_JUMP_KNOCKBACK; p->base.ky = 0; break; // 오른쪽
+		case 1: p->base.kx = -BOSS_JUMP_KNOCKBACK; p->base.ky = 0; break; // 왼쪽
+		case 2: p->base.kx = 0; p->base.ky = BOSS_JUMP_KNOCKBACK; break; // 아래
+		case 3: p->base.kx = 0; p->base.ky = -BOSS_JUMP_KNOCKBACK; break; // 위
+		}
+		p->base.kTimer = KNOCKBACK_TIME;
 
 		if (p->base.hp < 0) p->base.hp = 0;
 		return 1;

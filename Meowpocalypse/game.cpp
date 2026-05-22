@@ -61,5 +61,6 @@ void Render(HDC mDC) {
 	RenderCatPaw(mDC);
 	// 보스
 	RenderBoss(mDC);
-	RenderBossPaws(mDC);
+	RenderBossPaws(mDC); 
+	RenderBossHitBox(mDC);
 }

@@ -74,6 +74,10 @@ void UpdateBullet() {
 			}
 		}
 
+		if (bullets[i].isActive == ACTIVE) {
+			HandleBulletBossCollision(&bullets[i], &boss);
+		}
+
 		// 이미 적과 충돌하여 비활성화되었다면 벽 충돌 체크는 건너뜀
 		if (bullets[i].isActive == INACTIVE) continue;
 
