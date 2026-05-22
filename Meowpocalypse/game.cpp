@@ -9,6 +9,9 @@
 #include "boss.h"
 #include "enum.h"
 
+int SCREEN_WIDTH = 1920;
+int SCREEN_HEIGHT = 1080;
+
 void InitGame() {
 	// 시작 맵 설정
 	currentMapType = MAP_WAITING;
@@ -58,5 +61,6 @@ void Render(HDC mDC) {
 	RenderCatPaw(mDC);
 	// 보스
 	RenderBoss(mDC);
-	RenderBossPaws(mDC);
+	RenderBossPaws(mDC); 
+	RenderBossHitBox(mDC);
 }
