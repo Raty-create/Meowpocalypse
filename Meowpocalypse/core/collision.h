@@ -8,6 +8,7 @@
 
 int IsTileWall(float x, float y);
 int IsPlayerOnDoor();
+void HandlePlayerCollision();
 int IsOverlapWithEnemy(float x, float y);
 int IsObjectCollision(float ax, float ay, int aw, int ah, float bx, float by, int bw, int bh);
 int HandleBulletEnemyCollision(BULLET* bullet, ENEMY* enemy);
