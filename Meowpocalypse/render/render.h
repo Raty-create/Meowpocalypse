@@ -18,8 +18,11 @@ void RenderEnemiesHitBox(HDC hDC);
 void RenderCatPaw(HDC hDC);
 
 // 보스
-void RenderBoss(HDC hDC);
-void RenderBossPaws(HDC hDC);
+void RenderBoss(HDC mDC);
+void RenderBossPaws(HDC mDC);
+void RenderDashWarning(HDC mDC);
+void RenderJumpWarning(HDC mDC);
+void RenderBossHitBox(HDC mDC);
 
 // 총알
 void RenderBullets(HDC hDC);

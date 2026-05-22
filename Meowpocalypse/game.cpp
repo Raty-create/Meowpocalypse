@@ -47,6 +47,7 @@ void Render(HDC hDC) {
 	RenderEnemiesHitBox(hDC);			// 잡몹 히트박스
 	RenderCatPaw(hDC);					// 잡몹 젤리
 	RenderBoss(hDC);					// 보스
+	RenderBossHitBox(hDC);				// 보스 히트박스
 	RenderBossPaws(hDC);				// 보스 젤리
 	RenderBullets(hDC);					// 총알
 	RenderChuru(hDC);					// 츄르
