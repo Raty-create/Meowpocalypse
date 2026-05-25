@@ -3,4 +3,5 @@
 
 void InitGame();
 void Update(HWND hWnd);
-void Render(HDC mDC);
+void Render(HWND hWnd, HDC mDC);
+void ReleaseGame();

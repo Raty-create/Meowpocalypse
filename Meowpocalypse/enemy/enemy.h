@@ -4,6 +4,7 @@
 #include "config.h"
 #include "map.h"
 #include "enum.h"
+#include "graphics/animation.h"
 
 typedef struct {
     float x, y;
@@ -16,15 +17,20 @@ typedef struct {
     int isActive;
     int shootTimer;
     int moveTimer;
-    int deathTimer; // 사망 애니메이션용 타이머
+    int deathTimer;
+    int attackTimer;
+    ANIMATION anim;
 } ENEMY;
 
 extern ENEMY enemies[ENEMY_LIMIT];
 extern CATPAW catpaw[CAT_PAW_LIMIT];
+extern IMAGE imgCatMove;
 
 void InitEnemy();
+void ReleaseEnemy(); // 추가
 void ClearEnemies();
 void SpawnEnemy(MAP_TYPE type, int count);
+void SpawnCatPaw(int enemyIndex);
 void UpdateEnemies();
 
 // 적 업데이트 관련 내부 함수

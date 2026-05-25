@@ -44,11 +44,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdPa
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	PAINTSTRUCT ps;
-	HDC hDC, mDC;
-	HBITMAP hBitmap, oldBitMap;
-
-	RECT rt;
-	GetClientRect(hWnd, &rt);
+	HDC hDC;
 
 	switch (uMsg) {
 	case WM_CREATE:
@@ -77,24 +73,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
 	case WM_PAINT:
 		hDC = BeginPaint(hWnd, &ps);
-		mDC = CreateCompatibleDC(hDC);
-		hBitmap = CreateCompatibleBitmap(hDC, rt.right, rt.bottom);
-		oldBitMap = (HBITMAP)SelectObject(mDC, hBitmap);
-		FillRect(mDC, &rt, (HBRUSH)GetStockObject(BLACK_BRUSH));
 		
-		Render(mDC);
-
-		BitBlt(hDC, 0, 0, rt.right, rt.bottom, mDC, 0, 0, SRCCOPY);
-
-		SelectObject(mDC, oldBitMap);
-		DeleteObject(hBitmap);
-		DeleteDC(mDC);
+		Render(hWnd, hDC);
 
 		EndPaint(hWnd, &ps);
 		break;
 
 	case WM_DESTROY:
 		KillTimer(hWnd, 1);
+		ReleaseGame();
 		PostQuitMessage(0);
 		break;
 	}

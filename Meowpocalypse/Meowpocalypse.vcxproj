@@ -105,7 +105,7 @@
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)core;$(ProjectDir)player;$(ProjectDir)enemy;$(ProjectDir)map;$(ProjectDir)camera;$(ProjectDir)render;$(ProjectDir)bullet;$(ProjectDir)enum</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)core;$(ProjectDir)player;$(ProjectDir)enemy;$(ProjectDir)map;$(ProjectDir)camera;$(ProjectDir)render;$(ProjectDir)bullet;$(ProjectDir)enum;$(ProjectDir)graphics</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
@@ -137,6 +137,8 @@
     <ClCompile Include="enemy\boss.cpp" />
     <ClCompile Include="enemy\enemy.cpp" />
     <ClCompile Include="game.cpp" />
+    <ClCompile Include="graphics\animation.cpp" />
+    <ClCompile Include="graphics\image.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="map\map.cpp" />
     <ClCompile Include="player\player.cpp" />
@@ -153,6 +155,8 @@
     <ClInclude Include="enemy\enemy.h" />
     <ClInclude Include="enum.h" />
     <ClInclude Include="game.h" />
+    <ClInclude Include="graphics\animation.h" />
+    <ClInclude Include="graphics\image.h" />
     <ClInclude Include="map\map.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="player\player.h" />
