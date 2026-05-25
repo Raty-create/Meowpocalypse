@@ -76,6 +76,15 @@
     <Filter Include="camera\소스 파일">
       <UniqueIdentifier>{978c7eef-606a-4dbb-9c1b-c039124c80c4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="graphics">
+      <UniqueIdentifier>{32ad60fb-9f0c-4d85-9dc5-8beef191df17}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="graphics\헤더 파일">
+      <UniqueIdentifier>{22198fb9-3e9a-4b7b-8b7e-a543a14dd544}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="graphics\소스 파일">
+      <UniqueIdentifier>{8db13187-d361-4b70-8c3c-78a4061b7b5d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="game.cpp">
@@ -110,6 +119,12 @@
     </ClCompile>
     <ClCompile Include="camera\camera.cpp">
       <Filter>camera\소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\animation.cpp">
+      <Filter>graphics\소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\image.cpp">
+      <Filter>graphics\소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -148,6 +163,18 @@
     </ClInclude>
     <ClInclude Include="camera\camera.h">
       <Filter>camera\헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="enum.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\image.h">
+      <Filter>graphics\헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\animation.h">
+      <Filter>graphics\헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
