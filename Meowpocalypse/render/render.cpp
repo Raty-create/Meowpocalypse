@@ -8,6 +8,12 @@
 #include "bullet.h"
 #include "enum.h"
 
+IMAGE imgShadow;
+
+void InitRenderResources() {
+	LoadMyImage(&imgShadow, L"DEFAULT_SHADOW.png");
+}
+
 HBRUSH hBrush, oldBrush;
 HPEN hPen, oldPen;
 COLORREF color;
@@ -68,6 +74,19 @@ void RenderCurrentMap(HDC hDC) {
 	}
 }
 
+// 그림자 공용 함수
+void RenderObjectShadow(HDC hDC, float x, float y, int objW) {
+	if (imgShadow.img.IsNull()) return;
+
+	int shadowX = (int)(x - camera.x);
+	int shadowY = (int)(y - camera.y) + (objW / 3);		// 발밑 위치 오프셋
+
+	int sw = (int)(objW * 0.6f);
+	int sh = sw;
+
+	DrawMyImage(&imgShadow, hDC, shadowX - sw / 2, shadowY - sh / 2, sw, sh, 0, 0, imgShadow.width, imgShadow.height);
+}
+
 // 플레이어
 void RenderPlayer(HDC hDC) {
 	// 무적 상태일 때 깜빡임 효과
@@ -103,19 +122,53 @@ void RenderEnemies(HDC hDC) {
 		screenX = (int)(enemies[i].base.x - camera.x);
 		screenY = (int)(enemies[i].base.y - camera.y);
 
-		COLORREF enemyColor;
-		if (enemies[i].base.state == ENEMY_MELEE) enemyColor = RGB(255, 0, 0);
-		else if (enemies[i].base.state == ENEMY_CHASE) enemyColor = RGB(200, 30, 0);
-		else enemyColor = RGB(0, 30, 200);
+		// 애니메이션 행 세트 결정 (각 세트는 8줄씩 차지)
+		int baseRow = 0;
+		bool isDeadState = false; 
+		switch (enemies[i].base.state) {
+		case ENEMY_IDLE:
+		case ENEMY_MOVE:
+		case ENEMY_CHASE:
+		case ENEMY_AGGRO:
+			baseRow = 0;	// 대기/이동 세트 (0~7)
+			break;
+		case ENEMY_RANGED:
+			baseRow = 8;	// 총 쏘기 세트 (8~15)
+			break;
+		case ENEMY_HIT:
+			baseRow = 16;	// 피격 세트 (16~23)
+			break;
+		case ENEMY_MELEE:
+			baseRow = 24;	// 근접 공격 세트 (24~31)
+			break;
+		case ENEMY_DEAD:
+			baseRow = 32;	// 사망 세트 (32) - 방향 무시
+			isDeadState = true;
+			break;
+		default:
+			baseRow = 0;
+			break;
+		}
 
-		hBrush = CreateSolidBrush(enemyColor);
-		oldBrush = (HBRUSH)SelectObject(hDC, hBrush);
+		// 방향에 따른 오프셋 (사망 상태면 오프셋 0 고정)
+		int dirOffset = 0;
+		if (!isDeadState) {
+			switch (enemies[i].base.direction) {
+			case DIR_DOWN:       dirOffset = 0; break;
+			case DIR_UP:         dirOffset = 1; break;
+			case DIR_LEFT:       dirOffset = 2; break;
+			case DIR_RIGHT:      dirOffset = 3; break;
+			case DIR_UP_LEFT:    dirOffset = 4; break;
+			case DIR_UP_RIGHT:   dirOffset = 5; break;
+			case DIR_DOWN_LEFT:  dirOffset = 6; break;
+			case DIR_DOWN_RIGHT: dirOffset = 7; break;
+			default:             dirOffset = 0; break;
+			}
+		}
 
-		Rectangle(hDC, screenX - enemies[i].base.width / 2, screenY - enemies[i].base.height / 2,
-			screenX + enemies[i].base.width / 2, screenY + enemies[i].base.height / 2);
+		int finalRow = baseRow + dirOffset;
 
-		SelectObject(hDC, oldBrush);
-		DeleteObject(hBrush);
+		RenderAnimation(&enemies[i].anim, hDC, screenX, screenY, enemies[i].base.width, enemies[i].base.height, finalRow);
 	}
 }
 
@@ -131,7 +184,7 @@ void RenderEnemiesHitBox(HDC hDC) {
 		oldPen = (HPEN)SelectObject(hDC, hPen);
 		oldBrush = (HBRUSH)SelectObject(hDC, GetStockObject(NULL_BRUSH));
 
-		Rectangle(hDC, screenX - enemies[i].base.hitBoxW / 2, screenY - enemies[i].base.hitBoxH / 2,
+		Rectangle(hDC, screenX - enemies[i].base.hitBoxW / 2, screenY - enemies[i].base.hitBoxH / 3,
 			screenX + enemies[i].base.hitBoxW / 2, screenY + enemies[i].base.hitBoxH / 2);
 
 		SelectObject(hDC, oldPen);

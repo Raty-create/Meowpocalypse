@@ -10,13 +10,24 @@
 
 ENEMY enemies[ENEMY_LIMIT];
 CATPAW catpaw[CAT_PAW_LIMIT];
+IMAGE imgCatMove;
 
 // 잡몹 생성
 void InitEnemy() {
+	if (imgCatMove.img.IsNull()) {
+		LoadMyImage(&imgCatMove, L"cat_sprite.png");
+	}
+
+	// 애니메이션 초기화 (가로 5프레임, 세로 33줄 중 한 줄은 렌더링 시 결정)
+	// 이미지의 전체 크기를 프레임 수로 나눠서 fw, fh 계산
+	int fw = imgCatMove.width / 11;
+	int fh = imgCatMove.height / 33;
+
 	for (int i = 0; i < ENEMY_LIMIT; i++) {
 		enemies[i].isActive = INACTIVE;
 		enemies[i].base.width = enemies[i].base.height = ENEMY_SIZE;
-		enemies[i].base.hitBoxW = enemies[i].base.hitBoxH = ENEMY_HITBOX_SIZE;
+		enemies[i].base.hitBoxW = ENEMY_HITBOX_SIZE;
+		enemies[i].base.hitBoxH = ENEMY_HITBOX_SIZE * 2;
 		enemies[i].base.state = ENEMY_IDLE;
 		enemies[i].base.direction = DIR_DOWN;
 		enemies[i].shootTimer = 0;
@@ -26,10 +37,17 @@ void InitEnemy() {
 		enemies[i].base.kx = 0;
 		enemies[i].base.ky = 0;
 		enemies[i].base.kTimer = 0;
+		enemies[i].attackTimer = 0;
+
+		InitAnimation(&enemies[i].anim, &imgCatMove, fw, fh, 5, 8);
 	}
 	for (int i = 0; i < CAT_PAW_LIMIT; i++) {
 		catpaw[i].isActive = INACTIVE;
 	}
+}
+
+void ReleaseEnemy() {
+	ReleaseMyImage(&imgCatMove);
 }
 
 void ClearEnemies() {
@@ -52,13 +70,19 @@ void SpawnEnemy(MAP_TYPE type, int count) {
 
 	int spawned = 0;
 	int attempts = 0;
+	int half = ENEMY_SIZE / 2;
 
 	while (spawned < count && attempts < 1000) {
 		attempts++;
-		float spawnX = m->worldX + (rand() % (m->cols - ENEMY_COLS_SPAWN_MARGIN) + ENEMY_COLS_SPAWN_MARGIN) * TILE_SIZE;
-		float spawnY = m->worldY + (rand() % (m->rows - ENEMY_ROWS_SPAWN_MARGIN) + ENEMY_ROWS_SPAWN_MARGIN) * TILE_SIZE;
+		
+		float spawnX = m->worldX + (rand() % (m->cols - ENEMY_COLS_SPAWN_MARGIN) + ENEMY_COLS_SPAWN_MARGIN) * TILE_SIZE + TILE_SIZE / 2.0f;
+		float spawnY = m->worldY + (rand() % (m->rows - ENEMY_ROWS_SPAWN_MARGIN) + ENEMY_ROWS_SPAWN_MARGIN) * TILE_SIZE + TILE_SIZE / 2.0f;
 
-		if (IsTileWall(spawnX, spawnY)) continue;
+		if (IsTileWall(spawnX - half, spawnY - half) ||
+			IsTileWall(spawnX + half, spawnY - half) ||
+			IsTileWall(spawnX - half, spawnY + half) ||
+			IsTileWall(spawnX + half, spawnY + half)) continue;
+
 		if (IsOverlapWithEnemy(spawnX, spawnY)) continue;
 
 		for (int i = 0; i < ENEMY_LIMIT; i++) {
@@ -69,7 +93,7 @@ void SpawnEnemy(MAP_TYPE type, int count) {
 				enemies[i].base.state = ENEMY_IDLE;
 				enemies[i].base.direction = DIR_DOWN;
 				enemies[i].shootTimer = rand() % CAT_PAW_INTERVAL;
-				enemies[i].moveTimer = rand() % ENEMY_MOVE;
+				enemies[i].moveTimer = rand() % ENEMY_MOVE_TIMER;
 				enemies[i].base.dx = 0;
 				enemies[i].base.dy = 0;
 				enemies[i].base.hp = ENEMY_HP;
@@ -81,19 +105,46 @@ void SpawnEnemy(MAP_TYPE type, int count) {
 }
 
 // 잡몹 공격 생성
-void SpawnCatPaw(float fromX, float fromY) {
+void SpawnCatPaw(int i) {
+	float fromX = enemies[i].base.x;
+	float fromY = enemies[i].base.y;
+
 	float dx = player.base.x - fromX;
 	float dy = player.base.y - fromY;
 	float dist = sqrtf(dx * dx + dy * dy);
 	if (dist == 0) return;
 
-	for (int i = 0; i < CAT_PAW_LIMIT; i++) {
-		if (!catpaw[i].isActive) {
-			catpaw[i].isActive = ACTIVE;
-			catpaw[i].x = fromX;
-			catpaw[i].y = fromY;
-			catpaw[i].dx = (dx / dist) * CAT_PAW_SPEED;
-			catpaw[i].dy = (dy / dist) * CAT_PAW_SPEED;
+	// 공격 방향 결정 (플레이어를 바라보게)
+	if (fabsf(dx) > fabsf(dy)) {
+		if (dx > 0) enemies[i].base.direction = DIR_RIGHT;
+		else enemies[i].base.direction = DIR_LEFT;
+	}
+	else {
+		if (dy > 0) enemies[i].base.direction = DIR_DOWN;
+		else enemies[i].base.direction = DIR_UP;
+	}
+
+	float ratio = (dy != 0) ? fabsf(dx / dy) : 100.0f;
+	if (ratio > DEG_TO_RAD(22.5f) && ratio < DEG_TO_RAD(67.5f)) {
+		if (dx > 0 && dy > 0) enemies[i].base.direction = DIR_DOWN_RIGHT;
+		else if (dx > 0 && dy < 0) enemies[i].base.direction = DIR_UP_RIGHT;
+		else if (dx < 0 && dy > 0) enemies[i].base.direction = DIR_DOWN_LEFT;
+		else if (dx < 0 && dy < 0) enemies[i].base.direction = DIR_UP_LEFT;
+	}
+
+	enemies[i].base.state = ENEMY_RANGED;
+	enemies[i].anim.totalFrames = 5;
+	enemies[i].attackTimer = 30;
+	SetAnimationFrame(&enemies[i].anim, 0);
+
+	// 실제 총알 생성
+	for (int j = 0; j < CAT_PAW_LIMIT; j++) {
+		if (!catpaw[j].isActive) {
+			catpaw[j].isActive = ACTIVE;
+			catpaw[j].x = fromX;
+			catpaw[j].y = fromY;
+			catpaw[j].dx = (dx / dist) * CAT_PAW_SPEED;
+			catpaw[j].dy = (dy / dist) * CAT_PAW_SPEED;
 			break;
 		}
 	}
@@ -104,6 +155,7 @@ void UpdateEnemies() {
 	for (int i = 0; i < ENEMY_LIMIT; i++) {
 		if (!enemies[i].isActive) continue;
 		UpdateEnemyState(i);
+		UpdateAnimation(&enemies[i].anim);
 	}
 
 	UpdateCatPaws();
@@ -129,11 +181,28 @@ void UpdateEnemies() {
 void UpdateEnemyState(int i) {
 	// 사망 상태 처리
 	if (enemies[i].base.state == ENEMY_DEAD) {
+		enemies[i].anim.totalFrames = 11;
+		enemies[i].anim.isLoop = FALSE;
+
 		enemies[i].deathTimer--;
 		if (enemies[i].deathTimer <= 0) {
 			enemies[i].isActive = INACTIVE;
 		}
 		return;
+	}
+
+	enemies[i].anim.totalFrames = 5;
+	enemies[i].anim.isLoop = TRUE;
+
+	// 공격 모션 타이머 처리
+	if (enemies[i].attackTimer > 0) {
+		enemies[i].attackTimer--;
+		if (enemies[i].attackTimer <= 0) {
+			enemies[i].base.state = ENEMY_IDLE;
+		}
+		else {
+			return;
+		}
 	}
 
 	// 넉백 및 히트 상태 처리
@@ -178,6 +247,7 @@ void UpdateEnemyState(int i) {
 // 적 넉백
 void HandleEnemyKnockback(int i) {
 	enemies[i].base.state = ENEMY_HIT;
+	//SetAnimationFrame(&enemies[i].anim, 0);
 
 	float ex = enemies[i].base.x;
 	float ey = enemies[i].base.y;
@@ -289,12 +359,17 @@ void HandleEnemyPatrol(int i) {
 	float ex = enemies[i].base.x;
 	float ey = enemies[i].base.y;
 
-	enemies[i].base.state = ENEMY_RANGED;
+	if (enemies[i].attackTimer <= 0) {
+		enemies[i].base.state = ENEMY_MOVE;
+	}
+
 	enemies[i].shootTimer++;
 	if (enemies[i].shootTimer >= CAT_PAW_INTERVAL) {
-		SpawnCatPaw(ex, ey);
+		SpawnCatPaw(i);
 		enemies[i].shootTimer = 0;
+		return;
 	}
+
 	enemies[i].moveTimer--;
 	if (enemies[i].moveTimer <= 0) {
 		enemies[i].moveTimer = 120 + rand() % 60;
@@ -310,6 +385,26 @@ void HandleEnemyPatrol(int i) {
 		case 5: enemies[i].base.dx = diagSpeed; enemies[i].base.dy = -diagSpeed; enemies[i].base.direction = DIR_UP_RIGHT; break;
 		case 6: enemies[i].base.dx = -diagSpeed; enemies[i].base.dy = diagSpeed; enemies[i].base.direction = DIR_DOWN_LEFT; break;
 		case 7: enemies[i].base.dx = diagSpeed; enemies[i].base.dy = diagSpeed; enemies[i].base.direction = DIR_DOWN_RIGHT; break;
+		}
+	}
+
+	if (enemies[i].attackTimer <= 0) {
+		float adx = enemies[i].base.dx;
+		float ady = enemies[i].base.dy;
+
+		if (adx > 0) {
+			if (ady > 0) enemies[i].base.direction = DIR_DOWN_RIGHT;
+			else if (ady < 0) enemies[i].base.direction = DIR_UP_RIGHT;
+			else enemies[i].base.direction = DIR_RIGHT;
+		}
+		else if (adx < 0) {
+			if (ady > 0) enemies[i].base.direction = DIR_DOWN_LEFT;
+			else if (ady < 0) enemies[i].base.direction = DIR_UP_LEFT;
+			else enemies[i].base.direction = DIR_LEFT;
+		}
+		else {
+			if (ady > 0) enemies[i].base.direction = DIR_DOWN;
+			else if (ady < 0) enemies[i].base.direction = DIR_UP;
 		}
 	}
 
@@ -351,7 +446,7 @@ void HandleEnemyAggro(int i, float tx, float ty) {
 			nx = -(dx / dist) * (ENEMY_SPEED * 0.5f);
 			ny = -(dy / dist) * (ENEMY_SPEED * 0.5f);
 		}
-
+		
 		float sepX = 0, sepY = 0;
 		for (int j = 0; j < ENEMY_LIMIT; j++) {
 			if (i == j || !enemies[j].isActive) continue;
@@ -384,7 +479,7 @@ void HandleEnemyAggro(int i, float tx, float ty) {
 			if (finalNY > 0) enemies[i].base.direction = DIR_DOWN;
 			else if (finalNY < 0) enemies[i].base.direction = DIR_UP;
 		}
-
+		
 		int half = ENEMY_SIZE / 2;
 		float nextX = ex + finalNX;
 		float nextY = ey + finalNY;
