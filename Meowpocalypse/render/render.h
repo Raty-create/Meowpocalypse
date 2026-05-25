@@ -1,5 +1,5 @@
 #pragma once
-#include <windows.h>
+#include <Windows.h>
 
 // 타일
 void RenderTile(HDC hDC, int screenX, int screenY, COLORREF color);
@@ -7,8 +7,12 @@ void RenderTile(HDC hDC, int screenX, int screenY, COLORREF color);
 // 맵
 void RenderCurrentMap(HDC hDC);
 
+// 그림자
+void InitRenderResources();
+void RenderObjectShadow(HDC hDC, float x, float y, int objW);
+
 // 플레이어
-void RenderPlayer(HDC mDC);
+void RenderPlayer(HDC hDC);
 void RenderPlayerHitBox(HDC hDC);
 
 // 잡몹

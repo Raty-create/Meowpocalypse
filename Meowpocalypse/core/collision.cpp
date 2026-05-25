@@ -101,7 +101,7 @@ int HandleBulletEnemyCollision(BULLET* bullet, ENEMY* enemy) {
 		if (enemy->base.hp <= 0) {
 			enemy->base.hp = 0;
 			enemy->base.state = ENEMY_DEAD;
-			enemy->deathTimer = 60; // 60프레임 동안 사망 상태 유지 (애니메이션용)
+			enemy->deathTimer = 120; // 120프레임 동안 사망 상태 유지 (애니메이션용)
 		}
 		else {
 			enemy->base.state = ENEMY_HIT;
@@ -209,6 +209,17 @@ int HandleBulletBossCollision(BULLET* bullet, BOSS* boss) {
 	return 0;
 }
 
+int HandleChuruBossCollision(CHURU* churues, BOSS* boss) {
+	if (!churues->isActive || boss->isActive == INACTIVE) return 0;
+
+	if (IsObjectCollision(churues->x, churues->y, churues->width, churues->height,
+		boss->base.hitBoxX, boss->base.hitBoxY, boss->base.hitBoxW, boss->base.hitBoxH)) {
+
+		churues->isActive = INACTIVE;
+
+	}
+}
+
 // 보스 PAW - 플레이어 충돌 처리 (catpaw와 동일 방식)
 int HandleBossPawPlayerCollision(BOSS_PAW* bp, PLAYER* p) {
 	if (!bp->isActive || p->invincibleTimer > 0) return 0;
@@ -260,7 +271,7 @@ int HandleBossPlayerCollision(PLAYER* p) {
 		float dy = p->base.y - boss.base.y;
 		float dist = sqrtf(dx * dx + dy * dy);
 		if (dist > 0) {
-			p->base.kx = (dx / dist) * BOSS_NORMAL_KNOCKBACK;
+			p->base.kx = (dx / dist) * 10.0f;
 			p->base.ky = (dy / dist) * BOSS_NORMAL_KNOCKBACK;
 			p->base.kTimer = KNOCKBACK_TIME;
 		}

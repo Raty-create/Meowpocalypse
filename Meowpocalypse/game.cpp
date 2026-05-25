@@ -17,11 +17,16 @@ void InitGame() {
 	currentMapType = MAP_WAITING;				// 시작 맵 설정
 	InitAllMap();								// 맵
 	SetDoorState(MAP_WAITING, DOOR_OPEN);		// 문
+	InitRenderResources();						// 렌더링 리소스(그림자)
 	InitPlayer();								// 플레이어
 	InitEnemy();								// 잡몹
 	InitBoss();									// 보스
 	InitBullet();								// 총알
 	InitChuru();								// 츄르
+}
+
+void ReleaseGame() {
+	ReleaseEnemy();
 }
 
 void Update(HWND hWnd) {
@@ -39,16 +44,39 @@ void Update(HWND hWnd) {
 	UpdateCamera(player.base.x, player.base.y, m->rows, m->cols);		// 카메라 업데이트
 }
 
-void Render(HDC hDC) {
-	RenderCurrentMap(hDC);				// 현재 맵만 렌더링
-	RenderPlayer(hDC);					// 플레이어
-	RenderPlayerHitBox(hDC);			// 플레이어 히트박스
-	RenderEnemies(hDC);					// 잡몹
-	RenderEnemiesHitBox(hDC);			// 잡몹 히트박스
-	RenderCatPaw(hDC);					// 잡몹 젤리
-	RenderBoss(hDC);					// 보스
-	RenderBossHitBox(hDC);				// 보스 히트박스
-	RenderBossPaws(hDC);				// 보스 젤리
-	RenderBullets(hDC);					// 총알
-	RenderChuru(hDC);					// 츄르
+void Render(HWND hWnd, HDC hDC) {
+	RECT rt;
+	GetClientRect(hWnd, &rt);
+
+	HDC hMemDC = CreateCompatibleDC(hDC);
+	HBITMAP hMemBitmap = CreateCompatibleBitmap(hDC, rt.right, rt.bottom);
+	HBITMAP hOldBitmap = (HBITMAP)SelectObject(hMemDC, hMemBitmap);
+
+	RenderCurrentMap(hMemDC);				// 현재 맵만 렌더링
+
+	RenderObjectShadow(hMemDC, player.base.x, player.base.y, player.base.width);
+	for (int i = 0; i < ENEMY_LIMIT; i++) {
+		if (enemies[i].isActive)
+			RenderObjectShadow(hMemDC, enemies[i].base.x, enemies[i].base.y, enemies[i].base.width);
+	}
+
+	RenderPlayer(hMemDC);					// 플레이어
+	RenderPlayerHitBox(hMemDC);				// 플레이어 히트박스
+
+	RenderEnemies(hMemDC);					// 잡몹
+	RenderEnemiesHitBox(hMemDC);			// 잡몹 히트박스
+	RenderCatPaw(hMemDC);					// 잡몹 젤리
+
+	RenderBoss(hMemDC);						// 보스
+	RenderBossHitBox(hMemDC);				// 보스 히트박스
+	RenderBossPaws(hMemDC);					// 보스 젤리
+
+	RenderBullets(hMemDC);					// 총알
+	RenderChuru(hMemDC);					// 츄르
+
+	BitBlt(hDC, 0, 0, rt.right, rt.bottom, hMemDC, 0, 0, SRCCOPY);
+
+	SelectObject(hMemDC, hOldBitmap);
+	DeleteDC(hMemDC);
+	DeleteObject(hMemBitmap);
 }

@@ -142,9 +142,8 @@ void SpawnBoss(MAP_TYPE type) {
 	}
 }
 
-// 보스 스킬(3방향 발바닥)
+// 보스 스킬(3방향 젤리)
 void SpawnBossPaws() {
-
 	boss.isActive = ACTIVE;
 	boss.isAttacking = 1;
 	boss.attackEndTimer = BOSS_ATTACK_INTERVAL / 2; // 발사 후 이 프레임 동안 정지
@@ -156,7 +155,7 @@ void SpawnBossPaws() {
 	dx /= len;
 	dy /= len;
 
-	float offsets[3] = { -0.7854f, 0.0f, 0.7854f };
+	float offsets[3] = { -0.1454f, 0.0f, 0.1454f };
 
 	for (int d = 0; d < 3; d++) {
 		float angle = atan2f(dy, dx) + offsets[d];
@@ -401,6 +400,8 @@ static int CheckPhaseTransition() {
 // 대시 실행 처리
 static void UpdateDash(int is3rdPhase) {
 	int is2nd3rdPhase = (currentMapType == MAP_SECOND_BOSS || currentMapType == MAP_THIRD_BOSS);
+
+	HandleBossDashPlayerCollision(&player);
 
 	float nextX = boss.base.x + boss.dashDirX * DASH_SPEED;
 	float nextY = boss.base.y + boss.dashDirY * DASH_SPEED;
