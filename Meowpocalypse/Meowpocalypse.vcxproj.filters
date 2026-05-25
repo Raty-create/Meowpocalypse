@@ -1,0 +1,180 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="소스 파일">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="헤더 파일">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="리소스 파일">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="bullet">
+      <UniqueIdentifier>{d60476de-571f-45e0-9d8c-89ab7723eaa6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="enemy">
+      <UniqueIdentifier>{b6c5d4e1-0624-4909-b3d0-7aca9d439786}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="player">
+      <UniqueIdentifier>{ee190796-4e35-4ac3-bd60-bf481857bb3a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="render">
+      <UniqueIdentifier>{a8d73646-900e-4506-a893-4a76714bc8c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core">
+      <UniqueIdentifier>{270daf20-6743-484e-88ab-4536517a259a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="player\헤더 파일">
+      <UniqueIdentifier>{bdeee138-14d4-48b5-900d-59c47b328f22}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="player\소스 파일">
+      <UniqueIdentifier>{c187c06e-fc1d-477c-8823-7bce518d1e10}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="render\헤더 파일">
+      <UniqueIdentifier>{b18f3bc9-86ed-4c8f-ae4a-8ff82ba2c9a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="render\소스 파일">
+      <UniqueIdentifier>{0c660aaa-d6af-4b98-9739-1d4fc2763c3a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\헤더 파일">
+      <UniqueIdentifier>{30898193-3fc3-4adc-a9fb-2456cd634cee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\소스 파일">
+      <UniqueIdentifier>{0089603e-b210-4432-b27f-12c514ae3e6e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="enemy\헤더 파일">
+      <UniqueIdentifier>{7aa6e1a5-80a4-4f59-97ce-5d9b95f3f2bc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="enemy\소스 파일">
+      <UniqueIdentifier>{25d3667e-0a32-45cf-8597-9e9d601790ef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="bullet\헤더 파일">
+      <UniqueIdentifier>{d178db09-e8aa-4dd9-b0fc-df901a59a89a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="bullet\소스 파일">
+      <UniqueIdentifier>{b2152566-dbb8-43eb-91bd-264035b5db46}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="map">
+      <UniqueIdentifier>{149ef258-a06e-4273-85e0-32970320ae08}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="camera">
+      <UniqueIdentifier>{36b939e6-56ee-4adb-92c8-ec913fd91145}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="map\헤더 파일">
+      <UniqueIdentifier>{586c0cfa-01ff-4fd3-be07-c49853695fc4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="map\소스 파일">
+      <UniqueIdentifier>{5e68ef7c-4e20-4c68-a899-40ec8fee06e3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="camera\헤더 파일">
+      <UniqueIdentifier>{6b99422c-cbb3-4652-8d4d-5ce20590cd13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="camera\소스 파일">
+      <UniqueIdentifier>{978c7eef-606a-4dbb-9c1b-c039124c80c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="graphics">
+      <UniqueIdentifier>{5d446d7b-5c2c-4bd0-aa8b-ae5686252fa9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="graphics\헤더 파일">
+      <UniqueIdentifier>{acef0aa4-89f3-4e7d-92d7-968daa78039c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="graphics\소스 파일">
+      <UniqueIdentifier>{b2ac6441-79dd-4fef-a058-f122a125bf09}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="game.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="player\player.cpp">
+      <Filter>player\소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="render\render.cpp">
+      <Filter>render\소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="core\input.cpp">
+      <Filter>core\소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="core\collision.cpp">
+      <Filter>core\소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="enemy\enemy.cpp">
+      <Filter>enemy\소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="enemy\boss.cpp">
+      <Filter>enemy\소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="bullet\bullet.cpp">
+      <Filter>bullet\소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="map\map.cpp">
+      <Filter>map\소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="camera\camera.cpp">
+      <Filter>camera\소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\image.cpp">
+      <Filter>graphics\소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\animation.cpp">
+      <Filter>graphics\소스 파일</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="game.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="player\player.h">
+      <Filter>player\헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="render\render.h">
+      <Filter>render\헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="core\input.h">
+      <Filter>core\헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="core\collision.h">
+      <Filter>core\헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="core\object.h">
+      <Filter>core\헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="enemy\boss.h">
+      <Filter>enemy\헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="enemy\enemy.h">
+      <Filter>enemy\헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="bullet\bullet.h">
+      <Filter>bullet\헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="core\config.h">
+      <Filter>core\헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="map\map.h">
+      <Filter>map\헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="camera\camera.h">
+      <Filter>camera\헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="enum.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\image.h">
+      <Filter>graphics\헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\animation.h">
+      <Filter>graphics\헤더 파일</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
