@@ -97,6 +97,13 @@ extern int SCREEN_HEIGHT;
 #define BOSS_JUMP_KNOCKBACK    15.0f
 #define BOSS_NORMAL_KNOCKBACK  10.0f
 
+#define BOSS_SPIRAL_COUNT      36      // 회오리 한 바퀴 발사 수
+#define BOSS_SPIRAL_INTERVAL   4       // 발사 간격 (프레임)
+#define BOSS_SPIRAL_ROTATIONS  3       // 총 회전 수
+
+#define BOSS_DOUBLE_DASH_DELAY  10     // 첫 대시 종료 후 두 번째 대시까지 딜레이 (프레임)
+
+
 // BULLET
 #define BULLET_MAX 50
 #define BULLET_SPEED 8.0f

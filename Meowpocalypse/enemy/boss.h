@@ -26,6 +26,19 @@ typedef struct {
     int jumpTimer;
     float jumpDirX;
     float jumpDirY;
+    
+    // 보스 스킬 (회오리)
+    int spiralTimer;       // 회오리 PAW 발사 간격 타이머
+    int spiralIndex;       // 현재 회오리 발사 인덱스 (0 ~ 총 발사 수)
+    int isSpiralActive;    // 회오리 발사 중 여부
+
+    // 보스 스킬 (연속 대쉬)
+    int doubleDashPhase;   // 0=대시 안 함, 1=첫 번째 대시 완료 대기, 2=두 번째 대시 중
+    int doubleDashDelay;   // 두 번째 대시 시작 전 딜레이 타이머
+
+    // PAW 발사 중 이동 정지
+    int isAttacking;       // 1이면 PAW 발사 직후 정지 중
+    int attackEndTimer;    // 0이 되면 이동 재개
 } BOSS;
 
 typedef struct {
