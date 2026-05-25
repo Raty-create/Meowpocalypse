@@ -44,6 +44,14 @@ void InitBoss() {
 	boss.jumpDirX = 0;
 	boss.jumpDirY = 0;
 
+	boss.spiralTimer = 0;
+	boss.spiralIndex = 0;
+	boss.isSpiralActive = 0;
+	boss.doubleDashPhase = 0;
+	boss.doubleDashDelay = 0;
+	boss.isAttacking = 0;
+	boss.attackEndTimer = 0;
+
 	for (int i = 0; i < BOSS_PAW_LIMIT; i++) {
 		bossPaws[i].isActive = INACTIVE;
 	}
@@ -116,6 +124,20 @@ void SpawnBoss(MAP_TYPE type) {
 			boss.base.state = BOSS_IDLE;
 			boss.base.dx = 0;
 			boss.base.dy = 0;
+
+			// 상태 초기화
+			boss.moveTimer = BOSS_MOVE_INTERVAL;
+			boss.attackTimer = BOSS_ATTACK_INTERVAL;
+			boss.isDashing = 0;
+			boss.isJumping = 0;
+			dashWarn.isActive = INACTIVE;
+			jumpWarn.isActive = INACTIVE;
+
+			boss.spiralTimer = 0;
+			boss.spiralIndex = 0;
+			boss.isSpiralActive = 0;
+			boss.doubleDashPhase = 0;
+			boss.doubleDashDelay = 0;
 		}
 	}
 }
@@ -124,6 +146,8 @@ void SpawnBoss(MAP_TYPE type) {
 void SpawnBossPaws() {
 
 	boss.isActive = ACTIVE;
+	boss.isAttacking = 1;
+	boss.attackEndTimer = BOSS_ATTACK_INTERVAL / 2; // 발사 후 이 프레임 동안 정지
 	float dx = player.base.x - boss.base.x;
 	float dy = player.base.y - boss.base.y;
 	float len = sqrtf(dx * dx + dy * dy);
@@ -155,6 +179,8 @@ void SpawnBossPaws() {
 // 보스 스킬(원형 탄막)
 void SpawnCircularPaws() {
 	boss.isActive = ACTIVE;
+	boss.isAttacking = 1;
+	boss.attackEndTimer = BOSS_ATTACK_INTERVAL / 2;
 
 	int count = BOSS_CIRCULARPAWS_COUNT;
 	float angleStep = (2.0f * PI) / count;
@@ -354,6 +380,8 @@ static int CheckPhaseTransition() {
 		boss.isActive = INACTIVE;
 		dashWarn.isActive = INACTIVE;
 		jumpWarn.isActive = INACTIVE;
+		boss.isSpiralActive = 0;
+		boss.doubleDashPhase = 0;
 		SetDoorState(MAP_FIRST_BOSS, DOOR_OPEN);
 		return 1;
 	}
@@ -362,6 +390,8 @@ static int CheckPhaseTransition() {
 		boss.isActive = INACTIVE;
 		dashWarn.isActive = INACTIVE;
 		jumpWarn.isActive = INACTIVE;
+		boss.isSpiralActive = 0;
+		boss.doubleDashPhase = 0;
 		SetDoorState(MAP_SECOND_BOSS, DOOR_OPEN);
 		return 1;
 	}
@@ -369,7 +399,9 @@ static int CheckPhaseTransition() {
 }
 
 // 대시 실행 처리
-static void UpdateDash(int is2nd3rdPhase) {
+static void UpdateDash(int is3rdPhase) {
+	int is2nd3rdPhase = (currentMapType == MAP_SECOND_BOSS || currentMapType == MAP_THIRD_BOSS);
+
 	float nextX = boss.base.x + boss.dashDirX * DASH_SPEED;
 	float nextY = boss.base.y + boss.dashDirY * DASH_SPEED;
 	int half = BOSS_SIZE / 2;
@@ -378,21 +410,34 @@ static void UpdateDash(int is2nd3rdPhase) {
 		IsTileWall(nextX + half, nextY - half) ||
 		IsTileWall(nextX - half, nextY + half) ||
 		IsTileWall(nextX + half, nextY + half)) {
+		// 벽 충돌 -> 대쉬 종료
 		boss.isDashing = INACTIVE;
 		boss.base.state = is2nd3rdPhase ? BOSS_CHASE : BOSS_IDLE;
 		boss.attackTimer = BOSS_ATTACK_INTERVAL;
+		boss.doubleDashPhase = 0; // 3페이즈 연속 대시도 종료
 	}
 	else {
 		boss.base.x = nextX;
 		boss.base.y = nextY;
 		boss.base.hitBoxX = nextX;
 		boss.base.hitBoxY = nextY;
+
+		HandleBossDashPlayerCollision(&player);
+
 		boss.dashTimer--;
 
 		if (boss.dashTimer <= 0) {
 			boss.isDashing = INACTIVE;
 			boss.base.state = is2nd3rdPhase ? BOSS_CHASE : BOSS_IDLE;
-			boss.attackTimer = BOSS_ATTACK_INTERVAL;
+
+			if (is3rdPhase && boss.doubleDashPhase == 1) {
+				boss.doubleDashPhase = 2;
+				boss.doubleDashDelay = BOSS_DOUBLE_DASH_DELAY;
+			}
+			else {
+				boss.attackTimer = BOSS_ATTACK_INTERVAL;
+				boss.doubleDashPhase = 0;
+			}
 		}
 	}
 }
@@ -422,8 +467,58 @@ static void UpdateJumpLanding(int is2nd3rdPhase) {
 	}
 }
 
+// 3페이즈 회오리 PAW: 프레임마다 호출, 내부 타이머로 순차 발사
+static void UpdateSpiralPaws() {
+	if (!boss.isSpiralActive) return;
+
+	int totalShots = BOSS_SPIRAL_COUNT * BOSS_SPIRAL_ROTATIONS;
+	if (boss.spiralIndex >= totalShots) {
+		boss.isSpiralActive = 0;
+		boss.spiralIndex = 0;
+		boss.attackTimer = BOSS_ATTACK_INTERVAL;
+		return;
+	}
+
+	boss.spiralTimer--;
+	if (boss.spiralTimer > 0) return;
+	boss.spiralTimer = BOSS_SPIRAL_INTERVAL;
+
+	// 각도: 한 바퀴(2PI)를 BOSS_SPIRAL_COUNT 등분, 인덱스마다 누적
+	float angle = ((float)boss.spiralIndex / BOSS_SPIRAL_COUNT) * (2.0f * PI);
+	float vx = cosf(angle);
+	float vy = sinf(angle);
+
+	for (int j = 0; j < BOSS_PAW_LIMIT; j++) {
+		if (bossPaws[j].isActive == INACTIVE) {
+			bossPaws[j].isActive = ACTIVE;
+			bossPaws[j].x = boss.base.x;
+			bossPaws[j].y = boss.base.y;
+			bossPaws[j].dx = vx * BOSS_PAW_SPEED;
+			bossPaws[j].dy = vy * BOSS_PAW_SPEED;
+			break;
+		}
+	}
+	boss.spiralIndex++;
+}
+
+// 3페이즈 회오리 PAW 시작
+static void StartSpiralPaws() {
+	boss.isSpiralActive = 1;
+	boss.spiralIndex = 0;
+	boss.spiralTimer = 0;
+}
+
+// 3페이즈 첫 번째 대시 경고 시작 (doubleDashPhase 설정)
+static void StartDoubleDashWarning() {
+	StartDashWarning();
+	boss.doubleDashPhase = 1; // 첫 번째 대시 예약
+}
+
 // 패턴 선택
 static void SelectPattern(int is2nd3rdPhase) {
+
+	int is3rdPhase = (currentMapType == MAP_THIRD_BOSS);
+
 	int pattern = rand() % 8;
 
 	if (!is2nd3rdPhase) {
@@ -435,7 +530,7 @@ static void SelectPattern(int is2nd3rdPhase) {
 			StartDashWarning();
 		}
 	}
-	else {
+	else if (!is3rdPhase) {
 		if (pattern <= 2) {
 			SpawnBossPaws();
 			boss.attackTimer = BOSS_ATTACK_INTERVAL;
@@ -446,6 +541,27 @@ static void SelectPattern(int is2nd3rdPhase) {
 		}
 		else if (pattern == 6) {
 			StartDashWarning();
+		}
+		else {
+			StartJumpWarning();
+		}
+	}
+	else {
+		int pattern = rand() % 10;
+
+		if (pattern <= 1) {
+			SpawnBossPaws();
+			boss.attackTimer = BOSS_ATTACK_INTERVAL;
+		}
+		else if (pattern <= 4) {
+			SpawnCircularPaws();
+			boss.attackTimer = BOSS_ATTACK_INTERVAL;
+		}
+		else if (pattern <= 7) {
+			StartSpiralPaws();
+		}
+		else if (pattern == 8) {
+			StartDoubleDashWarning();
 		}
 		else {
 			StartJumpWarning();
@@ -464,18 +580,52 @@ void UpdateBoss() {
 	if (boss.isActive == INACTIVE) return;
 
 	int is2nd3rdPhase = (currentMapType == MAP_SECOND_BOSS || currentMapType == MAP_THIRD_BOSS);
+	int is3rdPhase = (currentMapType == MAP_THIRD_BOSS);
 
 	if (CheckPhaseTransition()) return;
 
+	// 3페이즈 회오리 PAW는 다른 스킬과 무관하게 프레임마다 처리
+	if (is3rdPhase) UpdateSpiralPaws();
+
 	if (boss.isDashing) {
-		UpdateDash(is2nd3rdPhase);
+		UpdateDash(is3rdPhase);
 	}
 	else if (dashWarn.isActive == ACTIVE) {
 		UpdateDashWarningCountdown();
 	}
+
+	// 3페이즈 연속 대시: 첫 대시 완료 후 딜레이 → 두 번째 대시 시작
+	else if (is3rdPhase && boss.doubleDashPhase == 2) {
+		boss.doubleDashDelay--;
+		if (boss.doubleDashDelay <= 0) {
+			// 현재 플레이어 방향으로 두 번째 대시 (경고 없이 즉시)
+			float dx = player.base.x - boss.base.x;
+			float dy = player.base.y - boss.base.y;
+			float len = sqrtf(dx * dx + dy * dy);
+			if (len > 0) {
+				boss.dashDirX = dx / len;
+				boss.dashDirY = dy / len;
+			}
+			boss.isDashing = ACTIVE;
+			boss.dashTimer = DASH_INTERVAL;
+			boss.doubleDashPhase = 0; // 두 번째 대시 시작, 이후 UpdateDash에서 완료 처리
+		}
+	}
 	else if (boss.isJumping == ACTIVE && jumpWarn.isActive == ACTIVE) {
 		UpdateJumpLanding(is2nd3rdPhase);
 	}
+	else if (boss.isSpiralActive) {
+	}
+	// PAW 발사 직후 정지 구간
+	else if (boss.isAttacking) {
+		boss.attackEndTimer--;
+		if (boss.attackEndTimer <= 0) {
+			boss.isAttacking = 0;
+			boss.attackTimer = BOSS_ATTACK_INTERVAL;
+		}
+		// 정지 중: 이동/패턴선택 안 함
+	}
+
 	else {
 		if (is2nd3rdPhase)
 			UpdateBossChase();
