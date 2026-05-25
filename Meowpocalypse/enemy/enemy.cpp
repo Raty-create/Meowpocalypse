@@ -26,7 +26,7 @@ void InitEnemy() {
 	for (int i = 0; i < ENEMY_LIMIT; i++) {
 		enemies[i].isActive = INACTIVE;
 		enemies[i].base.width = enemies[i].base.height = ENEMY_SIZE;
-		enemies[i].base.hitBoxW = ENEMY_HITBOX_SIZE;
+		enemies[i].base.hitBoxW = ENEMY_HITBOX_SIZE * 2;
 		enemies[i].base.hitBoxH = ENEMY_HITBOX_SIZE * 2;
 		enemies[i].base.state = ENEMY_IDLE;
 		enemies[i].base.direction = DIR_DOWN;
@@ -96,7 +96,15 @@ void SpawnEnemy(MAP_TYPE type, int count) {
 				enemies[i].moveTimer = rand() % ENEMY_MOVE_TIMER;
 				enemies[i].base.dx = 0;
 				enemies[i].base.dy = 0;
+				enemies[i].base.kx = 0;
+				enemies[i].base.ky = 0;
+				enemies[i].base.kTimer = 0;
 				enemies[i].base.hp = ENEMY_HP;
+				enemies[i].shootTimer = rand() % CAT_PAW_INTERVAL;
+				enemies[i].moveTimer = rand() % ENEMY_MOVE_TIMER;
+				enemies[i].deathTimer = 0;
+				enemies[i].attackTimer = 0;
+				SetAnimationFrame(&enemies[i].anim, 0);
 				spawned++;
 				break;
 			}
