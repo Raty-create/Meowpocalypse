@@ -32,6 +32,11 @@ typedef struct {
     int spiralIndex;       // 현재 회오리 발사 인덱스 (0 ~ 총 발사 수)
     int isSpiralActive;    // 회오리 발사 중 여부
 
+    // 보스 스킬 (랜덤 원형 3연속)
+    int isRandomCircularActive; // 랜덤 원형 3연속 발사 중 여부
+    int randomCircularPhase;    // 현재 발사 단계 (0, 1, 2)
+    int randomCircularDelay;    // 다음 단계까지 남은 딜레이 타이머
+
     // 보스 스킬 (연속 대쉬)
     int doubleDashPhase;   // 0=대시 안 함, 1=첫 번째 대시 완료 대기, 2=두 번째 대시 중
     int doubleDashDelay;   // 두 번째 대시 시작 전 딜레이 타이머

@@ -104,6 +104,9 @@ extern int SCREEN_HEIGHT;
 #define BOSS_DOUBLE_DASH_DELAY  10     // 첫 대시 종료 후 두 번째 대시까지 딜레이 (프레임)
 
 
+#define BOSS_RANDOM_CIRCULARPAWS_COUNT 96
+
+
 // BULLET
 #define BULLET_MAX 50
 #define BULLET_SPEED 8.0f

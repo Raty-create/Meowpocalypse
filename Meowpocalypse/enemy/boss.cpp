@@ -47,6 +47,10 @@ void InitBoss() {
 	boss.spiralTimer = 0;
 	boss.spiralIndex = 0;
 	boss.isSpiralActive = 0;
+
+	boss.isRandomCircularActive = 0;
+	boss.randomCircularPhase = 0;
+	boss.randomCircularDelay = 0;
 	boss.doubleDashPhase = 0;
 	boss.doubleDashDelay = 0;
 	boss.isAttacking = 0;
@@ -136,6 +140,10 @@ void SpawnBoss(MAP_TYPE type) {
 			boss.spiralTimer = 0;
 			boss.spiralIndex = 0;
 			boss.isSpiralActive = 0;
+
+			boss.isRandomCircularActive = 0;
+			boss.randomCircularPhase = 0;
+			boss.randomCircularDelay = 0;
 			boss.doubleDashPhase = 0;
 			boss.doubleDashDelay = 0;
 		}
@@ -468,6 +476,61 @@ static void UpdateJumpLanding(int is2nd3rdPhase) {
 	}
 }
 
+static void FireRandomCircularPhase(int phase) {
+	int count = BOSS_CIRCULARPAWS_COUNT;
+	float angleStep = (2.0f * PI) / count;
+	float angleOffset = DEG_TO_RAD(phase * 30.0f); // 0도, 30도, 60도
+
+	for (int i = 0; i < count; i++) {
+		float currAngle = i * angleStep + angleOffset;
+
+		for (int j = 0; j < BOSS_PAW_LIMIT; j++) {
+			if (bossPaws[j].isActive == INACTIVE) {
+				bossPaws[j].isActive = ACTIVE;
+				bossPaws[j].x = boss.base.x;
+				bossPaws[j].y = boss.base.y;
+				bossPaws[j].dx = cosf(currAngle) * BOSS_PAW_SPEED;
+				bossPaws[j].dy = sinf(currAngle) * BOSS_PAW_SPEED;
+				break;
+			}
+		}
+	}
+}
+
+// 랜덤 원형 PAW 3연속 발사 업데이트 (매 프레임 호출)
+static void UpdateRandomCircularPaws() {
+	if (!boss.isRandomCircularActive) return;
+
+	// 딜레이 카운트다운 중
+	if (boss.randomCircularDelay > 0) {
+		boss.randomCircularDelay--;
+		return;
+	}
+
+	// 현재 단계 발사
+	FireRandomCircularPhase(boss.randomCircularPhase);
+	boss.randomCircularPhase++;
+
+	if (boss.randomCircularPhase >= 3) {
+		// 3단계 완료 → 종료
+		boss.isRandomCircularActive = 0;
+		boss.randomCircularPhase = 0;
+		boss.attackTimer = BOSS_ATTACK_INTERVAL;
+	}
+	else {
+		// 다음 단계까지 1초(60프레임) 대기
+		boss.randomCircularDelay = 60;
+	}
+}
+
+// 랜덤 원형 PAW 3연속 발사 시작
+void SpawnRandomCircularPaws() {
+	boss.isActive = ACTIVE;
+	boss.isRandomCircularActive = 1;
+	boss.randomCircularPhase = 0;
+	boss.randomCircularDelay = 0; // 첫 발사는 즉시
+}
+
 // 3페이즈 회오리 PAW: 프레임마다 호출, 내부 타이머로 순차 발사
 static void UpdateSpiralPaws() {
 	if (!boss.isSpiralActive) return;
@@ -550,7 +613,7 @@ static void SelectPattern(int is2nd3rdPhase) {
 	else {
 		int pattern = rand() % 10;
 
-		if (pattern <= 1) {
+		if (pattern <= 2) {
 			SpawnBossPaws();
 			boss.attackTimer = BOSS_ATTACK_INTERVAL;
 		}
@@ -558,7 +621,11 @@ static void SelectPattern(int is2nd3rdPhase) {
 			SpawnCircularPaws();
 			boss.attackTimer = BOSS_ATTACK_INTERVAL;
 		}
-		else if (pattern <= 7) {
+		else if (pattern <= 6) {
+			SpawnRandomCircularPaws();
+			boss.attackTimer = BOSS_ATTACK_INTERVAL;
+		}
+		else if (pattern == 7) {
 			StartSpiralPaws();
 		}
 		else if (pattern == 8) {
@@ -587,6 +654,7 @@ void UpdateBoss() {
 
 	// 3페이즈 회오리 PAW는 다른 스킬과 무관하게 프레임마다 처리
 	if (is3rdPhase) UpdateSpiralPaws();
+	if (is3rdPhase) UpdateRandomCircularPaws();
 
 	if (boss.isDashing) {
 		UpdateDash(is3rdPhase);
@@ -616,6 +684,9 @@ void UpdateBoss() {
 		UpdateJumpLanding(is2nd3rdPhase);
 	}
 	else if (boss.isSpiralActive) {
+	}
+	else if (boss.isRandomCircularActive) {
+		// 랜덤 원형 3연속 발사 중 → 이동 없음, 패턴선택 없음 (UpdateRandomCircularPaws가 처리)
 	}
 	// PAW 발사 직후 정지 구간
 	else if (boss.isAttacking) {
