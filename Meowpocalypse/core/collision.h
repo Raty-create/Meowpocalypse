@@ -6,11 +6,12 @@
 #include "bullet.h"
 #include "boss.h"
 
+int IsObjectCollision(float ax, float ay, int aw, int ah, float bx, float by, int bw, int bh);		// AABB 충돌 체크 함수
+
 int IsTileWall(float x, float y);
 int IsPlayerOnDoor();
 void HandlePlayerCollision();
 int IsOverlapWithEnemy(float x, float y);
-int IsObjectCollision(float ax, float ay, int aw, int ah, float bx, float by, int bw, int bh);
 int HandleBulletEnemyCollision(BULLET* bullet, ENEMY* enemy);
 int HandleBulletBossCollision(BULLET* bullet, BOSS* boss);
 int HandleChuruBossCollision(CHURU* churues, BOSS* boss);

@@ -369,7 +369,10 @@ static void UpdateBossPaws() {
 			continue;
 		}
 
-		HandleBossPawPlayerCollision(&bossPaws[i], &player);
+		// 플레이어가 살아있을 때만 충돌 체크
+		if (player.base.state != PLAYER_DEAD) {
+			HandleBossPawPlayerCollision(&bossPaws[i], &player);
+		}
 	}
 }
 
@@ -580,6 +583,17 @@ void UpdateBoss() {
 
 	if (boss.isActive == INACTIVE) return;
 
+	// 플레이어가 죽었으면 모든 공격과 추적을 중지
+	if (player.base.state == PLAYER_DEAD) {
+		dashWarn.isActive = INACTIVE;
+		jumpWarn.isActive = INACTIVE;
+		boss.isDashing = 0;
+		boss.isJumping = 0;
+		boss.isSpiralActive = 0;
+		boss.base.state = BOSS_IDLE;
+		return;
+	}
+
 	int is2nd3rdPhase = (currentMapType == MAP_SECOND_BOSS || currentMapType == MAP_THIRD_BOSS);
 	int is3rdPhase = (currentMapType == MAP_THIRD_BOSS);
 
@@ -628,10 +642,55 @@ void UpdateBoss() {
 	}
 
 	else {
-		if (is2nd3rdPhase)
-			UpdateBossChase();
-		else
-			UpdateBossMove();
+		// 츄르 어그로 체크 (1페이즈 보스 중심)
+		BOOL aggroFound = FALSE;
+		if (currentMapType == MAP_FIRST_BOSS) {
+			for (int j = 0; j < CHURU_MAX; j++) {
+				if (churues[j].isActive == ACTIVE && churues[j].isDropped == DROPPED) {
+					float cdx = churues[j].x - boss.base.x;
+					float cdy = churues[j].y - boss.base.y;
+					float cDist = sqrtf(cdx * cdx + cdy * cdy);
+
+					if (cDist < CHURU_AGGRO_RANGE) {
+						boss.base.state = BOSS_AGGRO;
+						aggroFound = TRUE;
+
+						// 츄르를 향해 느린 속도로 이동
+						if (cDist > 10.0f) {
+							float nx = (cdx / cDist) * (BOSS_MOVE_SPEED * 0.5f);
+							float ny = (cdy / cDist) * (BOSS_MOVE_SPEED * 0.5f);
+
+							int half = BOSS_SIZE / 2;
+							float nextX = boss.base.x + nx;
+							if (!IsTileWall(nextX - half, boss.base.y - half) &&
+								!IsTileWall(nextX + half, boss.base.y - half) &&
+								!IsTileWall(nextX - half, boss.base.y + half) &&
+								!IsTileWall(nextX + half, boss.base.y + half)) {
+								boss.base.x = nextX;
+								boss.base.hitBoxX = nextX;
+							}
+
+							float nextY = boss.base.y + ny;
+							if (!IsTileWall(boss.base.x - half, nextY - half) &&
+								!IsTileWall(boss.base.x + half, nextY - half) &&
+								!IsTileWall(boss.base.x - half, nextY + half) &&
+								!IsTileWall(boss.base.x + half, nextY + half)) {
+								boss.base.y = nextY;
+								boss.base.hitBoxY = nextY;
+							}
+						}
+						break;
+					}
+				}
+			}
+		}
+
+		if (!aggroFound) {
+			if (is2nd3rdPhase)
+				UpdateBossChase();
+			else
+				UpdateBossMove();
+		}
 
 		HandleBossPlayerCollision(&player);
 

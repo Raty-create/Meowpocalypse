@@ -11,13 +11,25 @@
 
 BULLET bullets[BULLET_MAX];
 CHURU churues[CHURU_MAX];
+IMAGE imgBullet;
 
 void InitBullet() {
+	if (imgBullet.img.IsNull()) {
+		LoadMyImage(&imgBullet, L"bullet.png");
+	}
+
+	int fw = imgBullet.width;
+	int fh = imgBullet.height;
+
 	for (int i = 0; i < BULLET_MAX; i++) {
 		bullets[i].isActive = INACTIVE;
-		bullets[i].width = TILE_SIZE / 3;
-		bullets[i].height = TILE_SIZE / 3;
+		bullets[i].width = BULLET_WIDTH;
+		bullets[i].height = BULLET_HEIGHT;
 	}
+}
+
+void ReleaseBullet() {
+	ReleaseMyImage(&imgBullet);
 }
 
 // 총알 업데이트
@@ -30,7 +42,7 @@ void UpdateBullet() {
 
 		// 적과의 충돌 체크
 		for (int j = 0; j < ENEMY_LIMIT; j++) {
-			if (enemies[j].isActive == ACTIVE) {
+			if (enemies[j].isActive == ACTIVE && enemies[j].base.state != ENEMY_DEAD) {
 				if (HandleBulletEnemyCollision(&bullets[i], &enemies[j])) {
 					// 충돌 시 해당 총알은 더 이상 처리할 필요 없음
 					break;
@@ -55,23 +67,40 @@ void UpdateBullet() {
 
 // 총알 발사
 void ShootBullet() {
-	// 발사 쿨타임 체크
-	if (player.fireTimer > 0) return;
+	if (player.base.state == PLAYER_DEAD) return;
 
-	// 마우스 왼쪽 버튼이 눌려 있을 때 발사 (isLButtonDown으로 변경하여 자동 연사 지원)
+	// 마우스 왼쪽 버튼이 눌려 있을 때 (isLButtonDown으로 변경하여 자동 연사 지원)
 	if (g_Input.isLButtonDown) {
+		player.base.state = PLAYER_SHOOT;
+
+		POINT pt = g_Input.mousePos;
+
+		// 플레이어의 스크린 좌표
+		float playerScreenX = player.base.x - camera.x;
+		float playerScreenY = player.base.y - camera.y;
+
+		// 마우스 방향 벡터
+		float dirX = pt.x - playerScreenX;
+		float dirY = pt.y - playerScreenY;
+
+		// 마우스 방향에 따른 플레이어 방향 업데이트
+		float angle = atan2f(dirY, dirX) * 180.0f / PI;
+		if (angle < 0) angle += 360.0f;
+
+		if (angle >= 337.5f || angle < 22.5f) player.base.direction = DIR_RIGHT;
+		else if (angle >= 22.5f && angle < 67.5f) player.base.direction = DIR_DOWN_RIGHT;
+		else if (angle >= 67.5f && angle < 112.5f) player.base.direction = DIR_DOWN;
+		else if (angle >= 112.5f && angle < 157.5f) player.base.direction = DIR_DOWN_LEFT;
+		else if (angle >= 157.5f && angle < 202.5f) player.base.direction = DIR_LEFT;
+		else if (angle >= 202.5f && angle < 247.5f) player.base.direction = DIR_UP_LEFT;
+		else if (angle >= 247.5f && angle < 292.5f) player.base.direction = DIR_UP;
+		else if (angle >= 292.5f && angle < 337.5f) player.base.direction = DIR_UP_RIGHT;
+
+		// 발사 쿨타임 체크
+		if (player.fireTimer > 0) return;
+
 		for (int i = 0; i < BULLET_MAX; i++) {
 			if (bullets[i].isActive == INACTIVE) {
-
-				POINT pt = g_Input.mousePos;
-
-				// 플레이어의 스크린 좌표
-				float playerScreenX = player.base.x - camera.x;
-				float playerScreenY = player.base.y - camera.y;
-
-				// 마우스 방향 벡터
-				float dirX = pt.x - playerScreenX;
-				float dirY = pt.y - playerScreenY;
 
 				float length = sqrtf(dirX * dirX + dirY * dirY);
 				if (length == 0) return;
@@ -177,9 +206,15 @@ void UpdateChuru() {
 				churues[i].x = nextX;
 				churues[i].y = nextY;
 			}
+
+			// 공중 상태에서도 보스와 충돌 체크
+			HandleChuruBossCollision(&churues[i], &boss);
 		}
 		else {
 			churues[i].activeTimer--;
+
+			// 바닥에 떨어진 상태에서도 보스와 충돌 체크
+			HandleChuruBossCollision(&churues[i], &boss);
 
 			if (churues[i].activeTimer <= 0)
 				churues[i].isActive = INACTIVE;

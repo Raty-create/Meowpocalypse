@@ -4,6 +4,7 @@
 
 #include "config.h"
 #include "enum.h"
+#include "animation.h"
 
 typedef struct {
 	float x, y;
@@ -11,6 +12,7 @@ typedef struct {
 	int width, height;
 	int damage;
 	int isActive;
+	int dirRow;
 } BULLET;
 
 typedef struct {
@@ -25,8 +27,10 @@ typedef struct {
 
 extern BULLET bullets[BULLET_MAX];
 extern CHURU churues[CHURU_MAX];
+extern IMAGE imgBullet;
 
 void InitBullet();
+void ReleaseBullet();
 void ShootBullet();
 void UpdateBullet();
 

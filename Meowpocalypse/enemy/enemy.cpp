@@ -93,7 +93,7 @@ void SpawnEnemy(MAP_TYPE type, int count) {
 				enemies[i].base.state = ENEMY_IDLE;
 				enemies[i].base.direction = DIR_DOWN;
 				enemies[i].shootTimer = rand() % CAT_PAW_INTERVAL;
-				enemies[i].moveTimer = rand() % ENEMY_MOVE_TIMER;
+				enemies[i].moveTimer = rand() % ENEMY_MOVE_TIME;
 				enemies[i].base.dx = 0;
 				enemies[i].base.dy = 0;
 				enemies[i].base.kx = 0;
@@ -101,7 +101,7 @@ void SpawnEnemy(MAP_TYPE type, int count) {
 				enemies[i].base.kTimer = 0;
 				enemies[i].base.hp = ENEMY_HP;
 				enemies[i].shootTimer = rand() % CAT_PAW_INTERVAL;
-				enemies[i].moveTimer = rand() % ENEMY_MOVE_TIMER;
+				enemies[i].moveTimer = rand() % ENEMY_MOVE_TIME;
 				enemies[i].deathTimer = 0;
 				enemies[i].attackTimer = 0;
 				SetAnimationFrame(&enemies[i].anim, 0);
@@ -114,6 +114,8 @@ void SpawnEnemy(MAP_TYPE type, int count) {
 
 // 잡몹 공격 생성
 void SpawnCatPaw(int i) {
+	if (player.base.state == PLAYER_DEAD) return;
+
 	float fromX = enemies[i].base.x;
 	float fromY = enemies[i].base.y;
 
@@ -199,6 +201,13 @@ void UpdateEnemyState(int i) {
 		return;
 	}
 
+	// 플레이어가 죽었으면 순찰 상태로 강제 전환
+	if (player.base.state == PLAYER_DEAD) {
+		enemies[i].base.state = ENEMY_IDLE;
+		HandleEnemyPatrol(i);
+		return;
+	}
+
 	enemies[i].anim.totalFrames = 5;
 	enemies[i].anim.isLoop = TRUE;
 
@@ -255,7 +264,6 @@ void UpdateEnemyState(int i) {
 // 적 넉백
 void HandleEnemyKnockback(int i) {
 	enemies[i].base.state = ENEMY_HIT;
-	//SetAnimationFrame(&enemies[i].anim, 0);
 
 	float ex = enemies[i].base.x;
 	float ey = enemies[i].base.y;
@@ -520,6 +528,8 @@ void UpdateCatPaws() {
 			continue;
 		}
 
-		HandleCatPawPlayerCollision(&catpaw[i], &player);
+		if (player.base.state != PLAYER_DEAD) {
+			HandleCatPawPlayerCollision(&catpaw[i], &player);
+		}
 	}
 }

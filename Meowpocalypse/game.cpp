@@ -26,6 +26,8 @@ void InitGame() {
 }
 
 void ReleaseGame() {
+	ReleasePlayer();
+	ReleaseBullet();
 	ReleaseEnemy();
 }
 
@@ -54,7 +56,8 @@ void Render(HWND hWnd, HDC hDC) {
 
 	RenderCurrentMap(hMemDC);				// 현재 맵만 렌더링
 
-	RenderObjectShadow(hMemDC, player.base.x, player.base.y, player.base.width);
+	// 그림자
+	RenderObjectShadow(hMemDC, player.base.x, player.base.y, player.base.width * 3);
 	for (int i = 0; i < ENEMY_LIMIT; i++) {
 		if (enemies[i].isActive)
 			RenderObjectShadow(hMemDC, enemies[i].base.x, enemies[i].base.y, enemies[i].base.width);

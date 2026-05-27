@@ -7,6 +7,14 @@
 
 #include <math.h>
 
+// AABB 충돌 체크
+int IsObjectCollision(float ax, float ay, int aw, int ah, float bx, float by, int bw, int bh) {
+	return (ax - aw / 2 < bx + bw / 2 &&
+		ax + aw / 2 > bx - bw / 2 &&
+		ay - ah / 2 < by + bh / 2 &&
+		ay + ah / 2 > by - bh / 2);
+}
+
 // 플레이어 - 벽 충돌 체크
 int IsTileWall(float x, float y) {
 	MAPDATA* m = &maps[currentMapType];
@@ -80,14 +88,6 @@ int IsOverlapWithEnemy(float x, float y) {
 	return 0;
 }
 
-// AABB 충돌 체크
-int IsObjectCollision(float ax, float ay, int aw, int ah, float bx, float by, int bw, int bh) {
-	return (ax - aw / 2 < bx + bw / 2 &&
-		ax + aw / 2 > bx - bw / 2 &&
-		ay - ah / 2 < by + bh / 2 &&
-		ay + ah / 2 > by - bh / 2);
-}
-
 // 총알 - 적 충돌 처리
 int HandleBulletEnemyCollision(BULLET* bullet, ENEMY* enemy) {
 	if (!bullet->isActive || !enemy->isActive) return 0;
@@ -101,7 +101,7 @@ int HandleBulletEnemyCollision(BULLET* bullet, ENEMY* enemy) {
 		if (enemy->base.hp <= 0) {
 			enemy->base.hp = 0;
 			enemy->base.state = ENEMY_DEAD;
-			enemy->deathTimer = 120; // 120프레임 동안 사망 상태 유지 (애니메이션용)
+			enemy->deathTimer = ENEMY_DEATH_TIME;
 		}
 		else {
 			enemy->base.state = ENEMY_HIT;
@@ -120,7 +120,7 @@ int HandleBulletEnemyCollision(BULLET* bullet, ENEMY* enemy) {
 	return 0;
 }
 
-// 적 공격 - 플레이어 충돌 처리
+// 잡몹 젤리 - 플레이어 충돌 처리
 int HandleCatPawPlayerCollision(CATPAW* cp, PLAYER* p) {
 	if (!cp->isActive || p->invincibleTimer > 0) return 0;
 
@@ -135,6 +135,7 @@ int HandleCatPawPlayerCollision(CATPAW* cp, PLAYER* p) {
 		if (p->base.hp <= 0) {
 			p->base.hp = 0;
 			p->base.state = PLAYER_DEAD;
+			p->deathTimer = PLAYER_DEATH_TIME;
 		}
 		else {
 			p->base.state = PLAYER_HIT;
@@ -167,6 +168,7 @@ int HandleEnemyPlayerCollision(ENEMY* enemy, PLAYER* p) {
 		if (p->base.hp <= 0) {
 			p->base.hp = 0;
 			p->base.state = PLAYER_DEAD;
+			p->deathTimer = PLAYER_DEATH_TIME;
 		}
 		else {
 			p->base.state = PLAYER_HIT;
@@ -209,6 +211,7 @@ int HandleBulletBossCollision(BULLET* bullet, BOSS* boss) {
 	return 0;
 }
 
+// 츄르 - 보스 충돌 처리
 int HandleChuruBossCollision(CHURU* churues, BOSS* boss) {
 	if (!churues->isActive || boss->isActive == INACTIVE) return 0;
 
@@ -217,7 +220,9 @@ int HandleChuruBossCollision(CHURU* churues, BOSS* boss) {
 
 		churues->isActive = INACTIVE;
 
+		return 1;
 	}
+	return 0;
 }
 
 // 보스 PAW - 플레이어 충돌 처리 (catpaw와 동일 방식)
@@ -234,6 +239,7 @@ int HandleBossPawPlayerCollision(BOSS_PAW* bp, PLAYER* p) {
 		if (p->base.hp <= 0) {
 			p->base.hp = 0;
 			p->base.state = PLAYER_DEAD;
+			p->deathTimer = PLAYER_DEATH_TIME;
 		}
 		else {
 			p->base.state = PLAYER_HIT;
@@ -263,7 +269,11 @@ int HandleBossPlayerCollision(PLAYER* p) {
 		p->base.hp -= BOSS_CONTACT_DAMAGE;
 		p->invincibleTimer = PLAYER_INVINCIBLE_TIME;
 
-		if (p->base.hp <= 0) { p->base.hp = 0; p->base.state = PLAYER_DEAD; }
+		if (p->base.hp <= 0) {
+			p->base.hp = 0;
+			p->base.state = PLAYER_DEAD;
+			p->deathTimer = PLAYER_DEATH_TIME;
+		}
 		else p->base.state = PLAYER_HIT;
 
 		// 보스 → 플레이어 방향의 반대로 밀려남
@@ -292,7 +302,11 @@ int HandleBossDashPlayerCollision(PLAYER* p) {
 		p->base.hp -= BOSS_CONTACT_DAMAGE;
 		p->invincibleTimer = PLAYER_INVINCIBLE_TIME;
 
-		if (p->base.hp <= 0) { p->base.hp = 0; p->base.state = PLAYER_DEAD; }
+		if (p->base.hp <= 0) {
+			p->base.hp = 0;
+			p->base.state = PLAYER_DEAD;
+			p->deathTimer = PLAYER_DEATH_TIME;
+		}
 		else p->base.state = PLAYER_HIT;
 
 		// 대시 방향으로 강하게 밀려남 (보스는 계속 진행 - 넉백 적용 없음)
@@ -319,7 +333,11 @@ int HandleBossJumpPlayerCollision(PLAYER* p) {
 		p->base.hp -= BOSS_CONTACT_DAMAGE;
 		p->invincibleTimer = PLAYER_INVINCIBLE_TIME;
 
-		if (p->base.hp <= 0) { p->base.hp = 0; p->base.state = PLAYER_DEAD; }
+		if (p->base.hp <= 0) {
+			p->base.hp = 0;
+			p->base.state = PLAYER_DEAD;
+			p->deathTimer = PLAYER_DEATH_TIME;
+		}
 		else p->base.state = PLAYER_HIT;
 
 		// 랜덤 4방향 넉백

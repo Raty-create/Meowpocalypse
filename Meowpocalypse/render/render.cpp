@@ -95,7 +95,47 @@ void RenderPlayer(HDC hDC) {
 	screenX = (int)(player.base.x - camera.x);
 	screenY = (int)(player.base.y - camera.y);
 
-	Rectangle(hDC, screenX - player.base.width / 2, screenY - player.base.height / 2, screenX + player.base.width / 2, screenY + player.base.height / 2);
+	int finalRow = 0;
+
+	switch (player.base.state) {
+	case PLAYER_IDLE:
+		finalRow = 0;
+		break;
+	case PLAYER_MOVE:
+		switch (player.base.direction) {
+		case DIR_DOWN:
+			finalRow = 1;
+			break;
+		case DIR_UP:
+			finalRow = 2;
+			break;
+		case DIR_LEFT:
+		case DIR_UP_LEFT:
+		case DIR_DOWN_LEFT:
+			finalRow = 3;
+			break;
+		case DIR_RIGHT:
+		case DIR_UP_RIGHT:
+		case DIR_DOWN_RIGHT:
+			finalRow = 4;
+			break;
+		}
+		break;
+	case PLAYER_HIT:
+		finalRow = 5 + (int)player.base.direction;
+		break;
+	case PLAYER_SHOOT:
+		finalRow = 13 + (int)player.base.direction;
+		break;
+	case PLAYER_DEAD:
+		finalRow = 21 + (int)player.base.direction;
+		break;
+	default:
+		finalRow = 0;
+		break;
+	}
+
+	RenderAnimation(&player.anim, hDC, screenX, screenY, player.base.width * 6, player.base.height * 7, finalRow);
 }
 
 // 플레이어 hitBox
@@ -124,7 +164,7 @@ void RenderEnemies(HDC hDC) {
 
 		// 애니메이션 행 세트 결정 (각 세트는 8줄씩 차지)
 		int baseRow = 0;
-		bool isDeadState = false; 
+		BOOL isDeadState = FALSE; 
 		switch (enemies[i].base.state) {
 		case ENEMY_IDLE:
 		case ENEMY_MOVE:
@@ -143,7 +183,7 @@ void RenderEnemies(HDC hDC) {
 			break;
 		case ENEMY_DEAD:
 			baseRow = 32;	// 사망 세트 (32) - 방향 무시
-			isDeadState = true;
+			isDeadState = TRUE;
 			break;
 		default:
 			baseRow = 0;
@@ -339,7 +379,7 @@ void RenderBullets(HDC hDC) {
 		screenX = (int)(bullets[i].x - camera.x);
 		screenY = (int)(bullets[i].y - camera.y);
 
-		Ellipse(hDC, screenX - bullets[i].width, screenY - bullets[i].height, screenX + bullets[i].width, screenY + bullets[i].height);
+		DrawMyImage(&imgBullet, hDC, screenX - bullets[i].width / 2, screenY - bullets[i].height / 2, bullets[i].width, bullets[i].height, 0, 0, imgBullet.width, imgBullet.height);
 	}
 }
 

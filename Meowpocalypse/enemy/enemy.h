@@ -4,12 +4,13 @@
 #include "config.h"
 #include "map.h"
 #include "enum.h"
-#include "graphics/animation.h"
+#include "animation.h"
 
 typedef struct {
     float x, y;
     float dx, dy;
     int isActive;
+    int dirRow;
 } CATPAW;
 
 typedef struct {
