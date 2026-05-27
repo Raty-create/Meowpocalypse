@@ -154,6 +154,7 @@ void SpawnBoss(MAP_TYPE type) {
 void SpawnBossPaws() {
 	boss.isActive = ACTIVE;
 	boss.isAttacking = 1;
+	boss.base.state = BOSS_THREE_WAY_CATPAW;
 	boss.attackEndTimer = BOSS_ATTACK_INTERVAL / 2; // 발사 후 이 프레임 동안 정지
 	float dx = player.base.x - boss.base.x;
 	float dy = player.base.y - boss.base.y;
@@ -187,6 +188,7 @@ void SpawnBossPaws() {
 void SpawnCircularPaws() {
 	boss.isActive = ACTIVE;
 	boss.isAttacking = 1;
+	boss.base.state = BOSS_CIRCULAR_CATPAW;
 	boss.attackEndTimer = BOSS_ATTACK_INTERVAL / 2;
 
 	int count = BOSS_CIRCULARPAWS_COUNT;
@@ -271,6 +273,7 @@ void StartJumpWarning() {
 
 // 보스 랜덤 이동 처리 (벽 충돌 시 방향 전환)
 void UpdateBossMove() {
+	boss.base.state = BOSS_MOVE;
 	int half = BOSS_SIZE / 2;
 
 	// 방향 전환 타이머
@@ -323,6 +326,7 @@ void UpdateBossMove() {
 
 // 보스(플레이어 추적 이동)
 void UpdateBossChase() {
+	boss.base.state = BOSS_CHASE;
 	int half = BOSS_SIZE / 2;
 
 	float dx = player.base.x - boss.base.x;
@@ -400,6 +404,16 @@ static int CheckPhaseTransition() {
 		boss.isSpiralActive = 0;
 		boss.doubleDashPhase = 0;
 		SetDoorState(MAP_SECOND_BOSS, DOOR_OPEN);
+		return 1;
+	}
+
+	if (currentMapType == MAP_THIRD_BOSS && boss.base.hp <= 0) {
+		boss.isActive = INACTIVE;
+		dashWarn.isActive = INACTIVE;
+		jumpWarn.isActive = INACTIVE;
+		boss.isSpiralActive = 0;
+		boss.doubleDashPhase = 0;
+		SetDoorState(MAP_THIRD_BOSS, DOOR_OPEN);
 		return 1;
 	}
 	return 0;
@@ -511,7 +525,7 @@ static void UpdateRandomCircularPaws() {
 	FireRandomCircularPhase(boss.randomCircularPhase);
 	boss.randomCircularPhase++;
 
-	if (boss.randomCircularPhase >= 3) {
+	if (boss.randomCircularPhase >= 10) {
 		// 3단계 완료 → 종료
 		boss.isRandomCircularActive = 0;
 		boss.randomCircularPhase = 0;
@@ -519,7 +533,7 @@ static void UpdateRandomCircularPaws() {
 	}
 	else {
 		// 다음 단계까지 1초(60프레임) 대기
-		boss.randomCircularDelay = 60;
+		boss.randomCircularDelay = 15;
 	}
 }
 
@@ -527,6 +541,7 @@ static void UpdateRandomCircularPaws() {
 void SpawnRandomCircularPaws() {
 	boss.isActive = ACTIVE;
 	boss.isRandomCircularActive = 1;
+	boss.base.state = BOSS_RANDOM_CATPAW;
 	boss.randomCircularPhase = 0;
 	boss.randomCircularDelay = 0; // 첫 발사는 즉시
 }
@@ -568,6 +583,7 @@ static void UpdateSpiralPaws() {
 // 3페이즈 회오리 PAW 시작
 static void StartSpiralPaws() {
 	boss.isSpiralActive = 1;
+	boss.base.state = BOSS_SPIRAL_PAWS;
 	boss.spiralIndex = 0;
 	boss.spiralTimer = 0;
 }
