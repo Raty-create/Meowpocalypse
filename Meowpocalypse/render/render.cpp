@@ -280,14 +280,12 @@ void RenderBoss(HDC hDC) {
 	RenderDashWarning(hDC);
 	RenderJumpWarning(hDC);
 
-	if (boss.isJumping == ACTIVE) return;
-
 	COLORREF bossColor = boss.isDashing ? RGB(255, 220, 0) : RGB(0, 255, 0);
 	hBrush = CreateSolidBrush(bossColor);
 	oldBrush = (HBRUSH)SelectObject(hDC, hBrush);
 	
 	screenX = (int)(boss.base.x - camera.x);
-	screenY = (int)(boss.base.y - camera.y);
+	screenY = (int)(boss.base.y - camera.y + boss.jumpOffsetY);
 
 	Rectangle(hDC, screenX - BOSS_SIZE / 2, screenY - BOSS_SIZE / 2, screenX + BOSS_SIZE / 2, screenY + BOSS_SIZE / 2);
 
@@ -298,7 +296,7 @@ void RenderBoss(HDC hDC) {
 void RenderBossHitBox(HDC hDC) {
 
 	if (!boss.isActive) return;
-	if (boss.isJumping == ACTIVE) return;
+	if (boss.isJumping == ACTIVE && boss.jumpPhase < 3) return;
 
 	screenX = (int)(boss.base.hitBoxX - camera.x);
 	screenY = (int)(boss.base.hitBoxY - camera.y);
