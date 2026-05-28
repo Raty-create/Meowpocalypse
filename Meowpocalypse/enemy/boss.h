@@ -26,11 +26,20 @@ typedef struct {
     int jumpTimer;
     float jumpDirX;
     float jumpDirY;
+    int jumpPhase;       // 0=올라가는 중, 1=내려오는 중
+    float jumpOffsetY;   // 렌더링용 Y 오프셋 (음수=위로 올라감
+
+    int isEscaping;     // 페이즈 전환 시 보스의 이동
     
     // 보스 스킬 (회오리)
     int spiralTimer;       // 회오리 PAW 발사 간격 타이머
     int spiralIndex;       // 현재 회오리 발사 인덱스 (0 ~ 총 발사 수)
     int isSpiralActive;    // 회오리 발사 중 여부
+
+    // 보스 스킬 (랜덤 원형 3연속)
+    int isRandomCircularActive; // 랜덤 원형 3연속 발사 중 여부
+    int randomCircularPhase;    // 현재 발사 단계 (0, 1, 2)
+    int randomCircularDelay;    // 다음 단계까지 남은 딜레이 타이머
 
     // 보스 스킬 (연속 대쉬)
     int doubleDashPhase;   // 0=대시 안 함, 1=첫 번째 대시 완료 대기, 2=두 번째 대시 중

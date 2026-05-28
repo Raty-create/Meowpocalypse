@@ -9,7 +9,6 @@ x86/
 # Visual Studio 프로젝트 및 솔루션 관련
 .vs/
 *.vcxproj.user
-*.vcxproj.filters
 *.sln.docstates
 *.suo
 *.user

@@ -49,7 +49,7 @@ extern int SCREEN_HEIGHT;
 #define ENEMY_SIZE (TILE_SIZE * 4)
 #define ENEMY_HITBOX_SIZE 20
 #define ENEMY_HP 30
-#define ENEMY_LIMIT 5
+#define ENEMY_LIMIT 1
 
 #define ENEMY_COLS_SPAWN_MARGIN 20
 #define ENEMY_ROWS_SPAWN_MARGIN 5
@@ -70,11 +70,11 @@ extern int SCREEN_HEIGHT;
 // BOSS
 #define BOSS_SIZE (TILE_SIZE * 6)
 #define BOSS_HP 500
-#define BOSS_PAW_SIZE 64
+#define BOSS_PAW_SIZE 32
 #define BOSS_HITBOX_SIZE (BOSS_SIZE - 20)
 #define BOSS_PAW_SPEED 10.0f
 #define BOSS_PAW_INTERVAL 180
-#define BOSS_PAW_LIMIT 100
+#define BOSS_PAW_LIMIT 1000
 #define BOSS_CIRCULARPAWS_COUNT 32		// 원형 탄막 개수
 
 #define DASH_WARN_TILES 100
@@ -102,6 +102,9 @@ extern int SCREEN_HEIGHT;
 #define BOSS_SPIRAL_ROTATIONS  3       // 총 회전 수
 
 #define BOSS_DOUBLE_DASH_DELAY  10     // 첫 대시 종료 후 두 번째 대시까지 딜레이 (프레임)
+
+
+#define BOSS_RANDOM_CIRCULARPAWS_COUNT 96
 
 
 // BULLET
