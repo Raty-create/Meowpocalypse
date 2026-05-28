@@ -217,7 +217,10 @@ int HandleChuruBossCollision(CHURU* churues, BOSS* boss) {
 
 		churues->isActive = INACTIVE;
 
+		return 1;
 	}
+
+	return 0;
 }
 
 // 보스 PAW - 플레이어 충돌 처리 (catpaw와 동일 방식)

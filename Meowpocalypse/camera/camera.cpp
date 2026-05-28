@@ -21,14 +21,14 @@ void UpdateCamera(float playerX, float playerY, int mapRows, int mapCols) {
 
 		// 3초(약 180프레임) 중 처음 2초(120프레임) 동안은 보스를 강하게 클로즈업
 		if (camera.introTimer > 60) {
-			camera.zoom = 2.0f;
+			camera.zoom = 1.5f;
 			targetCamX = boss.base.x; // 플레이어가 아닌 보스를 조준
 			targetCamY = boss.base.y;
 		}
-		// 마지막 1초(60프레임) 동안은 2.0배에서 1.0배로 천천히 줌아웃
+		// 마지막 1초(60프레임) 동안은 1.5배에서 1.0배로 천천히 줌아웃
 		else if (camera.introTimer > 0) {
 			float t = (float)camera.introTimer / 60.0f; // 1.0 -> 0.0
-			camera.zoom = 1.0f + (1.0f * t);            // 2.0f -> 1.0f 로 변함
+			camera.zoom = 1.0f + (0.5f * t);            // 1.5f -> 1.0f 로 변함
 
 			// 카메라도 보스에게서 플레이어에게로 천천히 이동
 			targetCamX = playerX + (boss.base.x - playerX) * t;
@@ -49,7 +49,6 @@ void UpdateCamera(float playerX, float playerY, int mapRows, int mapCols) {
 	float scaledScreenWidth = (float)SCREEN_WIDTH / camera.zoom;
 	float scaledScreenHeight = (float)SCREEN_HEIGHT / camera.zoom;
 
-	// X축 카메라 위치 계산 및 맵 경계선(Wall) 제한 보정
 	if (mapW <= scaledScreenWidth) {
 		camera.x = m->worldX + (mapW - scaledScreenWidth) / 2.0f;
 	}
@@ -64,7 +63,6 @@ void UpdateCamera(float playerX, float playerY, int mapRows, int mapCols) {
 		}
 	}
 
-	// Y축 카메라 위치 계산 및 맵 경계선(Wall) 제한 보정
 	if (mapH <= scaledScreenHeight) {
 		camera.y = m->worldY + (mapH - scaledScreenHeight) / 2.0f;
 	}

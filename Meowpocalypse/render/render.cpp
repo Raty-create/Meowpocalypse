@@ -317,6 +317,7 @@ void RenderBoss(HDC hDC) {
 void RenderBossHitBox(HDC hDC) {
 
 	if (!boss.isActive) return;
+	if (boss.isEscaping == ACTIVE) return;
 	if (boss.isJumping == ACTIVE && boss.jumpPhase < 3) return;
 
 	screenX = (int)(boss.base.hitBoxX - camera.x);
