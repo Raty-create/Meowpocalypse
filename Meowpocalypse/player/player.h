@@ -2,6 +2,7 @@
 
 #include <Windows.h>
 #include "object.h"
+#include "animation.h"
 
 typedef struct {
 	OBJECT base;
@@ -12,11 +13,15 @@ typedef struct {
 	int boostCooldown;			// E 스킬 - 부스트 쿨타임
 	int fireTimer;				// E 스킬 - 발사 쿨타임 타이머
 	int skillRCooldown;			// R 스킬 - 쿨타임 타이머
+	int deathTimer;
+	ANIMATION anim;
 } PLAYER;
 
 extern PLAYER player;
+extern IMAGE imgPlayerSprite;
 
 void InitPlayer();
+void ReleasePlayer();
 void UpdatePlayer();
 void UpdatePlayerStatus();
 void UpdatePlayerTimers();

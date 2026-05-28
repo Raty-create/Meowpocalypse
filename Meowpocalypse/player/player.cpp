@@ -10,15 +10,25 @@
 #include "input.h"
 
 PLAYER player;
+IMAGE imgPlayerSprite;
 
 // 초기 설정
 void InitPlayer() {
+	if (imgPlayerSprite.img.IsNull()) {
+		LoadMyImage(&imgPlayerSprite, L"player_sprite.png");
+	}
+
+	int fw = imgPlayerSprite.width / 4;
+	int fh = imgPlayerSprite.height / 29;
+
 	player.base.x = player.base.hitBoxX = (float)SCREEN_WIDTH / 2;
 	player.base.y = player.base.hitBoxY = (float)SCREEN_HEIGHT / 2;
-	player.base.width = player.base.height = PLAYER_SIZE;
-	player.base.hitBoxW = player.base.hitBoxH = PLAYER_HITBOX_SIZE;
-	player.base.hp = 200;
-	player.mp = 100;
+	player.base.width = PLAYER_WIDTH;
+	player.base.height = PLAYER_HEIGHT;
+	player.base.hitBoxW = PLAYER_HITBOX_WIDTH;
+	player.base.hitBoxH = PLAYER_HITBOX_HEIGHT;
+	player.base.hp = PLAYER_HP;
+	player.mp = PLAYER_MP;
 
 	player.invincibleTimer = 0;
 
@@ -33,6 +43,14 @@ void InitPlayer() {
 
 	player.base.kx = player.base.ky = 0;
 	player.base.kTimer = 0;
+
+	player.deathTimer = 0;
+
+	InitAnimation(&player.anim, &imgPlayerSprite, fw, fh, 4, 10);
+}
+
+void ReleasePlayer() {
+	ReleaseMyImage(&imgPlayerSprite);
 }
 
 // MP를 소모하고 성공 여부를 반환하는 함수
@@ -48,25 +66,37 @@ BOOL ConsumeMP(int amount) {
 // 플레이어 업데이트
 void UpdatePlayer() {
 	UpdatePlayerStatus();
+	UpdateAnimation(&player.anim);
+	UpdatePlayerTimers();
+
 	if (player.base.state == PLAYER_DEAD) return;
 
-	UpdatePlayerTimers();
 	HandlePlayerInput();
 	HandlePlayerMovement();
-	HandlePlayerCollision();
+	HandlePlayerWallCollision();
 
 	MapTransition();
 }
 
 // 사망 여부 및 HP 확인
 void UpdatePlayerStatus() {
-	// 이미 죽은 상태면 업데이트 중단
-	if (player.base.state == PLAYER_DEAD) return;
+	// 사망 상태 처리
+	if (player.base.state == PLAYER_DEAD) {
+		player.anim.isLoop = FALSE;
+
+		player.deathTimer--;
+		return;
+	}
+
+	player.anim.isLoop = TRUE;
 
 	// 피가 0 이하이면 DEAD 상태로 전환
 	if (player.base.hp <= 0) {
 		player.base.hp = 0;
 		player.base.state = PLAYER_DEAD;
+		player.deathTimer = 0;
+		player.invincibleTimer = 0; // 사망 시 무적 시간 초기화 (깜빡임 방지)
+		SetAnimationFrame(&player.anim, 0);
 		return;
 	}
 
@@ -124,6 +154,8 @@ void HandlePlayerInput() {
 
 // 넉백 및 방향 키에 따른 이동 로직 처리
 void HandlePlayerMovement() {
+	if (player.base.state == PLAYER_DEAD) return;
+
 	// 넉백 처리
 	if (player.base.kTimer > 0) {
 		player.base.dx = player.base.kx;

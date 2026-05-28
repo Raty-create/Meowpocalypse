@@ -31,6 +31,8 @@ void InitGame() {
 }
 
 void ReleaseGame() {
+	ReleasePlayer();
+	ReleaseBullet();
 	ReleaseEnemy();
 }
 
@@ -64,25 +66,32 @@ void Render(HWND hWnd, HDC hDC) {
 
 	RenderCurrentMap(hMemDC);				// 현재 맵만 렌더링
 
-	RenderObjectShadow(hMemDC, player.base.x, player.base.y, player.base.width);
+	// 그림자
+	RenderObjectShadow(hMemDC, player.base.x, player.base.y, player.base.width * 3);
 	for (int i = 0; i < ENEMY_LIMIT; i++) {
 		if (enemies[i].isActive)
 			RenderObjectShadow(hMemDC, enemies[i].base.x, enemies[i].base.y, enemies[i].base.width);
 	}
+	for (int i = 0; i < CHURU_MAX; i++) {
+		if (churues[i].isActive)
+			RenderObjectShadow(hMemDC, churues[i].x, churues[i].y, (int)((float)churues[i].width * 1.6f));
+	}
 
 	RenderPlayer(hMemDC);					// 플레이어
-	RenderPlayerHitBox(hMemDC);				// 플레이어 히트박스
+	RenderPlayerHitBox(hMemDC);				// 플레이어 hitBox
 
 	RenderEnemies(hMemDC);					// 잡몹
-	RenderEnemiesHitBox(hMemDC);			// 잡몹 히트박스
+	RenderEnemiesHitBox(hMemDC);			// 잡몹 hitBox
 	RenderCatPaw(hMemDC);					// 잡몹 젤리
+	RenderCatPawHitBox(hMemDC);				// 잡몹 젤리 hitBox
 
 	RenderBoss(hMemDC);						// 보스
-	RenderBossHitBox(hMemDC);				// 보스 히트박스
+	RenderBossHitBox(hMemDC);				// 보스 hitBox
 	RenderBossPaws(hMemDC);					// 보스 젤리
 
-	RenderBullets(hMemDC);					// 총알
 	RenderChuru(hMemDC);					// 츄르
+	RenderBullets(hMemDC);					// 총알
+	RenderBulletsHitBox(hMemDC);			// 총알 hitBox
 
 	BitBlt(hDC, 0, 0, rt.right, rt.bottom, hMemDC, 0, 0, SRCCOPY);
 

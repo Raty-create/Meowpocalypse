@@ -18,8 +18,10 @@ void RenderPlayerHitBox(HDC hDC);
 // 잡몹
 void RenderEnemies(HDC hDC);
 void RenderEnemiesHitBox(HDC hDC);
+
 // 잡몹 공격
 void RenderCatPaw(HDC hDC);
+void RenderCatPawHitBox(HDC hDC);
 
 // 보스
 void RenderBoss(HDC hDC);
@@ -30,6 +32,7 @@ void RenderBossHitBox(HDC hDC);
 
 // 총알
 void RenderBullets(HDC hDC);
+void RenderBulletsHitBox(HDC hDC);
 
 // 츄르
 void RenderChuru(HDC hDC);

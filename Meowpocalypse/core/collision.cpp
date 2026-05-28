@@ -7,6 +7,14 @@
 
 #include <math.h>
 
+// AABB 충돌 체크
+int IsObjectCollision(float ax, float ay, int aw, int ah, float bx, float by, int bw, int bh) {
+	return (ax - aw / 2 < bx + bw / 2 &&
+		ax + aw / 2 > bx - bw / 2 &&
+		ay - ah / 2 < by + bh / 2 &&
+		ay + ah / 2 > by - bh / 2);
+}
+
 // 플레이어 - 벽 충돌 체크
 int IsTileWall(float x, float y) {
 	MAPDATA* m = &maps[currentMapType];
@@ -26,12 +34,13 @@ int IsPlayerOnDoor() {
 	MAPDATA* m = &maps[currentMapType];
 
 	// 플레이어의 4개 모서리 체크
-	float half = PLAYER_SIZE / 2.0f;
+	int halfW = PLAYER_WIDTH / 2;
+	int halfH = PLAYER_HEIGHT;
 	float point[4][2] = {
-		{player.base.x - half + 1, player.base.y - half + 1},
-		{player.base.x + half - 1, player.base.y - half + 1},
-		{player.base.x - half + 1, player.base.y + half - 1},
-		{player.base.x + half - 1, player.base.y + half - 1}
+		{player.base.x - halfW + 1, player.base.y + halfH + 1},
+		{player.base.x + halfW - 1, player.base.y + halfH + 1},
+		{player.base.x - halfW + 1, player.base.y + halfH - 1},
+		{player.base.x + halfW - 1, player.base.y + halfH - 1}
 	};
 
 	for (int p = 0; p < 4; p++) {
@@ -51,21 +60,22 @@ int IsPlayerOnDoor() {
 }
 
 // 플레이어 - 벽과의 충돌 처리
-void HandlePlayerCollision() {
+void HandlePlayerWallCollision() {
 	float playerNextX = player.base.x + player.base.dx;
 	float playerNextY = player.base.y + player.base.dy;
 
-	int playerSizeHalf = PLAYER_SIZE / 2;
-	if (!IsTileWall(playerNextX - playerSizeHalf, player.base.y - playerSizeHalf) &&
-		!IsTileWall(playerNextX + playerSizeHalf, player.base.y - playerSizeHalf) &&
-		!IsTileWall(playerNextX - playerSizeHalf, player.base.y + playerSizeHalf) &&
-		!IsTileWall(playerNextX + playerSizeHalf, player.base.y + playerSizeHalf))
+	int playerHalfW = PLAYER_WIDTH / 2;
+	int playerHalfH = PLAYER_HEIGHT;
+	if (!IsTileWall(playerNextX - playerHalfW, player.base.y - playerHalfH) &&
+		!IsTileWall(playerNextX + playerHalfW, player.base.y - playerHalfH) &&
+		!IsTileWall(playerNextX - playerHalfW, player.base.y + playerHalfH) &&
+		!IsTileWall(playerNextX + playerHalfW, player.base.y + playerHalfH))
 		player.base.x = player.base.hitBoxX = playerNextX;
 
-	if (!IsTileWall(player.base.x - playerSizeHalf, playerNextY - playerSizeHalf) &&
-		!IsTileWall(player.base.x + playerSizeHalf, playerNextY - playerSizeHalf) &&
-		!IsTileWall(player.base.x - playerSizeHalf, playerNextY + playerSizeHalf) &&
-		!IsTileWall(player.base.x + playerSizeHalf, playerNextY + playerSizeHalf))
+	if (!IsTileWall(player.base.x - playerHalfW, playerNextY - playerHalfH) &&
+		!IsTileWall(player.base.x + playerHalfW, playerNextY - playerHalfH) &&
+		!IsTileWall(player.base.x - playerHalfW, playerNextY + playerHalfH) &&
+		!IsTileWall(player.base.x + playerHalfW, playerNextY + playerHalfH))
 		player.base.y = player.base.hitBoxY = playerNextY;
 }
 
@@ -75,24 +85,16 @@ int IsOverlapWithEnemy(float x, float y) {
 		if (!enemies[j].isActive) continue;
 		float dx = enemies[j].base.x - x;
 		float dy = enemies[j].base.y - y;
-		if (sqrtf(dx * dx + dy * dy) < ENEMY_SIZE) return 1;
+		if (sqrtf(dx * dx + dy * dy) < ENEMY_WIDTH) return 1;
 	}
 	return 0;
-}
-
-// AABB 충돌 체크
-int IsObjectCollision(float ax, float ay, int aw, int ah, float bx, float by, int bw, int bh) {
-	return (ax - aw / 2 < bx + bw / 2 &&
-		ax + aw / 2 > bx - bw / 2 &&
-		ay - ah / 2 < by + bh / 2 &&
-		ay + ah / 2 > by - bh / 2);
 }
 
 // 총알 - 적 충돌 처리
 int HandleBulletEnemyCollision(BULLET* bullet, ENEMY* enemy) {
 	if (!bullet->isActive || !enemy->isActive) return 0;
 
-	if (IsObjectCollision(bullet->x, bullet->y, bullet->width, bullet->height,
+	if (IsObjectCollision(bullet->hitBoxX, bullet->hitBoxY, bullet->hitBoxW, bullet->hitBoxH,
 		enemy->base.hitBoxX, enemy->base.hitBoxY, enemy->base.hitBoxW, enemy->base.hitBoxH)) {
 
 		bullet->isActive = INACTIVE;
@@ -101,7 +103,7 @@ int HandleBulletEnemyCollision(BULLET* bullet, ENEMY* enemy) {
 		if (enemy->base.hp <= 0) {
 			enemy->base.hp = 0;
 			enemy->base.state = ENEMY_DEAD;
-			enemy->deathTimer = 120; // 120프레임 동안 사망 상태 유지 (애니메이션용)
+			enemy->deathTimer = ENEMY_DEATH_TIME;
 		}
 		else {
 			enemy->base.state = ENEMY_HIT;
@@ -120,12 +122,12 @@ int HandleBulletEnemyCollision(BULLET* bullet, ENEMY* enemy) {
 	return 0;
 }
 
-// 적 공격 - 플레이어 충돌 처리
+// 잡몹 젤리 - 플레이어 충돌 처리
 int HandleCatPawPlayerCollision(CATPAW* cp, PLAYER* p) {
 	if (!cp->isActive || p->invincibleTimer > 0) return 0;
 
 	// CatPaw의 크기는 설정값 사용
-	if (IsObjectCollision(cp->x, cp->y, CAT_PAW_SIZE, CAT_PAW_SIZE,
+	if (IsObjectCollision(cp->hitBoxX, cp->hitBoxY, cp->hitBoxW, cp->hitBoxH,
 		p->base.hitBoxX, p->base.hitBoxY, p->base.hitBoxW, p->base.hitBoxH)) {
 
 		cp->isActive = INACTIVE;
@@ -135,6 +137,7 @@ int HandleCatPawPlayerCollision(CATPAW* cp, PLAYER* p) {
 		if (p->base.hp <= 0) {
 			p->base.hp = 0;
 			p->base.state = PLAYER_DEAD;
+			p->deathTimer = PLAYER_DEATH_TIME;
 		}
 		else {
 			p->base.state = PLAYER_HIT;
@@ -167,6 +170,7 @@ int HandleEnemyPlayerCollision(ENEMY* enemy, PLAYER* p) {
 		if (p->base.hp <= 0) {
 			p->base.hp = 0;
 			p->base.state = PLAYER_DEAD;
+			p->deathTimer = PLAYER_DEATH_TIME;
 		}
 		else {
 			p->base.state = PLAYER_HIT;
@@ -194,7 +198,7 @@ int HandleBulletBossCollision(BULLET* bullet, BOSS* boss) {
 	if (!bullet->isActive || boss->isActive == INACTIVE) return 0;
 
 	// 보스 히트박스 = base.x/y 기준 BOSS_SIZE 크기
-	if (IsObjectCollision(bullet->x, bullet->y, bullet->width, bullet->height,
+	if (IsObjectCollision(bullet->hitBoxX, bullet->hitBoxY, bullet->hitBoxW, bullet->hitBoxH,
 		boss->base.hitBoxX, boss->base.hitBoxY, boss->base.hitBoxW, boss->base.hitBoxH)) {
 
 		bullet->isActive = INACTIVE;
@@ -209,6 +213,21 @@ int HandleBulletBossCollision(BULLET* bullet, BOSS* boss) {
 	return 0;
 }
 
+// 총알 - 잡몹 젤리 충돌 처리
+int HandleBulleCatPawCollision(BULLET* bullet, CATPAW* catpaw) {
+	if (!bullet->isActive || catpaw->isActive == INACTIVE) return 0;
+
+	if (IsObjectCollision(bullet->hitBoxX, bullet->hitBoxY, bullet->hitBoxW, bullet->hitBoxH,
+		catpaw->hitBoxX, catpaw->hitBoxY, catpaw->hitBoxW, catpaw->hitBoxH)) {
+
+		catpaw->isActive = INACTIVE;
+
+		return 1;
+	}
+	return 0;
+}
+
+// 츄르 - 보스 충돌 처리
 int HandleChuruBossCollision(CHURU* churues, BOSS* boss) {
 	if (!churues->isActive || boss->isActive == INACTIVE) return 0;
 
@@ -219,7 +238,6 @@ int HandleChuruBossCollision(CHURU* churues, BOSS* boss) {
 
 		return 1;
 	}
-
 	return 0;
 }
 
@@ -237,6 +255,7 @@ int HandleBossPawPlayerCollision(BOSS_PAW* bp, PLAYER* p) {
 		if (p->base.hp <= 0) {
 			p->base.hp = 0;
 			p->base.state = PLAYER_DEAD;
+			p->deathTimer = PLAYER_DEATH_TIME;
 		}
 		else {
 			p->base.state = PLAYER_HIT;
@@ -266,7 +285,11 @@ int HandleBossPlayerCollision(PLAYER* p) {
 		p->base.hp -= BOSS_CONTACT_DAMAGE;
 		p->invincibleTimer = PLAYER_INVINCIBLE_TIME;
 
-		if (p->base.hp <= 0) { p->base.hp = 0; p->base.state = PLAYER_DEAD; }
+		if (p->base.hp <= 0) {
+			p->base.hp = 0;
+			p->base.state = PLAYER_DEAD;
+			p->deathTimer = PLAYER_DEATH_TIME;
+		}
 		else p->base.state = PLAYER_HIT;
 
 		// 보스 → 플레이어 방향의 반대로 밀려남
@@ -295,7 +318,11 @@ int HandleBossDashPlayerCollision(PLAYER* p) {
 		p->base.hp -= BOSS_CONTACT_DAMAGE;
 		p->invincibleTimer = PLAYER_INVINCIBLE_TIME;
 
-		if (p->base.hp <= 0) { p->base.hp = 0; p->base.state = PLAYER_DEAD; }
+		if (p->base.hp <= 0) {
+			p->base.hp = 0;
+			p->base.state = PLAYER_DEAD;
+			p->deathTimer = PLAYER_DEATH_TIME;
+		}
 		else p->base.state = PLAYER_HIT;
 
 		// 대시 방향으로 강하게 밀려남 (보스는 계속 진행 - 넉백 적용 없음)
@@ -322,7 +349,11 @@ int HandleBossJumpPlayerCollision(PLAYER* p) {
 		p->base.hp -= BOSS_CONTACT_DAMAGE;
 		p->invincibleTimer = PLAYER_INVINCIBLE_TIME;
 
-		if (p->base.hp <= 0) { p->base.hp = 0; p->base.state = PLAYER_DEAD; }
+		if (p->base.hp <= 0) {
+			p->base.hp = 0;
+			p->base.state = PLAYER_DEAD;
+			p->deathTimer = PLAYER_DEATH_TIME;
+		}
 		else p->base.state = PLAYER_HIT;
 
 		// 랜덤 4방향 넉백
