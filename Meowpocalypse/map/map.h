@@ -3,8 +3,6 @@
 #include "config.h"
 #include "enum.h"
 
-extern MAP_TYPE currentMapType;
-
 typedef struct {
     int row;
     int col;
@@ -21,6 +19,7 @@ typedef struct {
     int doorCount;
 } MAPDATA;
 
+extern MAP_TYPE currentMapType;
 extern MAPDATA maps[7];
 
 MAP_TYPE GetNextMap(MAP_TYPE type);

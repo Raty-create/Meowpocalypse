@@ -51,11 +51,15 @@ void RenderCurrentMap(HDC hDC) {
 	for (int row = 0; row < m->rows; row++) {
 		for (int col = 0; col < m->cols; col++) {
 
-			screenX = (int)(m->worldX + col * TILE_SIZE - camera.x);
-			screenY = (int)(m->worldY + row * TILE_SIZE - camera.y);
+			// camera.zoom을 반영한 화면 좌표 계산
+			screenX = (int)((m->worldX + col * TILE_SIZE - camera.x) * camera.zoom);
+			screenY = (int)((m->worldY + row * TILE_SIZE - camera.y) * camera.zoom);
 
-			if (screenX + TILE_SIZE < 0 || screenX > SCREEN_WIDTH) continue;
-			if (screenY + TILE_SIZE < 0 || screenY > SCREEN_HEIGHT) continue;
+			// 확대된 타일 사이즈 계산
+			int scaledTileSize = (int)(TILE_SIZE * camera.zoom);
+
+			if (screenX + scaledTileSize < 0 || screenX > SCREEN_WIDTH) continue;
+			if (screenY + scaledTileSize < 0 || screenY > SCREEN_HEIGHT) continue;
 
 			int tileType = m->tiles[row][col];
 			DOOR_STATE doorstate = DOOR_CLOSE;
@@ -69,7 +73,16 @@ void RenderCurrentMap(HDC hDC) {
 				}
 			}
 
-			RenderTile(hDC, screenX, screenY, TileColor(tileType, doorstate));
+			// RenderTile 대신 직접 Rectangle을 크기에 맞게 그림
+			hBrush = CreateSolidBrush(TileColor(tileType, doorstate));
+			oldBrush = (HBRUSH)SelectObject(hDC, hBrush);
+			hPen = CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
+			oldPen = (HPEN)SelectObject(hDC, hPen);
+
+			Rectangle(hDC, screenX, screenY, screenX + scaledTileSize, screenY + scaledTileSize);
+
+			SelectObject(hDC, oldBrush); DeleteObject(hBrush);
+			SelectObject(hDC, oldPen); DeleteObject(hPen);
 		}
 	}
 }
@@ -89,11 +102,13 @@ void RenderObjectShadow(HDC hDC, float x, float y, int objW) {
 
 // 플레이어
 void RenderPlayer(HDC hDC) {
-	// 무적 상태일 때 깜빡임 효과
 	if (player.invincibleTimer > 0 && (player.invincibleTimer / 5) % 2 == 0) return;
 
-	screenX = (int)(player.base.x - camera.x);
-	screenY = (int)(player.base.y - camera.y);
+	// zoom을 적용한 스크린 좌표 및 크기 변환
+	screenX = (int)((player.base.x - camera.x) * camera.zoom);
+	screenY = (int)((player.base.y - camera.y) * camera.zoom);
+	int sw = (int)(player.base.width * camera.zoom);
+	int sh = (int)(player.base.height * camera.zoom);
 
 	int finalRow = 0;
 
@@ -335,19 +350,23 @@ void RenderJumpWarning(HDC hDC) {
 void RenderBoss(HDC hDC) {
 	if (!boss.isActive) return;
 
-	RenderDashWarning(hDC);
-	RenderJumpWarning(hDC);
-
-	if (boss.isJumping == ACTIVE) return;
+	// 연출 중에는 경고판을 그리거나 계산하지 않도록 예외 처리
+	if (camera.isIntroActive == INACTIVE) {
+		RenderDashWarning(hDC);
+		RenderJumpWarning(hDC);
+	}
 
 	COLORREF bossColor = boss.isDashing ? RGB(255, 220, 0) : RGB(0, 255, 0);
 	hBrush = CreateSolidBrush(bossColor);
 	oldBrush = (HBRUSH)SelectObject(hDC, hBrush);
-	
-	screenX = (int)(boss.base.x - camera.x);
-	screenY = (int)(boss.base.y - camera.y);
 
-	Rectangle(hDC, screenX - BOSS_SIZE / 2, screenY - BOSS_SIZE / 2, screenX + BOSS_SIZE / 2, screenY + BOSS_SIZE / 2);
+	// zoom을 적용한 스크린 좌표 및 크기 변환
+	screenX = (int)((boss.base.x - camera.x) * camera.zoom);
+	screenY = (int)((boss.base.y - camera.y + boss.jumpOffsetY) * camera.zoom);
+	int bw = (int)(BOSS_SIZE * camera.zoom);
+	int bh = (int)(BOSS_SIZE * camera.zoom);
+
+	Rectangle(hDC, screenX - bw / 2, screenY - bh / 2, screenX + bw / 2, screenY + bh / 2);
 
 	SelectObject(hDC, oldBrush);
 	DeleteObject(hBrush);
@@ -356,7 +375,8 @@ void RenderBoss(HDC hDC) {
 void RenderBossHitBox(HDC hDC) {
 
 	if (!boss.isActive) return;
-	if (boss.isJumping == ACTIVE) return;
+	if (boss.isEscaping == ACTIVE) return;
+	if (boss.isJumping == ACTIVE && boss.jumpPhase < 3) return;
 
 	screenX = (int)(boss.base.hitBoxX - camera.x);
 	screenY = (int)(boss.base.hitBoxY - camera.y);
