@@ -40,10 +40,12 @@ extern int SCREEN_HEIGHT;
 #define MAX_DOORS 16
 
 // PLAYER
-#define PLAYER_SIZE 32
-#define PLAYER_HITBOX_SIZE 20
+#define PLAYER_WIDTH 32
+#define PLAYER_HEIGHT 36
+#define PLAYER_HITBOX_WIDTH 24
+#define PLAYER_HITBOX_HEIGHT 46
 
-#define PLAYER_HP 10
+#define PLAYER_HP 200
 #define PLAYER_MP 100
 #define PLAYER_SPEED 6.5f
 
@@ -51,10 +53,12 @@ extern int SCREEN_HEIGHT;
 #define PLAYER_DEATH_TIME 120
 
 // ENEMY
-#define ENEMY_SIZE (TILE_SIZE * 4)
-#define ENEMY_HITBOX_SIZE 20
+#define ENEMY_WIDTH (TILE_SIZE * 4)
+#define ENEMY_HEIGHT (TILE_SIZE * 4)
+#define ENEMY_HITBOX_WIDTH 34
+#define ENEMY_HITBOX_HEIGHT 68
 #define ENEMY_HP 30
-#define ENEMY_LIMIT 5
+#define ENEMY_LIMIT 25
 
 #define ENEMY_COLS_SPAWN_MARGIN 20
 #define ENEMY_ROWS_SPAWN_MARGIN 5
@@ -67,10 +71,13 @@ extern int SCREEN_HEIGHT;
 #define ENEMY_CONTACT_DAMAGE 5
 #define ENEMY_STOP_DISTANCE 30.0f
 
-#define CAT_PAW_SIZE 25
-#define CAT_PAW_SPEED 5.0f
+#define CAT_PAW_WIDTH 32
+#define CAT_PAW_HEIGHT 32
+#define CAT_PAW_HITBOX_W 12
+#define CAT_PAW_HITBOX_H 12
+#define CAT_PAW_SPEED 10.0f
 #define CAT_PAW_DAMAGE 10
-#define CAT_PAW_LIMIT (ENEMY_LIMIT * 2)
+#define CAT_PAW_LIMIT 10
 #define CAT_PAW_INTERVAL 180
 
 // BOSS
@@ -114,6 +121,8 @@ extern int SCREEN_HEIGHT;
 #define BULLET_MAX 50
 #define BULLET_WIDTH 64
 #define BULLET_HEIGHT 64
+#define BULLET_HITBOX_WIDTH 28
+#define BULLET_HITBOX_HEIGHT 28
 #define BULLET_SPEED 15.0f
 #define BULLET_DAMAGE 10
 #define KNOCKBACK_FORCE 6.0f
@@ -133,8 +142,10 @@ extern int SCREEN_HEIGHT;
 
 #define SKILL_R_MP 30
 #define SKILL_R_COOLDOWN 480				// R 스킬 쿨타임 (8초)
+#define CHURU_WIDTH 64
+#define CHURU_HEIGHT 64
 #define CHURU_SPEED 10.0f
 #define CHURU_MAX_DIST 300.0f
 #define CHURU_DURATION 300					// 바닥에 머무는 시간 (5초)
 #define CHURU_AGGRO_RANGE 400.0f			// 어그로 범위
-#define CHURU_MAX 5
+#define CHURU_MAX 2

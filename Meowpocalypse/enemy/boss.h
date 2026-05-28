@@ -70,3 +70,4 @@ extern JUMP_WARNING jumpWarn;
 void InitBoss();
 void SpawnBoss(MAP_TYPE type);
 void UpdateBoss();
+void HandleBossAggro(float tx, float ty);

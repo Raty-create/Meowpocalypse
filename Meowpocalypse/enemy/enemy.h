@@ -9,8 +9,12 @@
 typedef struct {
     float x, y;
     float dx, dy;
+    int width, height;
+    float hitBoxX, hitBoxY;
+    int hitBoxW, hitBoxH;
     int isActive;
     int dirRow;
+    ANIMATION anim;
 } CATPAW;
 
 typedef struct {

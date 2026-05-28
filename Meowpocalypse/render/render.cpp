@@ -135,7 +135,7 @@ void RenderPlayer(HDC hDC) {
 		break;
 	}
 
-	RenderAnimation(&player.anim, hDC, screenX, screenY, player.base.width * 6, player.base.height * 7, finalRow);
+	RenderAnimation(&player.anim, hDC, screenX, screenY, player.base.width * 6, (int)((float)player.base.height * 6.3f), finalRow);
 }
 
 // 플레이어 hitBox
@@ -233,19 +233,37 @@ void RenderEnemiesHitBox(HDC hDC) {
 	}
 }
 
-// 잡몹 돌던지기 그리기
+// 잡몹 젤리
 void RenderCatPaw(HDC hDC) {
-	hBrush = CreateSolidBrush(RGB(255, 0, 0));
-	oldBrush = (HBRUSH)SelectObject(hDC, hBrush);
 	for (int i = 0; i < CAT_PAW_LIMIT; i++) {
 		if (!catpaw[i].isActive) continue;
+
 		screenX = (int)(catpaw[i].x - camera.x);
 		screenY = (int)(catpaw[i].y - camera.y);
-		Ellipse(hDC, screenX - CAT_PAW_SIZE / 2, screenY - CAT_PAW_SIZE / 2,
-			screenX + CAT_PAW_SIZE / 2, screenY + CAT_PAW_SIZE / 2);
+
+		RenderAnimation(&catpaw[i].anim, hDC, screenX, screenY, catpaw[i].width, catpaw[i].height, catpaw[i].dirRow);
 	}
-	SelectObject(hDC, oldBrush);
-	DeleteObject(hBrush);
+}
+
+// 잡몹 젤리 hitBox
+void RenderCatPawHitBox(HDC hDC) {
+	for (int i = 0; i < CAT_PAW_LIMIT; i++) {
+		if (!catpaw[i].isActive) continue;
+
+		screenX = (int)(catpaw[i].hitBoxX - camera.x);
+		screenY = (int)(catpaw[i].hitBoxY - camera.y);
+
+		hPen = CreatePen(PS_SOLID, 1, RGB(255, 0, 0));
+		oldPen = (HPEN)SelectObject(hDC, hPen);
+		oldBrush = (HBRUSH)SelectObject(hDC, GetStockObject(NULL_BRUSH));
+
+		Rectangle(hDC, screenX - catpaw[i].hitBoxW / 2, screenY - catpaw[i].hitBoxH / 2,
+			screenX + catpaw[i].hitBoxW / 2, screenY + catpaw[i].hitBoxH / 2);
+
+		SelectObject(hDC, oldPen);
+		SelectObject(hDC, oldBrush);
+		DeleteObject(hPen);
+	}
 }
 
 //보스 대시 경고 - Polygon으로 경고 영역 한 번에 그리기
@@ -379,7 +397,28 @@ void RenderBullets(HDC hDC) {
 		screenX = (int)(bullets[i].x - camera.x);
 		screenY = (int)(bullets[i].y - camera.y);
 
-		DrawMyImage(&imgBullet, hDC, screenX - bullets[i].width / 2, screenY - bullets[i].height / 2, bullets[i].width, bullets[i].height, 0, 0, imgBullet.width, imgBullet.height);
+		RenderAnimation(&bullets[i].anim, hDC, screenX, screenY, bullets[i].width, bullets[i].height, bullets[i].dirRow);
+	}
+}
+
+// 총알 hitBox
+void RenderBulletsHitBox(HDC hDC) {
+	for (int i = 0; i < BULLET_MAX; i++) {
+		if (!bullets[i].isActive) continue;
+
+		screenX = (int)(bullets[i].hitBoxX - camera.x);
+		screenY = (int)(bullets[i].hitBoxY - camera.y);
+
+		hPen = CreatePen(PS_SOLID, 1, RGB(255, 0, 0));
+		oldPen = (HPEN)SelectObject(hDC, hPen);
+		oldBrush = (HBRUSH)SelectObject(hDC, GetStockObject(NULL_BRUSH));
+
+		Rectangle(hDC, screenX - bullets[i].hitBoxW / 2, screenY - bullets[i].hitBoxH / 2,
+			screenX + bullets[i].hitBoxW / 2, screenY + bullets[i].hitBoxH / 2);
+
+		SelectObject(hDC, oldPen);
+		SelectObject(hDC, oldBrush);
+		DeleteObject(hPen);
 	}
 }
 
@@ -391,6 +430,6 @@ void RenderChuru(HDC hDC) {
 		screenX = (int)(churues[i].x - camera.x);
 		screenY = (int)(churues[i].y - camera.y);
 
-		Ellipse(hDC, screenX - churues[i].width, screenY - churues[i].height, screenX + churues[i].width, screenY + churues[i].height);
+		RenderAnimation(&churues[i].anim, hDC, screenX, screenY, churues[i].width, churues[i].height, churues[i].dirRow);
 	}
 }

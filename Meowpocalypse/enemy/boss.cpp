@@ -573,6 +573,43 @@ static void SelectPattern(int is2nd3rdPhase) {
 	}
 }
 
+// 보스 -> 츄르 쫓기
+void HandleBossAggro(float tx, float ty) {
+	float ex = boss.base.x;
+	float ey = boss.base.y;
+	float dx = tx - ex;
+	float dy = ty - ey;
+	float dist = sqrtf(dx * dx + dy * dy);
+
+	if (dist > 0) {
+		// 츄르를 향해 느린 속도로 이동
+		float nx = 0, ny = 0;
+		if (dist > 10.0f) {
+			nx = (dx / dist) * (BOSS_MOVE_SPEED * 0.5f);
+			ny = (dy / dist) * (BOSS_MOVE_SPEED * 0.5f);
+		}
+
+		int half = BOSS_SIZE / 2;
+		float nextX = boss.base.x + nx;
+		if (!IsTileWall(nextX - half, boss.base.y - half) &&
+			!IsTileWall(nextX + half, boss.base.y - half) &&
+			!IsTileWall(nextX - half, boss.base.y + half) &&
+			!IsTileWall(nextX + half, boss.base.y + half)) {
+			boss.base.x = nextX;
+			boss.base.hitBoxX = nextX;
+		}
+
+		float nextY = boss.base.y + ny;
+		if (!IsTileWall(boss.base.x - half, nextY - half) &&
+			!IsTileWall(boss.base.x + half, nextY - half) &&
+			!IsTileWall(boss.base.x - half, nextY + half) &&
+			!IsTileWall(boss.base.x + half, nextY + half)) {
+			boss.base.y = nextY;
+			boss.base.hitBoxY = nextY;
+		}
+	}
+}
+
 void UpdateBoss() {
 	if (currentMapType == MAP_WAITING ||
 		currentMapType == MAP_FIRST_HALLWAY ||
@@ -653,32 +690,8 @@ void UpdateBoss() {
 
 					if (cDist < CHURU_AGGRO_RANGE) {
 						boss.base.state = BOSS_AGGRO;
+						HandleBossAggro(churues[j].x, churues[j].y);
 						aggroFound = TRUE;
-
-						// 츄르를 향해 느린 속도로 이동
-						if (cDist > 10.0f) {
-							float nx = (cdx / cDist) * (BOSS_MOVE_SPEED * 0.5f);
-							float ny = (cdy / cDist) * (BOSS_MOVE_SPEED * 0.5f);
-
-							int half = BOSS_SIZE / 2;
-							float nextX = boss.base.x + nx;
-							if (!IsTileWall(nextX - half, boss.base.y - half) &&
-								!IsTileWall(nextX + half, boss.base.y - half) &&
-								!IsTileWall(nextX - half, boss.base.y + half) &&
-								!IsTileWall(nextX + half, boss.base.y + half)) {
-								boss.base.x = nextX;
-								boss.base.hitBoxX = nextX;
-							}
-
-							float nextY = boss.base.y + ny;
-							if (!IsTileWall(boss.base.x - half, nextY - half) &&
-								!IsTileWall(boss.base.x + half, nextY - half) &&
-								!IsTileWall(boss.base.x - half, nextY + half) &&
-								!IsTileWall(boss.base.x + half, nextY + half)) {
-								boss.base.y = nextY;
-								boss.base.hitBoxY = nextY;
-							}
-						}
 						break;
 					}
 				}

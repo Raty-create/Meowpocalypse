@@ -10,10 +10,11 @@ int IsObjectCollision(float ax, float ay, int aw, int ah, float bx, float by, in
 
 int IsTileWall(float x, float y);
 int IsPlayerOnDoor();
-void HandlePlayerCollision();
+void HandlePlayerWallCollision();
 int IsOverlapWithEnemy(float x, float y);
 int HandleBulletEnemyCollision(BULLET* bullet, ENEMY* enemy);
 int HandleBulletBossCollision(BULLET* bullet, BOSS* boss);
+int HandleBulleCatPawCollision(BULLET* bullet, CATPAW* catpaw);
 int HandleChuruBossCollision(CHURU* churues, BOSS* boss);
 int HandleCatPawPlayerCollision(CATPAW* cp, PLAYER* p);
 int HandleEnemyPlayerCollision(ENEMY* enemy, PLAYER* p);

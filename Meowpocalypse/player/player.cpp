@@ -23,8 +23,10 @@ void InitPlayer() {
 
 	player.base.x = player.base.hitBoxX = (float)SCREEN_WIDTH / 2;
 	player.base.y = player.base.hitBoxY = (float)SCREEN_HEIGHT / 2;
-	player.base.width = player.base.height = PLAYER_SIZE;
-	player.base.hitBoxW = player.base.hitBoxH = PLAYER_HITBOX_SIZE;
+	player.base.width = PLAYER_WIDTH;
+	player.base.height = PLAYER_HEIGHT;
+	player.base.hitBoxW = PLAYER_HITBOX_WIDTH;
+	player.base.hitBoxH = PLAYER_HITBOX_HEIGHT;
 	player.base.hp = PLAYER_HP;
 	player.mp = PLAYER_MP;
 
@@ -71,7 +73,7 @@ void UpdatePlayer() {
 
 	HandlePlayerInput();
 	HandlePlayerMovement();
-	HandlePlayerCollision();
+	HandlePlayerWallCollision();
 
 	MapTransition();
 }
