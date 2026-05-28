@@ -364,7 +364,7 @@ void UpdateBossChase() {
 }
 
 // BOSSPAW 이동 + 충돌처리
-static void UpdateBossPaws() {
+void UpdateBossPaws() {
 	int pawRadius = BOSS_PAW_SIZE / 2;
 	for (int i = 0; i < BOSS_PAW_LIMIT; i++) {
 		if (!bossPaws[i].isActive) continue;
@@ -393,27 +393,57 @@ static void UpdateBossPaws() {
 }
 
 // 페이즈 전환 및 보스 사망 처리
-static int CheckPhaseTransition() {
+int CheckPhaseTransition() {
+
+	// 이미 탈출 중이면 탈출 처리 계속
+	if (boss.isEscaping == ACTIVE) {
+
+		// 대기 중 (무적 상태로 바닥에 있음)
+		if (boss.escapingDelay > 0) {
+			boss.escapingDelay--;
+			boss.invincibleTimer = 10; // 매 프레임 무적 갱신
+			return 1;
+		}
+
+		float escapeSpeed = 60.0f;
+		boss.jumpOffsetY -= escapeSpeed;
+
+		// 화면 밖으로 충분히 올라갔으면(오프셋이 화면 높이 이상) 실제로 비활성화 + 문 열기
+		if (boss.jumpOffsetY < -(float)(SCREEN_HEIGHT + BOSS_SIZE)) {
+			boss.jumpOffsetY = 0;
+			boss.isEscaping = INACTIVE;
+			boss.escapingDelay = 0;
+			boss.isActive = INACTIVE;
+			boss.isSpiralActive = 0;
+			boss.doubleDashPhase = 0;
+			dashWarn.isActive = INACTIVE;
+			jumpWarn.isActive = INACTIVE;
+
+			if (currentMapType == MAP_FIRST_BOSS)
+				SetDoorState(MAP_FIRST_BOSS, DOOR_OPEN);
+			else if (currentMapType == MAP_SECOND_BOSS)
+				SetDoorState(MAP_SECOND_BOSS, DOOR_OPEN);
+		}
+		return 1; // 탈출 중에는 다른 업데이트 차단
+	}
 
 	if (currentMapType == MAP_FIRST_BOSS && boss.base.hp <= (BOSS_HP * 0.75)) {
-		boss.isActive = INACTIVE; 
+		boss.isEscaping = ACTIVE;
+		boss.escapingDelay = 60;
+		boss.jumpOffsetY = 0;
 		boss.base.state = BOSS_IDLE;
 		dashWarn.isActive = INACTIVE;
 		jumpWarn.isActive = INACTIVE;
-		boss.isSpiralActive = 0;
-		boss.doubleDashPhase = 0;
-		SetDoorState(MAP_FIRST_BOSS, DOOR_OPEN);
 		return 1;
 	}
 
 	if (currentMapType == MAP_SECOND_BOSS && boss.base.hp <= (BOSS_HP * 0.5)) {
-		boss.isActive = INACTIVE;
+		boss.isEscaping = ACTIVE;
+		boss.escapingDelay = 60;
+		boss.jumpOffsetY = 0;
 		boss.base.state = BOSS_CHASE;
 		dashWarn.isActive = INACTIVE;
 		jumpWarn.isActive = INACTIVE;
-		boss.isSpiralActive = 0;
-		boss.doubleDashPhase = 0;
-		SetDoorState(MAP_SECOND_BOSS, DOOR_OPEN);
 		return 1;
 	}
 
@@ -431,7 +461,7 @@ static int CheckPhaseTransition() {
 }
 
 // 대시 실행 처리
-static void UpdateDash(int is3rdPhase) {
+void UpdateDash(int is3rdPhase) {
 	int is2nd3rdPhase = (currentMapType == MAP_SECOND_BOSS || currentMapType == MAP_THIRD_BOSS);
 
 	HandleBossDashPlayerCollision(&player);
@@ -477,7 +507,7 @@ static void UpdateDash(int is3rdPhase) {
 }
 
 // 대시 경고 카운트다운
-static void UpdateDashWarningCountdown() {
+void UpdateDashWarningCountdown() {
 	dashWarn.timer--;
 	if (dashWarn.timer <= 0) {
 		dashWarn.isActive = INACTIVE;
@@ -486,7 +516,7 @@ static void UpdateDashWarningCountdown() {
 	}
 }
 
-static void UpdateJumpLanding(int is2nd3rdPhase) {
+void UpdateJumpLanding(int is2nd3rdPhase) {
 	float jumpSpeed = 40.0f;
 
 	if (boss.jumpPhase == 0) {
@@ -552,7 +582,7 @@ static void UpdateJumpLanding(int is2nd3rdPhase) {
 	}
 }
 
-static void FireRandomCircularPhase(int phase) {
+void FireRandomCircularPhase(int phase) {
 	int count = BOSS_CIRCULARPAWS_COUNT;
 	float angleStep = (2.0f * PI) / count;
 	float angleOffset = DEG_TO_RAD(phase * 30.0f); // 0도, 30도, 60도
@@ -574,7 +604,7 @@ static void FireRandomCircularPhase(int phase) {
 }
 
 // 랜덤 원형 PAW 3연속 발사 업데이트 (매 프레임 호출)
-static void UpdateRandomCircularPaws(int is2nd3rdPhase) {
+void UpdateRandomCircularPaws(int is2nd3rdPhase) {
 	if (!boss.isRandomCircularActive) return;
 
 	// 딜레이 카운트다운 중
@@ -610,7 +640,7 @@ void SpawnRandomCircularPaws() {
 }
 
 // 3페이즈 회오리 PAW: 프레임마다 호출, 내부 타이머로 순차 발사
-static void UpdateSpiralPaws(int is2nd3rdPhase) {
+void UpdateSpiralPaws(int is2nd3rdPhase) {
 	if (!boss.isSpiralActive) return;
 
 	int totalShots = BOSS_SPIRAL_COUNT * BOSS_SPIRAL_ROTATIONS;
@@ -645,7 +675,7 @@ static void UpdateSpiralPaws(int is2nd3rdPhase) {
 }
 
 // 3페이즈 회오리 PAW 시작
-static void StartSpiralPaws() {
+void StartSpiralPaws() {
 	boss.isSpiralActive = 1;
 	boss.base.state = BOSS_SPIRAL_PAWS;
 	boss.spiralIndex = 0;
@@ -653,13 +683,13 @@ static void StartSpiralPaws() {
 }
 
 // 3페이즈 첫 번째 대시 경고 시작 (doubleDashPhase 설정)
-static void StartDoubleDashWarning() {
+void StartDoubleDashWarning() {
 	StartDashWarning();
 	boss.doubleDashPhase = 1; // 첫 번째 대시 예약
 }
 
 // 패턴 선택
-static void SelectPattern(int is2nd3rdPhase) {
+void SelectPattern(int is2nd3rdPhase) {
 
 	int is3rdPhase = (currentMapType == MAP_THIRD_BOSS);
 
