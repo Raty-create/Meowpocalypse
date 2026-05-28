@@ -186,6 +186,12 @@ void MapTransition() {
 	player.base.x = player.base.hitBoxX = spawnX;
 	player.base.y = player.base.hitBoxY = spawnY;
 
+	if (currentMapType == MAP_FIRST_BOSS || currentMapType == MAP_SECOND_BOSS || currentMapType == MAP_THIRD_BOSS) {
+		camera.isIntroActive = ACTIVE;
+		camera.introTimer = 180; // 6ms 타이머 기준 180프레임 = 약 1초 초반이므로 정확히 3초를 원하시면 300~400으로 조절 가능
+		camera.zoom = 2.0f;
+	}
+
 	MAPDATA* m = &maps[currentMapType];
 	UpdateCamera(player.base.x, player.base.y, m->rows, m->cols);
 	UpdateCamera(player.base.hitBoxX, player.base.hitBoxY, m->rows, m->cols);

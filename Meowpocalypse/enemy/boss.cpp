@@ -9,6 +9,7 @@
 #include "object.h"
 #include "boss.h"
 #include "enum.h"
+#include "camera.h"
 
 BOSS boss;
 BOSS_PAW bossPaws[BOSS_PAW_LIMIT];
@@ -721,6 +722,12 @@ void UpdateBoss() {
 		currentMapType == MAP_FIRST_HALLWAY ||
 		currentMapType == MAP_SECOND_HALLWAY ||
 		currentMapType == MAP_THIRD_HALLWAY) return;
+
+	// 보스방 카메라 확대 연출 중에는 보스가 행동하지 않고 가만히 대기합니다.
+	if (camera.isIntroActive == ACTIVE) {
+		boss.base.state = BOSS_IDLE;
+		return;
+	}
 
 	UpdateBossPaws();
 
