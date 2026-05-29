@@ -85,6 +85,15 @@
     <Filter Include="graphics\소스 파일">
       <UniqueIdentifier>{b2ac6441-79dd-4fef-a058-f122a125bf09}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ui">
+      <UniqueIdentifier>{1bf7d60b-7fa4-4efe-97d0-bdf8295cdfc0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ui\헤더 파일">
+      <UniqueIdentifier>{1bbdc704-7edc-4de7-b5f5-3a704ff2d863}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ui\소스 파일">
+      <UniqueIdentifier>{db5d4843-9fb8-48a7-ae1b-7d90448b34b0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="game.cpp">
@@ -125,6 +134,9 @@
     </ClCompile>
     <ClCompile Include="graphics\animation.cpp">
       <Filter>graphics\소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\ui.cpp">
+      <Filter>ui\소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -175,6 +187,9 @@
     </ClInclude>
     <ClInclude Include="graphics\animation.h">
       <Filter>graphics\헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\ui.h">
+      <Filter>ui\헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

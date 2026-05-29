@@ -1,4 +1,5 @@
 #include "input.h"
+#include "config.h"
 
 INPUT_STATE g_Input;
 
@@ -30,6 +31,27 @@ void InputBulletShoot(HWND hWnd) {
 
 	GetCursorPos(&g_Input.mousePos);
 	ScreenToClient(hWnd, &g_Input.mousePos);
+
+	// 가상 해상도 및 레터박스 보정
+	RECT rt;
+	GetClientRect(hWnd, &rt);
+	int winW = rt.right;
+	int winH = rt.bottom;
+
+	if (winW > 0 && winH > 0) {
+		float scaleX = (float)winW / SCREEN_WIDTH;
+		float scaleY = (float)winH / SCREEN_HEIGHT;
+		float scale = (scaleX < scaleY) ? scaleX : scaleY;
+
+		int destW = (int)(SCREEN_WIDTH * scale);
+		int destH = (int)(SCREEN_HEIGHT * scale);
+		int destX = (winW - destW) / 2;
+		int destY = (winH - destH) / 2;
+
+		// 마우스 좌표를 가상 해상도(1920x1080) 기준으로 역계산
+		g_Input.mousePos.x = (long)((g_Input.mousePos.x - destX) / scale);
+		g_Input.mousePos.y = (long)((g_Input.mousePos.y - destY) / scale);
+	}
 }
 
 // 플레이어 스킬 입력 감지

@@ -5,10 +5,10 @@
 
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
-#define TILE_SIZE 32
+#define SCREEN_WIDTH 1920
+#define SCREEN_HEIGHT 1080
 
-extern int SCREEN_WIDTH;
-extern int SCREEN_HEIGHT;
+#define TILE_SIZE 32
 
 #define SCREEN_TILE_X (SCREEN_WIDTH / TILE_SIZE)
 #define SCREEN_TILE_Y (SCREEN_HEIGHT / TILE_SIZE)

@@ -39,7 +39,7 @@ void InitWaitingMap(MAPDATA* m) {
 		}
 	}
 	// 문
-	int doorRow = m->rows - 39;
+	int doorRow = m->rows - 25;
 	int doorCol = m->cols / 2;
 
 	if (doorRow >= 0 && doorRow + 1 < MAX_MAP_ROWS && doorCol + 1 >= 0 && doorCol + 1 < MAX_MAP_COLS) {
@@ -74,7 +74,7 @@ void InitHallWayMap(MAPDATA* m, int worldX) {
 		}
 	}
 	// 문
-	int doorRow = m->rows - 64;
+	int doorRow = m->rows - 44;
 	int doorCol = m->cols / 2;
 
 	if (doorRow >= 0 && doorRow + 1 < MAX_MAP_ROWS && doorCol + 1 >= 0 && doorCol + 1 < MAX_MAP_COLS) {
@@ -106,7 +106,7 @@ void InitBossMap(MAPDATA* m, int worldX) {
 		}
 	}
 	// 문
-	int doorRow = m->rows - 86;
+	int doorRow = m->rows - 44;
 	int doorCol = m->cols / 2;
 
 	if (doorRow >= 0 && doorRow + 1 < MAX_MAP_ROWS && doorCol + 1 >= 0 && doorCol + 1 < MAX_MAP_COLS) {
