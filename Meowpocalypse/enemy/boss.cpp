@@ -855,7 +855,7 @@ void UpdateBoss() {
 		UpdateDashWarningCountdown();
 	}
 
-	// 3페이즈 연속 대시: 첫 대시 완료 후 딜레이 → 두 번째 대시 시작
+	// 3페이즈 연속 대시: 첫 대시 완료 후 딜레이 -> 두 번째 대시 시작
 	else if (is3rdPhase && boss.doubleDashPhase == 2) {
 		boss.doubleDashDelay--;
 		if (boss.doubleDashDelay <= 0) {
@@ -879,7 +879,7 @@ void UpdateBoss() {
 	else if (boss.isSpiralActive) {
 	}
 	else if (boss.isRandomCircularActive) {
-		// 랜덤 원형 3연속 발사 중 → 이동 없음, 패턴선택 없음 (UpdateRandomCircularPaws가 처리)
+		// 랜덤 원형 3연속 발사 중 -> 이동 없음, 패턴선택 없음 (UpdateRandomCircularPaws가 처리)
 	}
 	// PAW 발사 직후 정지 구간
 	else if (boss.isAttacking) {

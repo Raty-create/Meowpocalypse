@@ -77,7 +77,7 @@ void InitHallWayMap(MAPDATA* m, int worldY) {
 		}
 	}
 	// 문
-	int doorRow = WALL_THICKNESS + 4;
+	int doorRow = WALL_THICKNESS + 3;
 	int doorCol = ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS;
 
 	if (doorRow >= 0 && doorRow + 1 < MAX_MAP_ROWS && doorCol - 1 >= 0 && doorCol + 1 < MAX_MAP_COLS) {

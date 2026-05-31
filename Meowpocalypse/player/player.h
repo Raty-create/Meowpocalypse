@@ -13,6 +13,10 @@ typedef struct {
 	int boostCooldown;			// E 스킬 - 부스트 쿨타임
 	int fireTimer;				// E 스킬 - 발사 쿨타임 타이머
 	int skillRCooldown;			// R 스킬 - 쿨타임 타이머
+	int itemOneCooldown;		// 키보드 숫자 1(잃은 체력 비례 HP 회복) 아이템 - 쿨타임 타이머
+	int itemTwoCooldown;		// 키보드 숫자 2(MP 전체 회복) 아이템 - 쿨타임 타이머
+	int hpPotionCount;			// HP 포션 개수
+	int mpPotionCount;			// MP 포션 개수
 	int deathTimer;
 	ANIMATION anim;
 } PLAYER;

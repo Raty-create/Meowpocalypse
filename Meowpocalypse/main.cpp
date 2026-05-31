@@ -7,11 +7,14 @@
 HINSTANCE g_hInst;
 LPCTSTR lpszClass = L"My Window Class";
 LPCTSTR lpszWindowName = L"windows program 1";
+int g_WindowWidth;
+int g_WindowHeight;
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam);
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdParam, int nCmdShow)
 {
-	SCREEN_WIDTH = GetSystemMetrics(SM_CXSCREEN);
-	SCREEN_HEIGHT = GetSystemMetrics(SM_CYSCREEN);
+	g_WindowWidth = GetSystemMetrics(SM_CXSCREEN);
+	g_WindowHeight = GetSystemMetrics(SM_CYSCREEN);
 
 	HWND hWnd;
 	MSG Message;
@@ -31,7 +34,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdPa
 	WndClass.lpszClassName = lpszClass;
 	WndClass.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
 	RegisterClassEx(&WndClass);
-	hWnd = CreateWindow(lpszClass, lpszWindowName, WS_POPUP | WS_VISIBLE, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, NULL, (HMENU)NULL, hInstance, NULL);
+	hWnd = CreateWindow(lpszClass, lpszWindowName, WS_POPUP | WS_VISIBLE, 0, 0, g_WindowWidth, g_WindowHeight, NULL, (HMENU)NULL, hInstance, NULL);
 	ShowWindow(hWnd, nCmdShow);
 	UpdateWindow(hWnd);
 	while (GetMessage(&Message, 0, 0, 0)) {
@@ -54,14 +57,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
 		break;
 
+	case WM_ERASEBKGND:
+		return 1;
+
 	case WM_SIZE:
-		SCREEN_WIDTH = LOWORD(lParam);
-		SCREEN_HEIGHT = HIWORD(lParam);
+		g_WindowWidth = LOWORD(lParam);
+		g_WindowHeight = HIWORD(lParam);
 		break;
 
 	case WM_KEYDOWN:
 		switch (wParam) {
-		case VK_ESCAPE: DestroyWindow(hWnd); break;
+		case VK_BACK: DestroyWindow(hWnd); break;
 		}
 		break;
 
