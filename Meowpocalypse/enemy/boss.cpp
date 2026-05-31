@@ -95,6 +95,7 @@ void SpawnBoss(MAP_TYPE type) {
 			boss.base.state = BOSS_IDLE;
 			boss.base.dx = 0;
 			boss.base.dy = 0;
+			boss.base.direction = DIR_DOWN;
 		}
 	}
 
@@ -160,6 +161,7 @@ void SpawnBossPaws() {
 	boss.isActive = ACTIVE;
 	boss.isAttacking = 1;
 	boss.base.state = BOSS_THREE_WAY_CATPAW;
+	boss.base.direction = DIR_DOWN;
 	boss.attackEndTimer = BOSS_ATTACK_INTERVAL / 2; // 발사 후 이 프레임 동안 정지
 	float dx = player.base.x - boss.base.x;
 	float dy = player.base.y - boss.base.y;
@@ -194,6 +196,7 @@ void SpawnCircularPaws() {
 	boss.isActive = ACTIVE;
 	boss.isAttacking = 1;
 	boss.base.state = BOSS_CIRCULAR_CATPAW;
+	boss.base.direction = DIR_DOWN;
 	boss.attackEndTimer = BOSS_ATTACK_INTERVAL / 2;
 
 	int count = BOSS_CIRCULARPAWS_COUNT;
@@ -258,8 +261,25 @@ void StartDashWarning() {
 	boss.base.state = BOSS_DASH;
 }
 
+// 점프스킬 착지 위치를 맵 안쪽으로 보정
+void ClampBossLanding(float* x, float* y) {
+	MAPDATA* m = &maps[currentMapType];
+	int half = BOSS_SIZE / 2;   // 이동 충돌과 동일한 기준 사용
+
+	float minX = m->worldX + (float)(WALL_THICKNESS + 1) * TILE_SIZE + half;
+	float maxX = m->worldX + (float)(m->cols - WALL_THICKNESS) * TILE_SIZE - half - 1;
+	float minY = m->worldY + (float)(WALL_THICKNESS + 1) * TILE_SIZE + half;
+	float maxY = m->worldY + (float)(m->rows - WALL_THICKNESS) * TILE_SIZE - half - 1;
+
+	if (*x < minX) *x = minX;
+	if (*x > maxX) *x = maxX;
+	if (*y < minY) *y = minY;
+	if (*y > maxY) *y = maxY;
+}
+
 // 보스 스킬(점프 경고)
 void StartJumpWarning() {
+	boss.base.direction = DIR_DOWN;
 	float dx = player.base.x - boss.base.x;
 	float dy = player.base.y - boss.base.y;
 	float len = sqrtf(dx * dx + dy * dy);
@@ -267,6 +287,9 @@ void StartJumpWarning() {
 
 	jumpWarn.targetX = player.base.x;
 	jumpWarn.targetY = player.base.y;
+
+	ClampBossLanding(&jumpWarn.targetX, &jumpWarn.targetY);
+
 	jumpWarn.timer = BOSS_JUMP_WARN_INTERVAL;
 	jumpWarn.isActive = ACTIVE;
 
@@ -638,6 +661,7 @@ void SpawnRandomCircularPaws() {
 	boss.isActive = ACTIVE;
 	boss.isRandomCircularActive = 1;
 	boss.base.state = BOSS_RANDOM_CATPAW;
+	boss.base.direction = DIR_DOWN;
 	boss.randomCircularPhase = 0;
 	boss.randomCircularDelay = 0; // 첫 발사는 즉시
 }
@@ -681,6 +705,7 @@ void UpdateSpiralPaws(int is2nd3rdPhase) {
 void StartSpiralPaws() {
 	boss.isSpiralActive = 1;
 	boss.base.state = BOSS_SPIRAL_PAWS;
+	boss.base.direction = DIR_DOWN;
 	boss.spiralIndex = 0;
 	boss.spiralTimer = 0;
 }

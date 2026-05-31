@@ -23,14 +23,14 @@ void InitDoor(MAPDATA* m, int row, int col) {
 void InitWaitingMap(MAPDATA* m) {
 	m->rows = MIN(WAITINGMAP_ROWS, MAX_MAP_ROWS);
 	m->cols = MIN(WAITINGMAP_COLS, MAX_MAP_COLS);
-	m->worldX = WAITING_X;
-	m->worldY = 0;
+	m->worldX = 0;
+	m->worldY = WAITING_Y;
 	m->doorCount = 0;
 
 	for (int row = 0; row < m->rows; row++) {
 		for (int col = 0; col < m->cols; col++) {
-			if (row <= 5 || col <= 15 ||
-				row >= m->rows - 5 || col >= m->cols - 15)
+			if (row <= WALL_THICKNESS || col <= WALL_THICKNESS + 10 ||
+				row >= m->rows - WALL_THICKNESS || col >= m->cols - WALL_THICKNESS - 10)
 				// 벽
 				m->tiles[row][col] = TILE_WALL;
 			else
@@ -39,31 +39,34 @@ void InitWaitingMap(MAPDATA* m) {
 		}
 	}
 	// 문
-	int doorRow = m->rows - 39;
-	int doorCol = m->cols / 2;
+	int doorRow = WALL_THICKNESS + 3;
+	int doorCol = ((m->cols - ( 2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS;
 
-	if (doorRow >= 0 && doorRow + 1 < MAX_MAP_ROWS && doorCol + 1 >= 0 && doorCol + 1 < MAX_MAP_COLS) {
+	if (doorRow >= 0 && doorRow + 1 < MAX_MAP_ROWS && doorCol - 1 >= 0 && doorCol + 1 < MAX_MAP_COLS) {
+
+		m->tiles[doorRow][doorCol - 1] = TILE_DOOR;
 		m->tiles[doorRow][doorCol] = TILE_DOOR;
 		m->tiles[doorRow][doorCol + 1] = TILE_DOOR;
 	}
-	
+
+	InitDoor(m, doorRow, doorCol - 1);
 	InitDoor(m, doorRow, doorCol);
 	InitDoor(m, doorRow, doorCol + 1);
 }
 
 // 복도맵
-void InitHallWayMap(MAPDATA* m, int worldX) {
+void InitHallWayMap(MAPDATA* m, int worldY) {
 	m->rows = MIN(HALLWAYMAP_ROWS, MAX_MAP_ROWS);
 	m->cols = MIN(HALLWAYMAP_COLS, MAX_MAP_COLS);
-	m->worldX = (float)worldX;
-	m->worldY = 0;
+	m->worldX = 0;
+	m->worldY = (float)worldY;;
 	m->doorCount = 0;
 
 
 	for (int row = 0; row < m->rows; row++) {
 		for (int col = 0; col < m->cols; col++) {
-			if (row <= 2 || row >= m->rows - 5 ||
-				col <= 5 || col >= m->cols - 10) {
+			if (row <= WALL_THICKNESS || row >= m->rows - WALL_THICKNESS ||
+				col <= WALL_THICKNESS || col >= m->cols - WALL_THICKNESS) {
 				//벽
 				m->tiles[row][col] = TILE_WALL;
 			}
@@ -74,30 +77,33 @@ void InitHallWayMap(MAPDATA* m, int worldX) {
 		}
 	}
 	// 문
-	int doorRow = m->rows - 64;
-	int doorCol = m->cols / 2;
+	int doorRow = WALL_THICKNESS + 4;
+	int doorCol = ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS;
 
-	if (doorRow >= 0 && doorRow + 1 < MAX_MAP_ROWS && doorCol + 1 >= 0 && doorCol + 1 < MAX_MAP_COLS) {
+	if (doorRow >= 0 && doorRow + 1 < MAX_MAP_ROWS && doorCol - 1 >= 0 && doorCol + 1 < MAX_MAP_COLS) {
+
+		m->tiles[doorRow][doorCol - 1] = TILE_DOOR;
 		m->tiles[doorRow][doorCol] = TILE_DOOR;
 		m->tiles[doorRow][doorCol + 1] = TILE_DOOR;
 	}
 
+	InitDoor(m, doorRow, doorCol - 1);
 	InitDoor(m, doorRow, doorCol);
 	InitDoor(m, doorRow, doorCol + 1);
 }
 
 // 보스맵
-void InitBossMap(MAPDATA* m, int worldX) {
+void InitBossMap(MAPDATA* m, int worldY) {
 	m->rows = MIN(BOSSMAP_ROWS, MAX_MAP_ROWS);
 	m->cols = MIN(BOSSMAP_COLS, MAX_MAP_COLS);
-	m->worldX = (float)worldX;
-	m->worldY = 0;
+	m->worldX = 0;
+	m->worldY = (float)worldY;
 	m->doorCount = 0;
 
 	for (int row = 0; row < m->rows; row++) {
 		for (int col = 0; col < m->cols; col++) {
-			if (row <= 3 || row >= m->rows - 5 ||
-				col <= 0 || col >= m->cols - 10)
+			if (row <= WALL_THICKNESS || row >= m->rows - WALL_THICKNESS ||
+				col <= WALL_THICKNESS || col >= m->cols - WALL_THICKNESS)
 				// 벽
 				m->tiles[row][col] = TILE_WALL;
 			else
@@ -106,14 +112,17 @@ void InitBossMap(MAPDATA* m, int worldX) {
 		}
 	}
 	// 문
-	int doorRow = m->rows - 86;
-	int doorCol = m->cols / 2;
+	int doorRow = WALL_THICKNESS + 3;
+	int doorCol = ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS;
 
-	if (doorRow >= 0 && doorRow + 1 < MAX_MAP_ROWS && doorCol + 1 >= 0 && doorCol + 1 < MAX_MAP_COLS) {
+	if (doorRow >= 0 && doorRow + 1 < MAX_MAP_ROWS && doorCol - 1 >= 0 && doorCol + 1 < MAX_MAP_COLS) {
+
+		m->tiles[doorRow][doorCol - 1] = TILE_DOOR;
 		m->tiles[doorRow][doorCol] = TILE_DOOR;
 		m->tiles[doorRow][doorCol + 1] = TILE_DOOR;
 	}
 
+	InitDoor(m, doorRow, doorCol - 1);
 	InitDoor(m, doorRow, doorCol);
 	InitDoor(m, doorRow, doorCol + 1);
 }
@@ -122,12 +131,12 @@ void InitMap(MAP_TYPE type) {
 	MAPDATA* m = &maps[type];
 	switch (type) {
 	case MAP_WAITING: InitWaitingMap(m); break;
-	case MAP_FIRST_HALLWAY: InitHallWayMap(m, HALLWAY1_X); break;
-	case MAP_FIRST_BOSS: InitBossMap(m, BOSS1_X); break;
-	case MAP_SECOND_HALLWAY: InitHallWayMap(m, HALLWAY2_X); break;
-	case MAP_SECOND_BOSS: InitBossMap(m, BOSS2_X); break;
-	case MAP_THIRD_HALLWAY: InitHallWayMap(m, HALLWAY3_X); break;
-	case MAP_THIRD_BOSS: InitBossMap(m, BOSS3_X); break;
+	case MAP_FIRST_HALLWAY: InitHallWayMap(m, HALLWAY1_Y); break;
+	case MAP_FIRST_BOSS: InitBossMap(m, BOSS1_Y); break;
+	case MAP_SECOND_HALLWAY: InitHallWayMap(m, HALLWAY2_Y); break;
+	case MAP_SECOND_BOSS: InitBossMap(m, BOSS2_Y); break;
+	case MAP_THIRD_HALLWAY: InitHallWayMap(m, HALLWAY3_Y); break;
+	case MAP_THIRD_BOSS: InitBossMap(m, BOSS3_Y); break;
 	}
 }
 
@@ -209,6 +218,6 @@ void MapTransition() {
 void GetSpawnPos(MAP_TYPE type, float* outX, float* outY) {
 	MAPDATA* m = &maps[type];
 	// 문 통과 후 맵 전환시 맵의 왼쪽 벽 근처에서 스폰
-	*outX = m->worldX + TILE_SIZE * 15 - TILE_SIZE / 2;
-	*outY = m->worldY + (m->rows / 2) * TILE_SIZE + TILE_SIZE / 2;
+	*outX = m->worldX + (m->cols / 2) * TILE_SIZE;
+	*outY = m->worldY + (m->rows - 10) * TILE_SIZE;
 }

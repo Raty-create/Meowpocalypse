@@ -10,6 +10,9 @@ LPCTSTR lpszWindowName = L"windows program 1";
 LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam);
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdParam, int nCmdShow)
 {
+	SCREEN_WIDTH = GetSystemMetrics(SM_CXSCREEN);
+	SCREEN_HEIGHT = GetSystemMetrics(SM_CYSCREEN);
+
 	HWND hWnd;
 	MSG Message;
 	WNDCLASSEX WndClass;
