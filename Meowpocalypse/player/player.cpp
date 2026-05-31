@@ -21,8 +21,8 @@ void InitPlayer() {
 	int fw = imgPlayerSprite.width / 4;
 	int fh = imgPlayerSprite.height / 29;
 
-	player.base.x = player.base.hitBoxX = (float)SCREEN_WIDTH / 2;
-	player.base.y = player.base.hitBoxY = (float)SCREEN_HEIGHT / 2;
+	player.base.x = player.base.hitBoxX = (float)(SCREEN_WIDTH / 2 + (TILE_SIZE / 2));
+	player.base.y = player.base.hitBoxY = (float)(SCREEN_HEIGHT / 2 + (TILE_SIZE / 2));
 	player.base.width = PLAYER_WIDTH;
 	player.base.height = PLAYER_HEIGHT;
 	player.base.hitBoxW = PLAYER_HITBOX_WIDTH;
