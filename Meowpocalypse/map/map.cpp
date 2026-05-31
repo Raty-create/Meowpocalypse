@@ -23,8 +23,8 @@ void InitDoor(MAPDATA* m, int row, int col) {
 void InitWaitingMap(MAPDATA* m) {
 	m->rows = MIN(WAITINGMAP_ROWS, MAX_MAP_ROWS);
 	m->cols = MIN(WAITINGMAP_COLS, MAX_MAP_COLS);
-	m->worldX = WAITING_X;
-	m->worldY = 0;
+	m->worldX = 0;
+	m->worldY = WAITING_Y;
 	m->doorCount = 0;
 
 	for (int row = 0; row < m->rows; row++) {
@@ -55,11 +55,11 @@ void InitWaitingMap(MAPDATA* m) {
 }
 
 // 복도맵
-void InitHallWayMap(MAPDATA* m, int worldX) {
+void InitHallWayMap(MAPDATA* m, int worldY) {
 	m->rows = MIN(HALLWAYMAP_ROWS, MAX_MAP_ROWS);
 	m->cols = MIN(HALLWAYMAP_COLS, MAX_MAP_COLS);
-	m->worldX = (float)worldX;
-	m->worldY = 0;
+	m->worldX = 0;
+	m->worldY = (float)worldY;;
 	m->doorCount = 0;
 
 
