@@ -95,6 +95,7 @@ void UpdateDash(int is3rdPhase);                             // 대시 실행 �
 void UpdateDashWarningCountdown();                           // 대시 경고 카운트다운
 void StartDoubleDashWarning();                               // 3페이즈 첫 번째 대시 경고 시작 (doubleDashPhase 설정)
 
+void ClampBossLanding(float* x, float* y);                   // 보스 점프 스킬 위치 보정
 void StartJumpWarning();                                     // 보스 스킬(점프 경고)
 void UpdateJumpLanding(int is2nd3rdPhase);                   // 보스 점프 착지
 
