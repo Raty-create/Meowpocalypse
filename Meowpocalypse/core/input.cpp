@@ -4,9 +4,23 @@
 INPUT_STATE g_Input;
 
 void UpdateInput(HWND hWnd) {
+	InputEsc();						// 키보드 Esc 입력
 	InputPlayerMovement();			// 플레이어 움직임 입력 (WASD)
 	InputBulletShoot(hWnd);			// 마우스 입력 (총알 발사)
 	InputSkill();					// 스킬 입력
+	InputNum();						// 키보드 숫자 입력
+}
+
+// 키보드 ESC
+void InputEsc() {
+	static BOOL prevEscPressed = FALSE;
+	BOOL currEscPressed = (GetAsyncKeyState(VK_ESCAPE) & 0x8000) != 0;
+
+	if (!prevEscPressed && currEscPressed) {
+		if (g_UI.gameState == INGAME) g_UI.gameState = PAUSE;
+		else if (g_UI.gameState == PAUSE) g_UI.gameState = INGAME;
+	}
+	prevEscPressed = currEscPressed;
 }
 
 // 플레이어 움직임 입력(WASD)
@@ -49,8 +63,8 @@ void InputBulletShoot(HWND hWnd) {
 		int destY = (winH - destH) / 2;
 
 		// 마우스 좌표를 가상 해상도(1920x1080) 기준으로 역계산
-		g_Input.mousePos.x = (long)((g_Input.mousePos.x - destX) / scale);
-		g_Input.mousePos.y = (long)((g_Input.mousePos.y - destY) / scale);
+		g_Input.mousePos.x = (long)((g_Input.mousePos.x - destX) / camera.zoom / scale);
+		g_Input.mousePos.y = (long)((g_Input.mousePos.y - destY) / camera.zoom / scale);
 	}
 }
 
@@ -86,4 +100,28 @@ void Input_Skill_R() {
 
 	g_Input.isRPressed = (!prevRPressed && currRPressed);
 	prevRPressed = currRPressed;
+}
+
+// 플레이어 키보드 숫자 입력 감지
+void InputNum() {
+	Input_Num_One();
+	Input_Num_Two();
+}
+
+// 키보드 숫자 1 아이템
+void Input_Num_One() {
+	static BOOL prevOnePressed = FALSE;
+	BOOL currOnePressed = (GetAsyncKeyState('1') & 0x8000) != 0;
+
+	g_Input.isOnePressed = (!prevOnePressed && currOnePressed);
+	prevOnePressed = currOnePressed;
+}
+
+// 키보드 숫자 2 아이템
+void Input_Num_Two() {
+	static BOOL prevTwoPressed = FALSE;
+	BOOL currTwoPressed = (GetAsyncKeyState('2') & 0x8000) != 0;
+
+	g_Input.isTwoPressed = (!prevTwoPressed && currTwoPressed);
+	prevTwoPressed = currTwoPressed;
 }

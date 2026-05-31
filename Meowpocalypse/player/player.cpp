@@ -33,11 +33,18 @@ void InitPlayer() {
 	player.invincibleTimer = 0;
 
 	player.skillQCooldown = 0;
-	player.skillRCooldown = 0;
 
 	player.boostTimer = 0;
 	player.boostCooldown = 0;
 	player.fireTimer = 0;
+
+	player.skillRCooldown = 0;
+
+	player.itemOneCooldown = 0;
+	player.itemTwoCooldown = 0;
+
+	player.hpPotionCount = POTION_LIMIT;
+	player.mpPotionCount = POTION_LIMIT;
 
 	player.base.direction = DIR_DOWN;
 
@@ -106,9 +113,27 @@ void UpdatePlayerStatus() {
 
 // 무적 시간, 스킬 쿨타임 등 타이머 갱신
 void UpdatePlayerTimers() {
+	static DWORD lastTime = GetTickCount64();
+	DWORD currTime = GetTickCount64();
+
+	int elapsed = (int)(currTime - lastTime);
+	lastTime = currTime;
+
+	// 60 FPS 기준(16.66ms)으로 몇 프레임이 지났어야 하는지 누적 계산
+	static float accumulator = 0.0f;
+	accumulator += (float)elapsed / (1000.0f / 60.0f);
+
+	int ticks = (int)accumulator;
+	accumulator -= (float)ticks;
+
+	// 아직 1프레임 분량의 시간도 안 지났다면 생략
+	if (ticks <= 0) return;
+
 	// 무적 타이머 감소
 	if (player.invincibleTimer > 0) {
-		player.invincibleTimer--;
+		player.invincibleTimer -= ticks;
+
+		if (player.invincibleTimer < 0) player.invincibleTimer = 0;
 		// 무적 타이머가 동작 중일 때 (즉, 맞았을 때) HIT 상태 유지 (넉백 시간 동안)
 		if (player.base.kTimer > 0) {
 			player.base.state = PLAYER_HIT;
@@ -117,31 +142,55 @@ void UpdatePlayerTimers() {
 
 	// Q 스킬 - 쿨타임 타이머 감소
 	if (player.skillQCooldown > 0) {
-		player.skillQCooldown--;
+		player.skillQCooldown -= ticks;
+
+		if (player.skillQCooldown < 0) player.skillQCooldown = 0;
 	}
 
 	// E 스킬 - 부스트 타이머 감소
 	if (player.boostTimer > 0) {
-		player.boostTimer--;
+		player.boostTimer -= ticks;
+
+		if (player.boostTimer < 0) player.boostTimer = 0;
 	}
 
 	// E 스킬 - 쿨타임 타이머 감소
 	if (player.boostCooldown > 0) {
-		player.boostCooldown--;
+		player.boostCooldown -= ticks;
+
+		if (player.boostCooldown < 0) player.boostCooldown = 0;
 	}
 
 	// E 스킬 - 발사 타이머 감소
 	if (player.fireTimer > 0) {
-		player.fireTimer--;
+		player.fireTimer -= ticks;
+
+		if (player.fireTimer < 0) player.fireTimer = 0;
 	}
 
 	// R 스킬 - 쿨타임 타이머 감소
 	if (player.skillRCooldown > 0) {
-		player.skillRCooldown--;
-	}
-}
+		player.skillRCooldown -= ticks;
 
-// 스킬 입력 처리
+		if (player.skillRCooldown < 0) player.skillRCooldown = 0;
+	}
+
+	// 키보드 숫자 1(잃은 체력 비례 HP 회복) 아이템 - 쿨타임 타이머 감소
+	if (player.itemOneCooldown > 0) {
+		player.itemOneCooldown -= ticks;
+
+		if (player.itemOneCooldown < 0) player.itemOneCooldown = 0;
+	}
+
+	// 키보드 숫자 2(MP 전체 회복) 아이템 - 쿨타임 타이머 감소
+	if (player.itemTwoCooldown > 0) {
+		player.itemTwoCooldown -= ticks;
+
+		if (player.itemTwoCooldown < 0) player.itemTwoCooldown = 0;
+	}
+	}
+
+// 스킬 및 아이템 입력 처리
 void HandlePlayerInput() {
 	// E 스킬 - 부스트 활성화 (쿨타임이 0일 때만 가능)
 	if (g_Input.isEPressed && player.boostTimer <= 0 && player.boostCooldown <= 0) {
@@ -149,6 +198,32 @@ void HandlePlayerInput() {
 			player.boostTimer = BOOST_DURATION;
 			player.boostCooldown = BOOST_DURATION + BOOST_COOLDOWN; // 지속시간 + 쿨타임만큼 설정
 		}
+	}
+
+	// 키보드 숫자 1 아이템 - HP 회복 (잃은 체력의 30%)
+	if (g_Input.isOnePressed && player.itemOneCooldown <= 0 && player.hpPotionCount > 0) {
+		int missingHp = PLAYER_HP - player.base.hp;
+		if (missingHp > 0) {
+			player.itemOneCooldown = ITEM_ONE_COOLDOWN;
+			player.hpPotionCount--;
+
+			int healAmount = (int)(missingHp * 0.3f);
+			if (healAmount < 1) healAmount = 1;
+
+			player.base.hp += healAmount;
+			if (player.base.hp > PLAYER_HP) player.base.hp = PLAYER_HP;
+		}
+		else {
+			player.itemOneCooldown = ITEM_ONE_COOLDOWN;
+			player.hpPotionCount--;
+		}
+	}
+
+	// 키보드 숫자 2 아이템 - MP 전체 회복
+	if (g_Input.isTwoPressed && player.itemTwoCooldown <= 0 && player.mpPotionCount > 0) {
+		player.itemTwoCooldown = ITEM_TWO_COOLDOWN;
+		player.mpPotionCount--;
+		player.mp = PLAYER_MP;
 	}
 }
 

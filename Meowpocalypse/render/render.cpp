@@ -1,4 +1,3 @@
-#include <Windows.h>
 #include "render.h"
 #include "player.h"
 #include "enemy.h"
@@ -7,6 +6,7 @@
 #include "boss.h"
 #include "bullet.h"
 #include "enum.h"
+#include "ui.h"
 
 IMAGE imgShadow;
 
@@ -91,10 +91,10 @@ void RenderCurrentMap(HDC hDC) {
 void RenderObjectShadow(HDC hDC, float x, float y, int objW) {
 	if (imgShadow.img.IsNull()) return;
 
-	int shadowX = (int)(x - camera.x);
-	int shadowY = (int)(y - camera.y) + (objW / 3);		// 발밑 위치 오프셋
+	int shadowX = (int)((x - camera.x) * camera.zoom);
+	int shadowY = (int)((y - camera.y + (float)objW / 3.0f) * camera.zoom);
 
-	int sw = (int)(objW * 0.6f);
+	int sw = (int)(objW * 0.6f * camera.zoom);
 	int sh = sw;
 
 	DrawMyImage(&imgShadow, hDC, shadowX - sw / 2, shadowY - sh / 2, sw, sh, 0, 0, imgShadow.width, imgShadow.height);
@@ -107,8 +107,8 @@ void RenderPlayer(HDC hDC) {
 	// zoom을 적용한 스크린 좌표 및 크기 변환
 	screenX = (int)((player.base.x - camera.x) * camera.zoom);
 	screenY = (int)((player.base.y - camera.y) * camera.zoom);
-	int sw = (int)(player.base.width * camera.zoom);
-	int sh = (int)(player.base.height * camera.zoom);
+	int sw = (int)(player.base.width * 6 * camera.zoom);
+	int sh = (int)(player.base.height * 6.3f * camera.zoom);
 
 	int finalRow = 0;
 
@@ -150,19 +150,21 @@ void RenderPlayer(HDC hDC) {
 		break;
 	}
 
-	RenderAnimation(&player.anim, hDC, screenX, screenY, player.base.width * 6, (int)((float)player.base.height * 6.3f), finalRow);
+	RenderAnimation(&player.anim, hDC, screenX, screenY, sw, sh, finalRow);
 }
 
 // 플레이어 hitBox
 void RenderPlayerHitBox(HDC hDC) {
-	screenX = (int)(player.base.hitBoxX - camera.x);
-	screenY = (int)(player.base.hitBoxY - camera.y);
+	screenX = (int)((player.base.hitBoxX - camera.x) * camera.zoom);
+	screenY = (int)((player.base.hitBoxY - camera.y) * camera.zoom);
+	int sw = (int)(player.base.hitBoxW * camera.zoom);
+	int sh = (int)(player.base.hitBoxH * camera.zoom);
 
 	hPen = CreatePen(PS_SOLID, 1, RGB(255, 0, 0));
 	oldPen = (HPEN)SelectObject(hDC, hPen);
 	oldBrush = (HBRUSH)SelectObject(hDC, GetStockObject(NULL_BRUSH));
 
-	Rectangle(hDC, screenX - player.base.hitBoxW / 2, screenY - player.base.hitBoxH / 2, screenX + player.base.hitBoxW / 2, screenY + player.base.hitBoxH / 2);
+	Rectangle(hDC, screenX - sw / 2, screenY - sh / 2, screenX + sw / 2, screenY + sh / 2);
 
 	SelectObject(hDC, oldPen);
 	SelectObject(hDC, oldBrush);
@@ -174,8 +176,10 @@ void RenderEnemies(HDC hDC) {
 	for (int i = 0; i < ENEMY_LIMIT; i++) {
 		if (!enemies[i].isActive) continue;
 
-		screenX = (int)(enemies[i].base.x - camera.x);
-		screenY = (int)(enemies[i].base.y - camera.y);
+		screenX = (int)((enemies[i].base.x - camera.x) * camera.zoom);
+		screenY = (int)((enemies[i].base.y - camera.y) * camera.zoom);
+		int sw = (int)(enemies[i].base.width * camera.zoom);
+		int sh = (int)(enemies[i].base.height * camera.zoom);
 
 		// 애니메이션 행 세트 결정 (각 세트는 8줄씩 차지)
 		int baseRow = 0;
@@ -223,7 +227,7 @@ void RenderEnemies(HDC hDC) {
 
 		int finalRow = baseRow + dirOffset;
 
-		RenderAnimation(&enemies[i].anim, hDC, screenX, screenY, enemies[i].base.width, enemies[i].base.height, finalRow);
+		RenderAnimation(&enemies[i].anim, hDC, screenX, screenY, sw, sh, finalRow);
 	}
 }
 
@@ -232,15 +236,17 @@ void RenderEnemiesHitBox(HDC hDC) {
 	for (int i = 0; i < ENEMY_LIMIT; i++) {
 		if (!enemies[i].isActive) continue;
 
-		screenX = (int)(enemies[i].base.hitBoxX - camera.x);
-		screenY = (int)(enemies[i].base.hitBoxY - camera.y);
+		screenX = (int)((enemies[i].base.hitBoxX - camera.x) * camera.zoom);
+		screenY = (int)((enemies[i].base.hitBoxY - camera.y) * camera.zoom);
+		int sw = (int)(enemies[i].base.hitBoxW * camera.zoom);
+		int sh = (int)(enemies[i].base.hitBoxH * camera.zoom);
 
 		hPen = CreatePen(PS_SOLID, 1, RGB(255, 0, 0));
 		oldPen = (HPEN)SelectObject(hDC, hPen);
 		oldBrush = (HBRUSH)SelectObject(hDC, GetStockObject(NULL_BRUSH));
 
-		Rectangle(hDC, screenX - enemies[i].base.hitBoxW / 2, screenY - enemies[i].base.hitBoxH / 3,
-			screenX + enemies[i].base.hitBoxW / 2, screenY + enemies[i].base.hitBoxH / 2);
+		Rectangle(hDC, screenX - sw / 2, screenY - sh / 3,
+			screenX + sw / 2, screenY + sh / 2);
 
 		SelectObject(hDC, oldPen);
 		SelectObject(hDC, oldBrush);
@@ -253,10 +259,12 @@ void RenderCatPaw(HDC hDC) {
 	for (int i = 0; i < CAT_PAW_LIMIT; i++) {
 		if (!catpaw[i].isActive) continue;
 
-		screenX = (int)(catpaw[i].x - camera.x);
-		screenY = (int)(catpaw[i].y - camera.y);
+		screenX = (int)((catpaw[i].x - camera.x) * camera.zoom);
+		screenY = (int)((catpaw[i].y - camera.y) * camera.zoom);
+		int sw = (int)(catpaw[i].width * camera.zoom);
+		int sh = (int)(catpaw[i].height * camera.zoom);
 
-		RenderAnimation(&catpaw[i].anim, hDC, screenX, screenY, catpaw[i].width, catpaw[i].height, catpaw[i].dirRow);
+		RenderAnimation(&catpaw[i].anim, hDC, screenX, screenY, sw, sh, catpaw[i].dirRow);
 	}
 }
 
@@ -265,15 +273,17 @@ void RenderCatPawHitBox(HDC hDC) {
 	for (int i = 0; i < CAT_PAW_LIMIT; i++) {
 		if (!catpaw[i].isActive) continue;
 
-		screenX = (int)(catpaw[i].hitBoxX - camera.x);
-		screenY = (int)(catpaw[i].hitBoxY - camera.y);
+		screenX = (int)((catpaw[i].hitBoxX - camera.x) * camera.zoom);
+		screenY = (int)((catpaw[i].hitBoxY - camera.y) * camera.zoom);
+		int sw = (int)(catpaw[i].hitBoxW * camera.zoom);
+		int sh = (int)(catpaw[i].hitBoxH * camera.zoom);
 
 		hPen = CreatePen(PS_SOLID, 1, RGB(255, 0, 0));
 		oldPen = (HPEN)SelectObject(hDC, hPen);
 		oldBrush = (HBRUSH)SelectObject(hDC, GetStockObject(NULL_BRUSH));
 
-		Rectangle(hDC, screenX - catpaw[i].hitBoxW / 2, screenY - catpaw[i].hitBoxH / 2,
-			screenX + catpaw[i].hitBoxW / 2, screenY + catpaw[i].hitBoxH / 2);
+		Rectangle(hDC, screenX - sw / 2, screenY - sh / 2,
+			screenX + sw / 2, screenY + sh / 2);
 
 		SelectObject(hDC, oldPen);
 		SelectObject(hDC, oldBrush);
@@ -288,7 +298,7 @@ void RenderDashWarning(HDC hDC) {
 	// 깜빡임: 10프레임 단위로 켜짐/꺼짐
 	if ((dashWarn.timer / 10) % 2 == 0) return;
 
-	int half = BOSS_SIZE / 2;
+	int half = (int)(BOSS_SIZE * camera.zoom / 2);
 
 	// 경고 영역의 꼭짓점 4개 계산 (월드 → 화면 좌표)
 	// 끝점 중심
@@ -297,17 +307,17 @@ void RenderDashWarning(HDC hDC) {
 
 	POINT pts[4];
 	// P0: 시작 왼쪽 위
-	pts[0].x = (int)(dashWarn.startX + dashWarn.perpX * half - camera.x);
-	pts[0].y = (int)(dashWarn.startY + dashWarn.perpY * half - camera.y);
+	pts[0].x = (int)((dashWarn.startX - camera.x) * camera.zoom + dashWarn.perpX * half);
+	pts[0].y = (int)((dashWarn.startY - camera.y) * camera.zoom + dashWarn.perpY * half);
 	// P1: 끝   왼쪽 위
-	pts[1].x = (int)(ex + dashWarn.perpX * half - camera.x);
-	pts[1].y = (int)(ey + dashWarn.perpY * half - camera.y);
+	pts[1].x = (int)((ex - camera.x) * camera.zoom + dashWarn.perpX * half);
+	pts[1].y = (int)((ey - camera.y) * camera.zoom + dashWarn.perpY * half);
 	// P2: 끝   오른쪽 아래
-	pts[2].x = (int)(ex - dashWarn.perpX * half - camera.x);
-	pts[2].y = (int)(ey - dashWarn.perpY * half - camera.y);
+	pts[2].x = (int)((ex - camera.x) * camera.zoom - dashWarn.perpX * half);
+	pts[2].y = (int)((ey - camera.y) * camera.zoom - dashWarn.perpY * half);
 	// P3: 시작 오른쪽 아래
-	pts[3].x = (int)(dashWarn.startX - dashWarn.perpX * half - camera.x);
-	pts[3].y = (int)(dashWarn.startY - dashWarn.perpY * half - camera.y);
+	pts[3].x = (int)((dashWarn.startX - camera.x) * camera.zoom - dashWarn.perpX * half);
+	pts[3].y = (int)((dashWarn.startY - camera.y) * camera.zoom - dashWarn.perpY * half);
 
 	hBrush = CreateSolidBrush(RGB(255, 40, 40));
 	oldBrush = (HBRUSH)SelectObject(hDC, hBrush);
@@ -329,9 +339,9 @@ void RenderJumpWarning(HDC hDC) {
 	// 깜빡임: 10프레임 단위
 	if ((jumpWarn.timer / 10) % 2 == 0) return;
 
-	int r = BOSS_JUMP_LAND_SIZE / 2;
-	int sx = (int)(jumpWarn.targetX - camera.x);
-	int sy = (int)(jumpWarn.targetY - camera.y);
+	int r = (int)(BOSS_JUMP_LAND_SIZE * camera.zoom / 2);
+	int sx = (int)((jumpWarn.targetX - camera.x) * camera.zoom);
+	int sy = (int)((jumpWarn.targetY - camera.y) * camera.zoom);
 
 	hBrush = CreateSolidBrush(RGB(255, 40, 40));
 	oldBrush = (HBRUSH)SelectObject(hDC, hBrush);
@@ -372,20 +382,23 @@ void RenderBoss(HDC hDC) {
 	DeleteObject(hBrush);
 }
 
+// 보스 hitBox
 void RenderBossHitBox(HDC hDC) {
 
 	if (!boss.isActive) return;
 	if (boss.isEscaping == ACTIVE) return;
 	if (boss.isJumping == ACTIVE && boss.jumpPhase < 3) return;
 
-	screenX = (int)(boss.base.hitBoxX - camera.x);
-	screenY = (int)(boss.base.hitBoxY - camera.y);
+	screenX = (int)((boss.base.hitBoxX - camera.x) * camera.zoom);
+	screenY = (int)((boss.base.hitBoxY - camera.y) * camera.zoom);
+	int sw = (int)(boss.base.hitBoxW * camera.zoom);
+	int sh = (int)(boss.base.hitBoxH * camera.zoom);
 
 	hPen = CreatePen(PS_SOLID, 1, RGB(255, 0, 0));
 	oldPen = (HPEN)SelectObject(hDC, hPen);
 	oldBrush = (HBRUSH)SelectObject(hDC, GetStockObject(NULL_BRUSH));
 
-	Rectangle(hDC, screenX - boss.base.hitBoxW / 2, screenY - boss.base.hitBoxH / 2, screenX + boss.base.hitBoxW / 2, screenY + boss.base.hitBoxH / 2);
+	Rectangle(hDC, screenX - sw / 2, screenY - sh / 2, screenX + sw / 2, screenY + sh / 2);
 
 	SelectObject(hDC, oldPen);
 	SelectObject(hDC, oldBrush);
@@ -399,11 +412,12 @@ void RenderBossPaws(HDC hDC) {
 
 	for (int i = 0; i < BOSS_PAW_LIMIT; i++) {
 		if (bossPaws[i].isActive == INACTIVE) continue;
-		screenX = (int)(bossPaws[i].x - camera.x);
-		screenY = (int)(bossPaws[i].y - camera.y);
+		screenX = (int)((bossPaws[i].x - camera.x) * camera.zoom);
+		screenY = (int)((bossPaws[i].y - camera.y) * camera.zoom);
+		int r = (int)(BOSS_PAW_SIZE * camera.zoom / 2);
 		Ellipse(hDC,
-			screenX - BOSS_PAW_SIZE / 2, screenY - BOSS_PAW_SIZE / 2,
-			screenX + BOSS_PAW_SIZE / 2, screenY + BOSS_PAW_SIZE / 2);
+			screenX - r, screenY - r,
+			screenX + r, screenY + r);
 	}
 	SelectObject(hDC, oldBrush);
 	DeleteObject(hBrush);
@@ -414,10 +428,12 @@ void RenderBullets(HDC hDC) {
 	for (int i = 0; i < BULLET_MAX; i++) {
 		if (bullets[i].isActive == INACTIVE) continue;
 
-		screenX = (int)(bullets[i].x - camera.x);
-		screenY = (int)(bullets[i].y - camera.y);
+		screenX = (int)((bullets[i].x - camera.x) * camera.zoom);
+		screenY = (int)((bullets[i].y - camera.y) * camera.zoom);
+		int sw = (int)(bullets[i].width * camera.zoom);
+		int sh = (int)(bullets[i].height * camera.zoom);
 
-		RenderAnimation(&bullets[i].anim, hDC, screenX, screenY, bullets[i].width, bullets[i].height, bullets[i].dirRow);
+		RenderAnimation(&bullets[i].anim, hDC, screenX, screenY, sw, sh, bullets[i].dirRow);
 	}
 }
 
@@ -426,15 +442,17 @@ void RenderBulletsHitBox(HDC hDC) {
 	for (int i = 0; i < BULLET_MAX; i++) {
 		if (!bullets[i].isActive) continue;
 
-		screenX = (int)(bullets[i].hitBoxX - camera.x);
-		screenY = (int)(bullets[i].hitBoxY - camera.y);
+		screenX = (int)((bullets[i].hitBoxX - camera.x) * camera.zoom);
+		screenY = (int)((bullets[i].hitBoxY - camera.y) * camera.zoom);
+		int sw = (int)(bullets[i].hitBoxW * camera.zoom);
+		int sh = (int)(bullets[i].hitBoxH * camera.zoom);
 
 		hPen = CreatePen(PS_SOLID, 1, RGB(255, 0, 0));
 		oldPen = (HPEN)SelectObject(hDC, hPen);
 		oldBrush = (HBRUSH)SelectObject(hDC, GetStockObject(NULL_BRUSH));
 
-		Rectangle(hDC, screenX - bullets[i].hitBoxW / 2, screenY - bullets[i].hitBoxH / 2,
-			screenX + bullets[i].hitBoxW / 2, screenY + bullets[i].hitBoxH / 2);
+		Rectangle(hDC, screenX - sw / 2, screenY - sh / 2,
+			screenX + sw / 2, screenY + sh / 2);
 
 		SelectObject(hDC, oldPen);
 		SelectObject(hDC, oldBrush);
@@ -447,9 +465,214 @@ void RenderChuru(HDC hDC) {
 	for (int i = 0; i < CHURU_MAX; i++) {
 		if (churues[i].isActive == INACTIVE) continue;
 
-		screenX = (int)(churues[i].x - camera.x);
-		screenY = (int)(churues[i].y - camera.y);
+		screenX = (int)((churues[i].x - camera.x) * camera.zoom);
+		screenY = (int)((churues[i].y - camera.y) * camera.zoom);
+		int sw = (int)(churues[i].width * camera.zoom);
+		int sh = (int)(churues[i].height * camera.zoom);
 
-		RenderAnimation(&churues[i].anim, hDC, screenX, screenY, churues[i].width, churues[i].height, churues[i].dirRow);
+		RenderAnimation(&churues[i].anim, hDC, screenX, screenY, sw, sh, churues[i].dirRow);
 	}
+}
+
+// UI
+void RenderUI(HDC hDC) {
+	if (g_UI.gameState == TITLE) {
+		RenderTitle(hDC);					// 타이틀 화면 그리기
+	}
+	else if (g_UI.gameState == INGAME) {
+		RenderHUD(hDC);						// 인게임 HUD 그리기
+	}
+	else if (g_UI.gameState == PAUSE) {
+		RenderPause(hDC);
+	}
+}
+
+// 타이틀 UI
+void RenderTitle(HDC hDC) {
+	// 배경 애니메이션 (UpdateTitle에서 업데이트 수행함)
+	DrawMyImage(&g_UI.imgTitleBg, hDC, (int)g_UI.title.titleBg.x - g_UI.title.titleBg.width / 2, (int)g_UI.title.titleBg.y - g_UI.title.titleBg.height / 2, g_UI.title.titleBg.width, g_UI.title.titleBg.height,
+		g_UI.title.titleBg.srcX, g_UI.title.titleBg.srcY, g_UI.title.titleBg.srcW, g_UI.title.titleBg.srcH);
+
+	// 텍스트 로고
+	DrawMyImage(&g_UI.imgMeowpocalypseTextLogo, hDC, (int)g_UI.title.titleLogo.x - g_UI.title.titleLogo.width / 2, (int)g_UI.title.titleLogo.y - g_UI.title.titleLogo.height / 2, g_UI.title.titleLogo.width, g_UI.title.titleLogo.height,
+		g_UI.title.titleLogo.srcX, g_UI.title.titleLogo.srcY, g_UI.title.titleLogo.srcW, g_UI.title.titleLogo.srcH);
+
+	// 버튼 호버 상태 체크 (텍스트 크기 결정을 위함)
+	UI_ELEMENT* startBnt = &g_UI.title.startButton;
+	UI_ELEMENT* exitBnt = &g_UI.title.exitButton;
+
+	bool isStartHover = (g_Input.mousePos.x >= startBnt->x - startBnt->width / 2 && g_Input.mousePos.x <= startBnt->x + startBnt->width / 2 &&
+		g_Input.mousePos.y >= startBnt->y - startBnt->height / 2 && g_Input.mousePos.y <= startBnt->y + startBnt->height / 2);
+	bool isExitHover = (g_Input.mousePos.x >= exitBnt->x - exitBnt->width / 2 && g_Input.mousePos.x <= exitBnt->x + exitBnt->width / 2 &&
+		g_Input.mousePos.y >= exitBnt->y - exitBnt->height / 2 && g_Input.mousePos.y <= exitBnt->y + exitBnt->height / 2);
+
+	// Start 버튼 배경 프레임
+	DrawMyImage(&g_UI.imgUISheet, hDC, (int)startBnt->x - startBnt->width / 2, (int)startBnt->y - startBnt->height / 2, startBnt->width, startBnt->height,
+		startBnt->srcX, startBnt->srcY, startBnt->srcW, startBnt->srcH);
+
+	// Exit 버튼 배경 프레임
+	DrawMyImage(&g_UI.imgUISheet, hDC, (int)exitBnt->x - exitBnt->width / 2, (int)exitBnt->y - exitBnt->height / 2, exitBnt->width, exitBnt->height,
+		exitBnt->srcX, exitBnt->srcY, exitBnt->srcW, exitBnt->srcH);
+
+	// 타이틀 버튼 텍스트 (START / EXIT)
+	SetBkMode(hDC, TRANSPARENT);
+	SetTextColor(hDC, RGB(255, 255, 255));
+	HFONT hOldFont = (HFONT)GetCurrentObject(hDC, OBJ_FONT);
+
+	SIZE textSize;
+	const wchar_t* startStr = L"START";
+	const wchar_t* exitStr = L"EXIT";
+
+	// START 텍스트 그리기
+	if (isStartHover) SelectObject(hDC, g_UI.hTitleHoverFont);
+	else SelectObject(hDC, g_UI.hTitleStartExitFont);
+	
+	GetTextExtentPoint32(hDC, startStr, lstrlen(startStr), &textSize);
+	TextOut(hDC, (int)startBnt->x - (textSize.cx / 2), (int)(startBnt->y - (textSize.cy / 2.5f)), startStr, lstrlen(startStr));
+
+	// EXIT 텍스트 그리기
+	if (isExitHover) SelectObject(hDC, g_UI.hTitleHoverFont);
+	else SelectObject(hDC, g_UI.hTitleStartExitFont);
+
+	GetTextExtentPoint32(hDC, exitStr, lstrlen(exitStr), &textSize);
+	TextOut(hDC, (int)exitBnt->x - (textSize.cx / 2), (int)(exitBnt->y - (textSize.cy / 2.5f)), exitStr, lstrlen(exitStr));
+
+	SelectObject(hDC, hOldFont);
+}
+
+// 인게임 UI
+void RenderHUD(HDC hDC) {
+	// HP 바 배경 프레임
+	DrawMyImage(&g_UI.imgUISheet, hDC, (int)g_UI.hud.hpBarFrame.x - g_UI.hud.hpBarFrame.width / 2, (int)g_UI.hud.hpBarFrame.y - g_UI.hud.hpBarFrame.height / 2, g_UI.hud.hpBarFrame.width, g_UI.hud.hpBarFrame.height,
+		g_UI.hud.hpBarFrame.srcX, g_UI.hud.hpBarFrame.srcY, g_UI.hud.hpBarFrame.srcW, g_UI.hud.hpBarFrame.srcH);
+
+	// HP 바
+	float hpRatio = (float)player.base.hp / PLAYER_HP;
+	int currHpW = (player.base.hp > 0) ? (int)ceil(g_UI.hud.hpBar.width * hpRatio) : 0;
+	int currHpSrcW = (player.base.hp > 0) ? (int)ceil(g_UI.hud.hpBar.srcW * hpRatio) : 0;
+
+	DrawMyImage(&g_UI.imgUISheet, hDC, (int)g_UI.hud.hpBar.x - g_UI.hud.hpBar.width / 2, (int)g_UI.hud.hpBar.y - g_UI.hud.hpBar.height / 2, currHpW, g_UI.hud.hpBar.height,
+		g_UI.hud.hpBar.srcX, g_UI.hud.hpBar.srcY, currHpSrcW, g_UI.hud.hpBar.srcH);
+
+	// MP 바 배경 프레임
+	DrawMyImage(&g_UI.imgUISheet, hDC, (int)g_UI.hud.mpBarFrame.x - g_UI.hud.mpBarFrame.width / 2, (int)g_UI.hud.mpBarFrame.y - g_UI.hud.mpBarFrame.height / 2, g_UI.hud.mpBarFrame.width, g_UI.hud.mpBarFrame.height,
+		g_UI.hud.mpBarFrame.srcX, g_UI.hud.mpBarFrame.srcY, g_UI.hud.mpBarFrame.srcW, g_UI.hud.mpBarFrame.srcH);
+
+	// MP 바
+	float mpRatio = (float)player.mp / PLAYER_MP;
+	int currMpW = (player.mp > 0) ? (int)ceil(g_UI.hud.mpBar.width * mpRatio) : 0;
+	int currMpSrcW = (player.mp > 0) ? (int)ceil(g_UI.hud.mpBar.srcW * mpRatio) : 0;
+
+	DrawMyImage(&g_UI.imgUISheet, hDC, (int)g_UI.hud.mpBar.x - g_UI.hud.mpBar.width / 2, (int)g_UI.hud.mpBar.y - g_UI.hud.mpBar.height / 2, currMpW, g_UI.hud.mpBar.height,
+		g_UI.hud.mpBar.srcX, g_UI.hud.mpBar.srcY, currMpSrcW, g_UI.hud.mpBar.srcH);
+
+	// 스킬 - 아이템 아이콘 배경
+	for (int i = 0; i < 5; i++) {
+		DrawMyImage(&g_UI.imgUISheet, hDC, (int)g_UI.hud.skill_item_sq[i].x - g_UI.hud.skill_item_sq[i].width / 2, (int)g_UI.hud.skill_item_sq[i].y - g_UI.hud.skill_item_sq[i].height / 2, g_UI.hud.skill_item_sq[i].width, g_UI.hud.skill_item_sq[i].height,
+			g_UI.hud.skill_item_sq[i].srcX, g_UI.hud.skill_item_sq[i].srcY, g_UI.hud.skill_item_sq[i].srcW, g_UI.hud.skill_item_sq[i].srcH);
+	}
+
+	// 스킬 아이콘
+	for (int i = 0; i < 3; i++) {
+		DrawMyImage(&g_UI.imgUISheet, hDC, (int)g_UI.hud.skill_Icon[i].x - g_UI.hud.skill_Icon[i].width / 2, (int)g_UI.hud.skill_Icon[i].y - g_UI.hud.skill_Icon[i].height / 2, g_UI.hud.skill_Icon[i].width, g_UI.hud.skill_Icon[i].height,
+			g_UI.hud.skill_Icon[i].srcX, g_UI.hud.skill_Icon[i].srcY, g_UI.hud.skill_Icon[i].srcW, g_UI.hud.skill_Icon[i].srcH);
+	}
+
+	// HP 포션
+	DrawMyImage(&g_UI.imgUISheet, hDC, (int)g_UI.hud.hpPotion.x - g_UI.hud.hpPotion.width / 2, (int)g_UI.hud.hpPotion.y - g_UI.hud.hpPotion.height / 2, g_UI.hud.hpPotion.width, g_UI.hud.hpPotion.height,
+		g_UI.hud.hpPotion.srcX, g_UI.hud.hpPotion.srcY, g_UI.hud.hpPotion.srcW, g_UI.hud.hpPotion.srcH);
+
+	// MP 포션
+	DrawMyImage(&g_UI.imgUISheet, hDC, (int)g_UI.hud.mpPotion.x - g_UI.hud.mpPotion.width / 2, (int)g_UI.hud.mpPotion.y - g_UI.hud.mpPotion.height / 2, g_UI.hud.mpPotion.width, g_UI.hud.mpPotion.height,
+		g_UI.hud.mpPotion.srcX, g_UI.hud.mpPotion.srcY, g_UI.hud.mpPotion.srcW, g_UI.hud.mpPotion.srcH);
+
+	// 쿨타임 및 아이템 개수 표시 설정
+	SetBkMode(hDC, TRANSPARENT);
+	wchar_t textBuf[16];
+	SIZE textSize;
+
+	// 스킬 - 아이템 쿨타임
+	HFONT hOldFont = (HFONT)SelectObject(hDC, g_UI.hCooldownFont);
+	SetTextColor(hDC, RGB(255, 255, 255));
+
+	int cooldowns[5] = {
+		player.skillQCooldown,
+		player.boostCooldown,
+		player.skillRCooldown,
+		player.itemOneCooldown,
+		player.itemTwoCooldown
+	};
+	UI_ELEMENT* icons[5] = {
+		&g_UI.hud.skill_Icon[0],
+		&g_UI.hud.skill_Icon[1],
+		&g_UI.hud.skill_Icon[2],
+		&g_UI.hud.hpPotion,
+		&g_UI.hud.mpPotion
+	};
+
+	for (int i = 0; i < 5; i++) {
+		if (cooldowns[i] > 0) {
+			// 스킬 - 아이템 아이콘 금지 배경
+			DrawMyImage(&g_UI.imgUISheet, hDC, (int)g_UI.hud.skill_item_ban_sq[i].x - g_UI.hud.skill_item_ban_sq[i].width / 2, (int)g_UI.hud.skill_item_ban_sq[i].y - g_UI.hud.skill_item_ban_sq[i].height / 2, g_UI.hud.skill_item_ban_sq[i].width, g_UI.hud.skill_item_ban_sq[i].height,
+				g_UI.hud.skill_item_ban_sq[i].srcX, g_UI.hud.skill_item_ban_sq[i].srcY, g_UI.hud.skill_item_ban_sq[i].srcW, g_UI.hud.skill_item_ban_sq[i].srcH);
+
+			// 쿨타임 숫자
+			swprintf_s(textBuf, L"%d", cooldowns[i] / 60 + 1);
+			GetTextExtentPoint32(hDC, textBuf, lstrlen(textBuf), &textSize);
+			TextOut(hDC, (int)icons[i]->x - (textSize.cx / 2), (int)icons[i]->y - (textSize.cy / 2), textBuf, lstrlen(textBuf));
+		}
+	}
+
+	// 아이템 개수
+	SelectObject(hDC, g_UI.hItemCountFont);
+	SetTextColor(hDC, RGB(242, 232, 175));
+
+	int counts[2] = { player.hpPotionCount, player.mpPotionCount };
+	UI_ELEMENT* potionIcons[2] = { &g_UI.hud.hpPotion, &g_UI.hud.mpPotion };
+
+	for (int i = 0; i < 2; i++) {
+		swprintf_s(textBuf, L"%d", counts[i]);
+		TextOut(hDC, (int)(potionIcons[i]->x + potionIcons[i]->width / 3.2f), (int)(potionIcons[i]->y - potionIcons[i]->height / 2.2f), textBuf, lstrlen(textBuf));
+	}
+
+	SelectObject(hDC, hOldFont);
+
+	// GUI 로고
+	DrawMyImage(&g_UI.imgUISheet, hDC, (int)g_UI.hud.logo_Icon.x - g_UI.hud.logo_Icon.width / 2, (int)g_UI.hud.logo_Icon.y - g_UI.hud.logo_Icon.height / 2, g_UI.hud.logo_Icon.width, g_UI.hud.logo_Icon.height,
+		g_UI.hud.logo_Icon.srcX, g_UI.hud.logo_Icon.srcY, g_UI.hud.logo_Icon.srcW, g_UI.hud.logo_Icon.srcH);
+}
+
+// 퍼즈 UI
+void RenderPause(HDC hDC) {
+	// 메뉴 배경
+	DrawMyImage(&g_UI.imgUISheet, hDC, (int)g_UI.pause.menuBg.x - g_UI.pause.menuBg.width / 2, (int)g_UI.pause.menuBg.y - g_UI.pause.menuBg.height / 2, g_UI.pause.menuBg.width, g_UI.pause.menuBg.height,
+		g_UI.pause.menuBg.srcX, g_UI.pause.menuBg.srcY, g_UI.pause.menuBg.srcW, g_UI.pause.menuBg.srcH);
+}
+
+// Fade Out - Fade In (타이틀 -> 인게임)
+void RenderFadeEffect(HDC hDC) {
+	if (g_UI.fadeAlpha <= 0.0f && g_UI.gameState != PAUSE) return;
+
+	HDC memDC = CreateCompatibleDC(hDC);
+	HBITMAP bmp = CreateCompatibleBitmap(hDC, 1, 1);
+	SelectObject(memDC, bmp);
+
+	SetPixel(memDC, 0, 0, (RGB(0, 0, 0)));
+
+	// AlphaBlend 설정
+	BLENDFUNCTION bf;
+	bf.AlphaFormat = 0;
+	bf.BlendFlags = 0;
+	bf.BlendOp = AC_SRC_OVER;
+
+	BYTE alpha = (BYTE)(g_UI.fadeAlpha * 255.0f);
+	if (g_UI.gameState == PAUSE && !g_UI.isFadeOut && !g_UI.isFadeIn) {
+		alpha = 100;
+	}
+	bf.SourceConstantAlpha = alpha;
+
+	AlphaBlend(hDC, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, memDC, 0, 0, 1, 1, bf);
+
+	DeleteObject(bmp);
+	DeleteDC(memDC);
 }

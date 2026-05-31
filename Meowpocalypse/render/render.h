@@ -1,5 +1,7 @@
 #pragma once
+
 #include <Windows.h>
+#include <math.h>
 
 // 타일
 void RenderTile(HDC hDC, int screenX, int screenY, COLORREF color);
@@ -36,3 +38,11 @@ void RenderBulletsHitBox(HDC hDC);
 
 // 츄르
 void RenderChuru(HDC hDC);
+
+// UI
+void RenderUI(HDC hDC);
+void RenderTitle(HDC hDC);
+void RenderHUD(HDC hDC);
+void RenderPause(HDC hDC);
+
+void RenderFadeEffect(HDC hDC);

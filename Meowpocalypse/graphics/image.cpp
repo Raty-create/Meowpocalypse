@@ -33,5 +33,7 @@ void ReleaseMyImage(IMAGE* image) {
 
 void DrawMyImage(IMAGE* image, HDC hDC, int x, int y, int dw, int dh, int sx, int sy, int sw, int sh) {
 	if (image->img.IsNull()) return;
+	if (dw <= 0 || dh <= 0 || sw <= 0 || sh <= 0) return;
+
 	image->img.Draw(hDC, x, y, dw, dh, sx, sy, sw, sh);
 }
