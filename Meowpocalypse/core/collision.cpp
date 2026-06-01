@@ -66,15 +66,11 @@ void HandlePlayerWallCollision() {
 
 	int playerHalfW = PLAYER_WIDTH / 2;
 	int playerHalfH = PLAYER_HEIGHT;
-	if (!IsTileWall(playerNextX - playerHalfW, player.base.y - playerHalfH) &&
-		!IsTileWall(playerNextX + playerHalfW, player.base.y - playerHalfH) &&
-		!IsTileWall(playerNextX - playerHalfW, player.base.y + playerHalfH) &&
+	if (!IsTileWall(playerNextX - playerHalfW, player.base.y + playerHalfH) &&
 		!IsTileWall(playerNextX + playerHalfW, player.base.y + playerHalfH))
 		player.base.x = player.base.hitBoxX = playerNextX;
 
-	if (!IsTileWall(player.base.x - playerHalfW, playerNextY - playerHalfH) &&
-		!IsTileWall(player.base.x + playerHalfW, playerNextY - playerHalfH) &&
-		!IsTileWall(player.base.x - playerHalfW, playerNextY + playerHalfH) &&
+	if (!IsTileWall(player.base.x - playerHalfW, playerNextY + playerHalfH) &&
 		!IsTileWall(player.base.x + playerHalfW, playerNextY + playerHalfH))
 		player.base.y = player.base.hitBoxY = playerNextY;
 }
