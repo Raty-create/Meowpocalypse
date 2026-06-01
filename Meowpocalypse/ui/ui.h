@@ -8,6 +8,7 @@
 #include "input.h"
 #include "image.h"
 #include "animation.h"
+#include "game.h"
 
 typedef struct {
 	float x, y;
@@ -27,11 +28,12 @@ typedef struct {
 
 typedef struct {
 	UI_ELEMENT menuBg;
-	UI_ELEMENT playButton;
-	UI_ELEMENT keyGuideButton;
-	UI_ELEMENT BackTitleButton;
-	UI_ELEMENT exitButton;
+	UI_ELEMENT menuButton[4];		// Play, Key Guide, Title, Exit
 } PAUSE_DATA;
+
+typedef struct {
+	UI_ELEMENT keyGuideUI;
+} KEY_GUIDE_DATA;
 
 typedef struct {
 	UI_ELEMENT hpBarFrame;
@@ -68,6 +70,9 @@ typedef struct {
 
 	PAUSE_DATA pause;
 
+	IMAGE imgKeyGuide;
+	KEY_GUIDE_DATA keyGuide;
+
 	HFONT hTitleStartExitFont;	// 타이틀 Start 및 Exit 폰트
 	HFONT hTitleHoverFont;		// 타이틀 마우스 호버용 큰 폰트
 	HFONT hCooldownFont;		// 스킬 쿨타임용 폰트
@@ -78,7 +83,8 @@ extern UI_SYSTEM g_UI;
 
 void InitUI();
 void UpdateTitle(HWND hWnd);
-//void UpdatePause(HWND hWnd);
+void UpdatePause(HWND hWnd);
+void UpdateKeyGuide(HWND hWnd);
 void ReleaseTitle();
 void ReleaseUI();
 
@@ -101,4 +107,7 @@ void LogoIconUI();				// GUI 로고
 
 // PAUSE
 void PauseMenuBg();
-void PausePlayButton();
+void PauseMenuButton();
+
+// KEY_GUIDE
+void KeyGuideUI();

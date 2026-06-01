@@ -44,5 +44,7 @@ void RenderUI(HDC hDC);
 void RenderTitle(HDC hDC);
 void RenderHUD(HDC hDC);
 void RenderPause(HDC hDC);
+void RenderKeyGuide(HDC hDC);
 
+void RenderDimmedBackground(HDC hDC);
 void RenderFadeEffect(HDC hDC);

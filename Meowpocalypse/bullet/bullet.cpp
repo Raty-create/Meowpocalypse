@@ -80,7 +80,7 @@ void ShootBullet() {
 	if (g_Input.isLButtonDown) {
 		player.base.state = PLAYER_SHOOT;
 
-		POINT pt = g_Input.mousePos;
+		POINT pt = g_Input.mouseWorldPos;
 
 		// 플레이어의 스크린 좌표
 		float playerScreenX = player.base.x - camera.x;
@@ -148,7 +148,7 @@ void ShootSkillQ() {
 			int bulletFired = 0;
 			float spreadAngle = DEG_TO_RAD(15.0f);
 
-			POINT pt = g_Input.mousePos;
+			POINT pt = g_Input.mouseWorldPos;
 			float playerScreenX = player.base.x - camera.x;
 			float playerScreenY = player.base.y - camera.y;
 
@@ -251,7 +251,7 @@ void ShootSkillR() {
 
 	// R 스킬 - 쿨타임이 0일 때만 가능
 	if (ConsumeMP(SKILL_R_MP)) {
-		POINT pt = g_Input.mousePos;
+		POINT pt = g_Input.mouseWorldPos;
 
 		float playerScreenX = player.base.x - camera.x;
 		float playerScreenY = player.base.y - camera.y;

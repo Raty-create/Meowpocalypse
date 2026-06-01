@@ -2,10 +2,12 @@
 
 UI_SYSTEM g_UI;
 
+// UI 초기화
 void InitUI() {
 	LoadMyImage(&g_UI.imgUISheet, L"ui.png");
 	LoadMyImage(&g_UI.imgTitleBg, L"title_bg.png");
 	LoadMyImage(&g_UI.imgMeowpocalypseTextLogo, L"meowpocalypse_logo.png");
+	LoadMyImage(&g_UI.imgKeyGuide, L"keyGuide.png");
 
 	// 폰트 파일 로드
 	AddFontResourceEx(L"upheavtt.ttf", FR_PRIVATE, NULL);
@@ -34,14 +36,26 @@ void InitUI() {
 	LogoIconUI();
 
 	PauseMenuBg();
-	//PausePlayButton();
+	PauseMenuButton();
+
+	KeyGuideUI();
 
 	g_UI.gameState = TITLE;
 }
 
+// 타이틀 관련 자원 해제
 void ReleaseTitle() {
 	ReleaseMyImage(&g_UI.imgTitleBg);
 	ReleaseMyImage(&g_UI.imgMeowpocalypseTextLogo);
+}
+
+// 인게임 관련 자원 해제
+void ReleaseUI() {
+	ReleaseMyImage(&g_UI.imgUISheet);
+	ReleaseMyImage(&g_UI.imgKeyGuide);
+	
+	// 타이틀 리소스가 아직 남아있다면 해제 (ReleaseTitle에서 NULL 처리를 하므로 안전하기 함)
+	ReleaseTitle();
 
 	if (g_UI.hTitleStartExitFont) {
 		DeleteObject(g_UI.hTitleStartExitFont);
@@ -51,16 +65,6 @@ void ReleaseTitle() {
 		DeleteObject(g_UI.hTitleHoverFont);
 		g_UI.hTitleHoverFont = NULL;
 	}
-
-	RemoveFontResourceEx(L"upheavtt.ttf", FR_PRIVATE, NULL);
-}
-
-void ReleaseUI() {
-	ReleaseMyImage(&g_UI.imgUISheet);
-	
-	// 타이틀 리소스가 아직 남아있다면 해제 (ReleaseTitle에서 NULL 처리를 하므로 안전하기 함)
-	ReleaseTitle();
-
 	if (g_UI.hCooldownFont) {
 		DeleteObject(g_UI.hCooldownFont);
 		g_UI.hCooldownFont = NULL;
@@ -70,10 +74,12 @@ void ReleaseUI() {
 		g_UI.hItemCountFont = NULL;
 	}
 
+	RemoveFontResourceEx(L"upheavtt.ttf", FR_PRIVATE, NULL);
 	RemoveFontResourceEx(L"neodgm_code.ttf", FR_PRIVATE, NULL);
 	RemoveFontResourceEx(L"Galmuri11.ttf", FR_PRIVATE, NULL);
 }
 
+// 타이틀 업데이트
 void UpdateTitle(HWND hWnd) {
 	// 텍스트 로고 둥둥 뜨는 효과
 	static float logoTimer = 0.0f;
@@ -110,7 +116,7 @@ void UpdateTitle(HWND hWnd) {
 
 	// Exit 버튼 스케일링
 	UI_ELEMENT* exitBnt = &g_UI.title.exitButton;
-	bool isExitHover = (g_Input.mousePos.x >= exitBnt->x - exitBnt->width / 2 && g_Input.mousePos.x <= exitBnt->x + exitBnt->width / 2 &&
+	BOOL isExitHover = (g_Input.mousePos.x >= exitBnt->x - exitBnt->width / 2 && g_Input.mousePos.x <= exitBnt->x + exitBnt->width / 2 &&
 		g_Input.mousePos.y >= exitBnt->y - exitBnt->height / 2 && g_Input.mousePos.y <= exitBnt->y + exitBnt->height / 2);
 
 	if (isExitHover) {
@@ -127,6 +133,54 @@ void UpdateTitle(HWND hWnd) {
 		exitBnt->width = (int)(exitBnt->width / 1.1f);
 		if (exitBnt->width < MIN_W) exitBnt->width = MIN_W;
 		exitBnt->height = (int)(exitBnt->width * RATIO);
+	}
+}
+
+// 퍼즈 업데이트
+void UpdatePause(HWND hWnd) {
+	for (int i = 0; i < 4; i++) {
+		UI_ELEMENT* buttons = &g_UI.pause.menuButton[i];
+
+		// Pause Menu 버튼 스케일링
+		const int MIN_W = (int)(buttons->srcW * 2.5f);
+		const int MAX_W = (int)(MIN_W * 1.1f);
+		const float RATIO = (float)buttons->srcH / buttons->srcW;		// 원본 비율 유지
+
+		BOOL isButtonHover = (g_Input.mousePos.x >= buttons->x - buttons->width / 2 && g_Input.mousePos.x <= buttons->x + buttons->width / 2 &&
+			g_Input.mousePos.y >= buttons->y - buttons->height / 2 && g_Input.mousePos.y <= buttons->y + buttons->height / 2);
+
+		if (isButtonHover) {
+			if (buttons->width < MAX_W) {
+				buttons->width = (int)(buttons->width * 1.03f) + 1;
+				if (buttons->width > MAX_W) buttons->width = MAX_W;
+				buttons->height = (int)(buttons->width * RATIO);
+			}
+			if ((buttons == &g_UI.pause.menuButton[0]) && g_Input.isLButtonDown) {
+				g_UI.gameState = INGAME;
+			}
+			else if ((buttons == &g_UI.pause.menuButton[1]) && g_Input.isLButtonDown) {
+				g_UI.gameState = KEY_GUIDE;
+			}
+			else if ((buttons == &g_UI.pause.menuButton[2]) && g_Input.isLButtonDown) {
+				ReleaseGame();
+				InitGame();
+			}
+			else if ((buttons == &g_UI.pause.menuButton[3]) && g_Input.isLButtonDown) {
+				PostQuitMessage(0);
+			}
+		}
+		else if (buttons->width > MIN_W) {
+			buttons->width = (int)(buttons->width / 1.03f);
+			if (buttons->width < MIN_W) buttons->width = MIN_W;
+			buttons->height = (int)(buttons->width * RATIO);
+		}
+	}
+}
+
+// 키 가이드 업데이트
+void UpdateKeyGuide(HWND hWnd) {
+	if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) {
+		g_UI.gameState = PAUSE;
 	}
 }
 
@@ -209,20 +263,20 @@ void HpMpBarFrame() {
 	// HP - MP 바 배경 프레임 원본 크기
 	g_UI.hud.hpBarFrame.srcX = g_UI.hud.mpBarFrame.srcX = 16;
 	g_UI.hud.hpBarFrame.srcY = g_UI.hud.mpBarFrame.srcY = 19;
-	g_UI.hud.hpBarFrame.srcW = g_UI.hud.mpBarFrame.srcW = 128;
-	g_UI.hud.hpBarFrame.srcH = g_UI.hud.mpBarFrame.srcH = 26;
+	g_UI.hud.hpBarFrame.srcW = g_UI.hud.mpBarFrame.srcW = 132;
+	g_UI.hud.hpBarFrame.srcH = g_UI.hud.mpBarFrame.srcH = 30;
 
 	// HP 바 배경 프레임 위치 및 크기 조절
 	g_UI.hud.hpBarFrame.x = SCREEN_WIDTH / 2 - HPBAR_FRAME_WIDTH_MARGIN;
 	g_UI.hud.hpBarFrame.y = SCREEN_HEIGHT - HPBAR_FRAME_HEIGHT_MARGIN;
-	g_UI.hud.hpBarFrame.width = 256;
-	g_UI.hud.hpBarFrame.height = 52;
+	g_UI.hud.hpBarFrame.width = g_UI.hud.hpBarFrame.srcW * 2;
+	g_UI.hud.hpBarFrame.height = g_UI.hud.hpBarFrame.srcH * 2;
 
 	// MP 바 배경 프레임 위치 및 크기 조절
 	g_UI.hud.mpBarFrame.x = SCREEN_WIDTH / 2 + MPBAR_FRAME_WIDTH_MARGIN;
 	g_UI.hud.mpBarFrame.y = SCREEN_HEIGHT - MPBAR_FRAME_HEIGHT_MARGIN;;
-	g_UI.hud.mpBarFrame.width = 256;
-	g_UI.hud.mpBarFrame.height = 52;
+	g_UI.hud.mpBarFrame.width = g_UI.hud.mpBarFrame.srcW * 2;
+	g_UI.hud.mpBarFrame.height = g_UI.hud.mpBarFrame.srcH * 2;
 }
 
 // HP 바
@@ -230,14 +284,14 @@ void HpBarUI() {
 	// HP 바 원본 크기
 	g_UI.hud.hpBar.srcX = 24;
 	g_UI.hud.hpBar.srcY = 91;
-	g_UI.hud.hpBar.srcW = 112;
-	g_UI.hud.hpBar.srcH = 10;
+	g_UI.hud.hpBar.srcW = 116;
+	g_UI.hud.hpBar.srcH = 14;
 
 	// HP 바 위치 및 크기 조절
 	g_UI.hud.hpBar.x = SCREEN_WIDTH / 2 - HPBAR_WIDTH_MARGIN;
 	g_UI.hud.hpBar.y = SCREEN_HEIGHT - HPBAR_HEIGHT_MARGIN;
-	g_UI.hud.hpBar.width = 224;
-	g_UI.hud.hpBar.height = 20;
+	g_UI.hud.hpBar.width = g_UI.hud.hpBar.srcW * 2;
+	g_UI.hud.hpBar.height = g_UI.hud.hpBar.srcH * 2;
 }
 
 // MP 바
@@ -245,14 +299,14 @@ void MpBarUI() {
 	// MP 바 원본 크기
 	g_UI.hud.mpBar.srcX = 24;
 	g_UI.hud.mpBar.srcY = 155;
-	g_UI.hud.mpBar.srcW = 112;
-	g_UI.hud.mpBar.srcH = 10;
+	g_UI.hud.mpBar.srcW = 116;
+	g_UI.hud.mpBar.srcH = 14;
 
 	// MP 바 위치 및 크기 조절
 	g_UI.hud.mpBar.x = SCREEN_WIDTH / 2 + MPBAR_WIDTH_MARGIN;
 	g_UI.hud.mpBar.y = SCREEN_HEIGHT - MPBAR_HEIGHT_MARGIN;
-	g_UI.hud.mpBar.width = 224;
-	g_UI.hud.mpBar.height = 20;
+	g_UI.hud.mpBar.width = g_UI.hud.mpBar.srcW * 2;
+	g_UI.hud.mpBar.height = g_UI.hud.mpBar.srcH * 2;
 }
 
 // 스킬 - 아이템 아이콘 배경
@@ -436,8 +490,8 @@ void PauseMenuBg() {
 	// 퍼즈 메뉴 배경 원본 크기
 	g_UI.pause.menuBg.srcX = 0;
 	g_UI.pause.menuBg.srcY = 385;
-	g_UI.pause.menuBg.srcW = 96;
-	g_UI.pause.menuBg.srcH = 150;
+	g_UI.pause.menuBg.srcW = 100;
+	g_UI.pause.menuBg.srcH = 154;
 
 	// 퍼즈 메뉴 배경 위치 및 크기 조절
 	g_UI.pause.menuBg.x = SCREEN_WIDTH / 2;
@@ -446,16 +500,57 @@ void PauseMenuBg() {
 	g_UI.pause.menuBg.height = g_UI.pause.menuBg.srcH * 4;
 }
 
-void PausePlayButton() {
-	// 게임 계속하기 버튼 원본 크기
-	g_UI.pause.playButton.srcX = 0;
-	g_UI.pause.playButton.srcY = 389;
-	g_UI.pause.playButton.srcW = 120;
-	g_UI.pause.playButton.srcH = 187;
+void PauseMenuButton() {
+	// 버튼 배경 원본 크기
+	for (int i = 0; i < 4; i++) {
+		g_UI.pause.menuButton[i].srcX = 105;
+		g_UI.pause.menuButton[i].srcY = 385;
+		g_UI.pause.menuButton[i].srcW = 110;
+		g_UI.pause.menuButton[i].srcH = 40;
+	}
 
-	// 게임 계속하기 버튼 위치 및 크기 조절
-	g_UI.pause.playButton.x = SCREEN_WIDTH / 2;
-	g_UI.pause.playButton.y = SCREEN_HEIGHT / 2;
-	g_UI.pause.playButton.width = 600;
-	g_UI.pause.playButton.height = 935;
+	// Play 버튼 배경 위치 및 크기 조절
+	g_UI.pause.menuButton[0].x = SCREEN_WIDTH / 2;
+	g_UI.pause.menuButton[0].y = SCREEN_HEIGHT / 2 - PAUSE_PLAY_BUTTON_BG_HEIGHT_MARGIN;
+	g_UI.pause.menuButton[0].width = (int)(g_UI.pause.menuButton[0].srcW * 2.5f);
+	g_UI.pause.menuButton[0].height = (int)(g_UI.pause.menuButton[0].srcH * 2.5f);
+
+	// Key Guide 버튼 배경 위치 및 크기 조절
+	g_UI.pause.menuButton[1].x = SCREEN_WIDTH / 2;
+	g_UI.pause.menuButton[1].y = g_UI.pause.menuButton[0].y + 100;
+	g_UI.pause.menuButton[1].width = (int)(g_UI.pause.menuButton[1].srcW * 2.5f);
+	g_UI.pause.menuButton[1].height = (int)(g_UI.pause.menuButton[1].srcH * 2.5f);
+
+	// Go Back Title 버튼 배경 위치 및 크기 조절
+	g_UI.pause.menuButton[2].x = SCREEN_WIDTH / 2;
+	g_UI.pause.menuButton[2].y = g_UI.pause.menuButton[1].y + 100;
+	g_UI.pause.menuButton[2].width = (int)(g_UI.pause.menuButton[2].srcW * 2.5f);
+	g_UI.pause.menuButton[2].height = (int)(g_UI.pause.menuButton[2].srcH * 2.5f);
+
+	// Exit 버튼 배경 위치 및 크기 조절
+	g_UI.pause.menuButton[3].x = SCREEN_WIDTH / 2;
+	g_UI.pause.menuButton[3].y = g_UI.pause.menuButton[2].y + 100;
+	g_UI.pause.menuButton[3].width = (int)(g_UI.pause.menuButton[3].srcW * 2.5f);
+	g_UI.pause.menuButton[3].height = (int)(g_UI.pause.menuButton[3].srcH * 2.5f);
+}
+
+// KEY_GUIDE
+//
+//
+// 
+// 
+// 
+// 키 가이드 UI
+void KeyGuideUI() {
+	// 키 가이드 원본 크기
+	g_UI.keyGuide.keyGuideUI.srcX = 0;
+	g_UI.keyGuide.keyGuideUI.srcY = 0;
+	g_UI.keyGuide.keyGuideUI.srcW = 1920;
+	g_UI.keyGuide.keyGuideUI.srcH = 1080;
+
+	// 키 가이드 위치 및 크기 조절
+	g_UI.keyGuide.keyGuideUI.x = SCREEN_WIDTH / 2;
+	g_UI.keyGuide.keyGuideUI.y = SCREEN_HEIGHT / 2;
+	g_UI.keyGuide.keyGuideUI.width = SCREEN_WIDTH;
+	g_UI.keyGuide.keyGuideUI.height = SCREEN_HEIGHT;
 }
