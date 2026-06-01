@@ -14,7 +14,8 @@ typedef struct {
 	BOOL isRPressed;						// 플레이어 R
 	BOOL isOnePressed;						// 키보드 숫자 1
 	BOOL isTwoPressed;						// 키보드 숫자 2
-	POINT mousePos;							// 현재 마우스 커서의 위치
+	POINT mousePos;							// 현재 마우스 커서의 위치 (UI용, 줌 미적용)
+	POINT mouseWorldPos;					// 현재 마우스 커서의 월드 위치 (게임용, 줌 적용)
 } INPUT_STATE;
 
 extern INPUT_STATE g_Input;

@@ -79,6 +79,12 @@ void Update(HWND hWnd) {
 	if (g_UI.gameState == TITLE) {
 		UpdateTitle(hWnd);
 	}
+	else if (g_UI.gameState == PAUSE) {
+		UpdatePause(hWnd);
+	}
+	else if (g_UI.gameState == KEY_GUIDE) {
+		UpdateKeyGuide(hWnd);
+	}
 	else if (g_UI.gameState == INGAME) {
 		// 카메라 인트로 중에는 플레이어가 움직이지 못하게 막거나 업데이트를 제한
 		if (camera.isIntroActive == INACTIVE) {
@@ -115,8 +121,8 @@ void Render(HWND hWnd, HDC hDC) {
 		RenderUI(g_hGameDC);
 	}
 	// 인게임 렌더링
-	else if (g_UI.gameState == INGAME || g_UI.gameState == PAUSE) {
-		// 모든 게임 그래픽을 가상 DC(g_hGameDC, 1920x1080)에 먼저 그림
+	else if (g_UI.gameState == INGAME || g_UI.gameState == PAUSE || g_UI.gameState == KEY_GUIDE) {
+		// 모든 게임 그래픽을 가상 DC(g_hGameDC, 1920x1080 기준)에 먼저 그림
 		RenderCurrentMap(g_hGameDC);
 
 		if (camera.isIntroActive == INACTIVE) {
@@ -154,7 +160,7 @@ void Render(HWND hWnd, HDC hDC) {
 	}
 
 	// Fade Out - Fade In (타이틀 -> 인게임)
-	if (g_UI.isFadeOut || g_UI.isFadeIn || g_UI.fadeAlpha >= 0.0f) {
+	if (g_UI.isFadeOut || g_UI.isFadeIn || g_UI.fadeAlpha > 0.0f) {
 		RenderFadeEffect(g_hGameDC);
 	}
 

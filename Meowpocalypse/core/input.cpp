@@ -62,9 +62,13 @@ void InputBulletShoot(HWND hWnd) {
 		int destX = (winW - destW) / 2;
 		int destY = (winH - destH) / 2;
 
-		// 마우스 좌표를 가상 해상도(1920x1080) 기준으로 역계산
-		g_Input.mousePos.x = (long)((g_Input.mousePos.x - destX) / camera.zoom / scale);
-		g_Input.mousePos.y = (long)((g_Input.mousePos.y - destY) / camera.zoom / scale);
+		// UI용 마우스 좌표 (가상 해상도 1920x1080 기준, 줌 미적용)
+		g_Input.mousePos.x = (long)((g_Input.mousePos.x - destX) / scale);
+		g_Input.mousePos.y = (long)((g_Input.mousePos.y - destY) / scale);
+
+		// 게임용 마우스 좌표 (카메라 줌 적용)
+		g_Input.mouseWorldPos.x = (long)((g_Input.mousePos.x) / camera.zoom);
+		g_Input.mouseWorldPos.y = (long)((g_Input.mousePos.y) / camera.zoom);
 	}
 }
 

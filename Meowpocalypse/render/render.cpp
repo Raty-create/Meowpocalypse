@@ -9,9 +9,12 @@
 #include "ui.h"
 
 IMAGE imgShadow;
+IMAGE imgMapTiles[7];
 
 void InitRenderResources() {
 	LoadMyImage(&imgShadow, L"DEFAULT_SHADOW.png");
+	
+	//LoadMyImage(&imgMapTiles[MAP_WAITING], L"map_waiting.png");
 }
 
 HBRUSH hBrush, oldBrush;
@@ -48,6 +51,8 @@ void RenderTile(HDC hDC, int screenX, int screenY, COLORREF color) {
 // 맵 그리기
 void RenderCurrentMap(HDC hDC) {
 	MAPDATA* m = &maps[currentMapType];
+	IMAGE* pTileImg = &imgMapTiles[currentMapType];
+
 	for (int row = 0; row < m->rows; row++) {
 		for (int col = 0; col < m->cols; col++) {
 
@@ -483,7 +488,12 @@ void RenderUI(HDC hDC) {
 		RenderHUD(hDC);						// 인게임 HUD 그리기
 	}
 	else if (g_UI.gameState == PAUSE) {
+		RenderDimmedBackground(hDC);		// 배경 어둡게 처리
 		RenderPause(hDC);
+	}
+	else if (g_UI.gameState == KEY_GUIDE) {
+		RenderDimmedBackground(hDC);		// 배경 어둡게 처리
+		RenderKeyGuide(hDC);
 	}
 }
 
@@ -501,9 +511,9 @@ void RenderTitle(HDC hDC) {
 	UI_ELEMENT* startBnt = &g_UI.title.startButton;
 	UI_ELEMENT* exitBnt = &g_UI.title.exitButton;
 
-	bool isStartHover = (g_Input.mousePos.x >= startBnt->x - startBnt->width / 2 && g_Input.mousePos.x <= startBnt->x + startBnt->width / 2 &&
+	BOOL isStartHover = (g_Input.mousePos.x >= startBnt->x - startBnt->width / 2 && g_Input.mousePos.x <= startBnt->x + startBnt->width / 2 &&
 		g_Input.mousePos.y >= startBnt->y - startBnt->height / 2 && g_Input.mousePos.y <= startBnt->y + startBnt->height / 2);
-	bool isExitHover = (g_Input.mousePos.x >= exitBnt->x - exitBnt->width / 2 && g_Input.mousePos.x <= exitBnt->x + exitBnt->width / 2 &&
+	BOOL isExitHover = (g_Input.mousePos.x >= exitBnt->x - exitBnt->width / 2 && g_Input.mousePos.x <= exitBnt->x + exitBnt->width / 2 &&
 		g_Input.mousePos.y >= exitBnt->y - exitBnt->height / 2 && g_Input.mousePos.y <= exitBnt->y + exitBnt->height / 2);
 
 	// Start 버튼 배경 프레임
@@ -647,11 +657,68 @@ void RenderPause(HDC hDC) {
 	// 메뉴 배경
 	DrawMyImage(&g_UI.imgUISheet, hDC, (int)g_UI.pause.menuBg.x - g_UI.pause.menuBg.width / 2, (int)g_UI.pause.menuBg.y - g_UI.pause.menuBg.height / 2, g_UI.pause.menuBg.width, g_UI.pause.menuBg.height,
 		g_UI.pause.menuBg.srcX, g_UI.pause.menuBg.srcY, g_UI.pause.menuBg.srcW, g_UI.pause.menuBg.srcH);
+
+	// 메뉴 버튼 배경
+	for (int i = 0; i < 4; i++) {
+		DrawMyImage(&g_UI.imgUISheet, hDC, (int)g_UI.pause.menuButton[i].x - g_UI.pause.menuButton[i].width / 2, (int)g_UI.pause.menuButton[i].y - g_UI.pause.menuButton[i].height / 2, g_UI.pause.menuButton[i].width, g_UI.pause.menuButton[i].height,
+			g_UI.pause.menuButton[i].srcX, g_UI.pause.menuButton[i].srcY, g_UI.pause.menuButton[i].srcW, g_UI.pause.menuButton[i].srcH);
+	}
+
+	// 퍼즈 메뉴 버튼 텍스트 (Play / Key Guide / Go Back Title / Exit)
+	SetBkMode(hDC, TRANSPARENT);
+	SetTextColor(hDC, RGB(255, 255, 255));
+	HFONT hOldFont = (HFONT)GetCurrentObject(hDC, OBJ_FONT);
+
+	SIZE textSize;
+	const wchar_t* pauseMenuButtonsStr[] = { L"Play", L"Key Guide", L"Title", L"Exit" };
+
+	for (int i = 0; i < 4; i++) {
+		UI_ELEMENT* buttons = &g_UI.pause.menuButton[i];
+
+		BOOL isButtonHover = (g_Input.mousePos.x >= buttons->x - buttons->width / 2 && g_Input.mousePos.x <= buttons->x + buttons->width / 2 &&
+			g_Input.mousePos.y >= buttons->y - buttons->height / 2 && g_Input.mousePos.y <= buttons->y + buttons->height / 2);
+
+		// 퍼즈 메뉴 버튼 텍스트 그리기
+		if (isButtonHover) SelectObject(hDC, g_UI.hTitleHoverFont);
+		else SelectObject(hDC, g_UI.hTitleStartExitFont);
+
+		GetTextExtentPoint32(hDC, pauseMenuButtonsStr[i], lstrlen(pauseMenuButtonsStr[i]), &textSize);
+		TextOut(hDC, (int)buttons->x - (textSize.cx / 2) - 4, (int)(buttons->y - (textSize.cy / 2.5f)) - 4, pauseMenuButtonsStr[i], lstrlen(pauseMenuButtonsStr[i]));
+	}
+
+	SelectObject(hDC, hOldFont);
+}
+
+// 키 가이드 UI
+void RenderKeyGuide(HDC hDC) {
+	// 키 가이드
+	DrawMyImage(&g_UI.imgKeyGuide, hDC, (int)g_UI.keyGuide.keyGuideUI.x - g_UI.keyGuide.keyGuideUI.width / 2, (int)g_UI.keyGuide.keyGuideUI.y - g_UI.keyGuide.keyGuideUI.height / 2, g_UI.keyGuide.keyGuideUI.width, g_UI.keyGuide.keyGuideUI.height,
+		g_UI.keyGuide.keyGuideUI.srcX, g_UI.keyGuide.keyGuideUI.srcY, g_UI.keyGuide.keyGuideUI.srcW, g_UI.keyGuide.keyGuideUI.srcH);
+}
+
+// 배경 어둡게(흐리게) 처리 (PAUSE 시)
+void RenderDimmedBackground(HDC hDC) {
+	HDC memDC = CreateCompatibleDC(hDC);
+	HBITMAP bmp = CreateCompatibleBitmap(hDC, 1, 1);
+	SelectObject(memDC, bmp);
+
+	SetPixel(memDC, 0, 0, (RGB(0, 0, 0)));
+
+	BLENDFUNCTION bf;
+	bf.AlphaFormat = 0;
+	bf.BlendFlags = 0;
+	bf.BlendOp = AC_SRC_OVER;
+	bf.SourceConstantAlpha = 100;
+
+	AlphaBlend(hDC, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, memDC, 0, 0, 1, 1, bf);
+
+	DeleteObject(bmp);
+	DeleteDC(memDC);
 }
 
 // Fade Out - Fade In (타이틀 -> 인게임)
 void RenderFadeEffect(HDC hDC) {
-	if (g_UI.fadeAlpha <= 0.0f && g_UI.gameState != PAUSE) return;
+	if (g_UI.fadeAlpha <= 0.0f) return;
 
 	HDC memDC = CreateCompatibleDC(hDC);
 	HBITMAP bmp = CreateCompatibleBitmap(hDC, 1, 1);
@@ -666,9 +733,6 @@ void RenderFadeEffect(HDC hDC) {
 	bf.BlendOp = AC_SRC_OVER;
 
 	BYTE alpha = (BYTE)(g_UI.fadeAlpha * 255.0f);
-	if (g_UI.gameState == PAUSE && !g_UI.isFadeOut && !g_UI.isFadeIn) {
-		alpha = 100;
-	}
 	bf.SourceConstantAlpha = alpha;
 
 	AlphaBlend(hDC, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, memDC, 0, 0, 1, 1, bf);
