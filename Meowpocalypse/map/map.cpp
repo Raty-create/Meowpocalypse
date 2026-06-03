@@ -29,8 +29,8 @@ void InitWaitingMap(MAPDATA* m) {
 
 	for (int row = 0; row < m->rows; row++) {
 		for (int col = 0; col < m->cols; col++) {
-			if (row <= WALL_THICKNESS || col <= WALL_THICKNESS + 10 ||
-				row >= m->rows - WALL_THICKNESS || col >= m->cols - WALL_THICKNESS - 10)
+			if (row <= WALL_THICKNESS || col <= WALL_THICKNESS ||
+				row >= m->rows - WALL_THICKNESS || col >= m->cols - WALL_THICKNESS)
 				// 벽
 				m->tiles[row][col] = TILE_WALL;
 			else
@@ -217,7 +217,6 @@ void MapTransition() {
 
 void GetSpawnPos(MAP_TYPE type, float* outX, float* outY) {
 	MAPDATA* m = &maps[type];
-	// 문 통과 후 맵 전환시 맵의 왼쪽 벽 근처에서 스폰
-	*outX = m->worldX + (m->cols / 2) * TILE_SIZE;
+	*outX = m->worldX + (m->cols / 2) * TILE_SIZE + TILE_SIZE / 2;
 	*outY = m->worldY + (m->rows - 10) * TILE_SIZE;
 }
