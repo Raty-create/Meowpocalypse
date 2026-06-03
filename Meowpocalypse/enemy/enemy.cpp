@@ -77,7 +77,7 @@ void SpawnEnemy(MAP_TYPE type, int count) {
 		attempts++;
 		
 		float spawnX = m->worldX + (rand() % (m->cols - ENEMY_COLS_SPAWN_MARGIN) + ENEMY_COLS_SPAWN_MARGIN) * TILE_SIZE + TILE_SIZE / 2.0f;
-		float spawnY = m->worldY + (rand() % (m->rows - ENEMY_ROWS_SPAWN_MARGIN) + ENEMY_ROWS_SPAWN_MARGIN) * TILE_SIZE + TILE_SIZE / 2.0f;
+		float spawnY = m->worldY + (rand() % (m->rows - ENEMY_ROWS_SPAWN_MARGIN * 3) + ENEMY_ROWS_SPAWN_MARGIN) * TILE_SIZE + TILE_SIZE / 2.0f;
 
 		if (IsTileWall(spawnX - halfW, spawnY - halfH) ||
 			IsTileWall(spawnX + halfW, spawnY - halfH) ||

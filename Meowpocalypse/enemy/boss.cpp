@@ -18,14 +18,15 @@ JUMP_WARNING jumpWarn;
 
 void InitBoss() {
 	boss.isActive = INACTIVE;
-	boss.base.width = BOSS_SIZE;
-	boss.base.height = BOSS_SIZE;
+	boss.base.width = BOSS_WIDTH;
+	boss.base.height = BOSS_HEIGHT;
+	boss.base.hitBoxW = BOSS_HITBOX_WIDTH;
+	boss.base.hitBoxH = BOSS_HITBOX_HEIGHT;
 	boss.base.state = BOSS_IDLE;
 	boss.base.dx = 0;
 	boss.base.dy = 0;
 	boss.base.hp = BOSS_HP;
 
-	boss.base.hitBoxW = boss.base.hitBoxH = BOSS_HITBOX_SIZE;
 	boss.invincibleTimer = 0;
 
 	boss.attackTimer = BOSS_ATTACK_INTERVAL;
@@ -80,7 +81,7 @@ void SpawnBoss(MAP_TYPE type) {
 
 	MAPDATA* m = &maps[type];
 
-	float spawnX = m->worldX + (BOSSMAP_COLS / 2) * TILE_SIZE;
+	float spawnX = m->worldX + (BOSSMAP_COLS / 2) * TILE_SIZE + TILE_SIZE / 2;
 	float spawnY = m->worldY + (BOSSMAP_ROWS / 2) * TILE_SIZE;
 
 	// 죽은 상태라면 스폰하지 않음
@@ -237,7 +238,8 @@ void StartDashWarning() {
 	dashWarn.perpY = dashWarn.dirX;
 
 	// 벽까지 거리 계산 - render.cpp 대신 여기서 한 번만 계산
-	int half = BOSS_SIZE / 2;
+	int halfW = BOSS_WIDTH / 2;
+	int halfH = BOSS_HEIGHT / 2;
 	int maxDist = DASH_WARN_TILES * TILE_SIZE;
 	dashWarn.stopDist = maxDist;
 
@@ -245,8 +247,8 @@ void StartDashWarning() {
 		float cx = dashWarn.startX + dashWarn.dirX * dist;
 		float cy = dashWarn.startY + dashWarn.dirY * dist;
 
-		if (IsTileWall(cx + dashWarn.perpX * half, cy + dashWarn.perpY * half) ||
-			IsTileWall(cx - dashWarn.perpX * half, cy - dashWarn.perpY * half) ||
+		if (IsTileWall(cx + dashWarn.perpX * halfW, cy + dashWarn.perpY * halfH) ||
+			IsTileWall(cx - dashWarn.perpX * halfW, cy - dashWarn.perpY * halfH) ||
 			IsTileWall(cx, cy)) {
 			dashWarn.stopDist = dist;
 			break;
@@ -264,12 +266,13 @@ void StartDashWarning() {
 // 점프스킬 착지 위치를 맵 안쪽으로 보정
 void ClampBossLanding(float* x, float* y) {
 	MAPDATA* m = &maps[currentMapType];
-	int half = BOSS_SIZE / 2;   // 이동 충돌과 동일한 기준 사용
+	int halfW = BOSS_WIDTH / 2;   // 이동 충돌과 동일한 기준 사용
+	int halfH = BOSS_HEIGHT / 2;   // 이동 충돌과 동일한 기준 사용
 
-	float minX = m->worldX + (float)(WALL_THICKNESS + 1) * TILE_SIZE + half;
-	float maxX = m->worldX + (float)(m->cols - WALL_THICKNESS) * TILE_SIZE - half - 1;
-	float minY = m->worldY + (float)(WALL_THICKNESS + 1) * TILE_SIZE + half;
-	float maxY = m->worldY + (float)(m->rows - WALL_THICKNESS) * TILE_SIZE - half - 1;
+	float minX = m->worldX + (float)(WALL_THICKNESS + 1) * TILE_SIZE + halfW;
+	float maxX = m->worldX + (float)(m->cols - WALL_THICKNESS) * TILE_SIZE - halfW - 1;
+	float minY = m->worldY + (float)(WALL_THICKNESS + 1) * TILE_SIZE + halfH;
+	float maxY = m->worldY + (float)(m->rows - WALL_THICKNESS) * TILE_SIZE - halfH - 1;
 
 	if (*x < minX) *x = minX;
 	if (*x > maxX) *x = maxX;
@@ -304,7 +307,7 @@ void StartJumpWarning() {
 // 보스 랜덤 이동 처리 (벽 충돌 시 방향 전환)
 void UpdateBossMove() {
 	boss.base.state = BOSS_MOVE;
-	int half = BOSS_SIZE / 2;
+	int half = BOSS_WIDTH / 2;
 
 	// 방향 전환 타이머
 	boss.moveTimer--;
@@ -357,7 +360,8 @@ void UpdateBossMove() {
 // 보스(플레이어 추적 이동)
 void UpdateBossChase() {
 	boss.base.state = BOSS_CHASE;
-	int half = BOSS_SIZE / 2;
+	int halfW = BOSS_WIDTH / 2;
+	int halfH = BOSS_HEIGHT / 2;
 
 	float dx = player.base.x - boss.base.x;
 	float dy = player.base.y - boss.base.y;
@@ -368,19 +372,19 @@ void UpdateBossChase() {
 	float ny = (dy / len) * BOSS_CHASE_SPEED;
 
 	float nextX = boss.base.x + nx;
-	if (!IsTileWall(nextX - half, boss.base.y - half) &&
-		!IsTileWall(nextX + half, boss.base.y - half) &&
-		!IsTileWall(nextX - half, boss.base.y + half) &&
-		!IsTileWall(nextX + half, boss.base.y + half)) {
+	if (!IsTileWall(nextX - halfW, boss.base.y - halfH) &&
+		!IsTileWall(nextX + halfW, boss.base.y - halfH) &&
+		!IsTileWall(nextX - halfW, boss.base.y + halfH) &&
+		!IsTileWall(nextX + halfW, boss.base.y + halfH)) {
 		boss.base.x = nextX;
 		boss.base.hitBoxX = nextX;
 	}
 
 	float nextY = boss.base.y + ny;
-	if (!IsTileWall(boss.base.x - half, nextY - half) &&
-		!IsTileWall(boss.base.x + half, nextY - half) &&
-		!IsTileWall(boss.base.x - half, nextY + half) &&
-		!IsTileWall(boss.base.x + half, nextY + half)) {
+	if (!IsTileWall(boss.base.x - halfW, nextY - halfH) &&
+		!IsTileWall(boss.base.x + halfW, nextY - halfH) &&
+		!IsTileWall(boss.base.x - halfW, nextY + halfH) &&
+		!IsTileWall(boss.base.x + halfW, nextY + halfH)) {
 		boss.base.y = nextY;
 		boss.base.hitBoxY = nextY;
 	}
@@ -435,7 +439,7 @@ int CheckPhaseTransition() {
 		boss.jumpOffsetY -= escapeSpeed;
 
 		// 화면 밖으로 충분히 올라갔으면(오프셋이 화면 높이 이상) 실제로 비활성화 + 문 열기
-		if (boss.jumpOffsetY < -(float)(SCREEN_HEIGHT + BOSS_SIZE)) {
+		if (boss.jumpOffsetY < -(float)(SCREEN_HEIGHT + BOSS_HEIGHT)) {
 			boss.jumpOffsetY = 0;
 			boss.isEscaping = INACTIVE;
 			boss.escapingDelay = 0;
@@ -494,12 +498,13 @@ void UpdateDash(int is3rdPhase) {
 
 	float nextX = boss.base.x + boss.dashDirX * DASH_SPEED;
 	float nextY = boss.base.y + boss.dashDirY * DASH_SPEED;
-	int half = BOSS_SIZE / 2;
+	int halfW = BOSS_WIDTH / 2;
+	int halfH = BOSS_HEIGHT / 2;
 
-	if (IsTileWall(nextX - half, nextY - half) ||
-		IsTileWall(nextX + half, nextY - half) ||
-		IsTileWall(nextX - half, nextY + half) ||
-		IsTileWall(nextX + half, nextY + half)) {
+	if (IsTileWall(nextX - halfW, nextY - halfH) ||
+		IsTileWall(nextX + halfW, nextY - halfH) ||
+		IsTileWall(nextX - halfW, nextY + halfH) ||
+		IsTileWall(nextX + halfW, nextY + halfH)) {
 		// 벽 충돌 -> 대쉬 종료
 		boss.isDashing = INACTIVE;
 		boss.base.state = is2nd3rdPhase ? BOSS_CHASE : BOSS_IDLE;
@@ -791,21 +796,22 @@ void HandleBossAggro(float tx, float ty) {
 			ny = (dy / dist) * (BOSS_MOVE_SPEED * 0.5f);
 		}
 
-		int half = BOSS_SIZE / 2;
+		int halfW = BOSS_WIDTH / 2;
+		int halfH = BOSS_HEIGHT / 2;
 		float nextX = boss.base.x + nx;
-		if (!IsTileWall(nextX - half, boss.base.y - half) &&
-			!IsTileWall(nextX + half, boss.base.y - half) &&
-			!IsTileWall(nextX - half, boss.base.y + half) &&
-			!IsTileWall(nextX + half, boss.base.y + half)) {
+		if (!IsTileWall(nextX - halfW, boss.base.y - halfH) &&
+			!IsTileWall(nextX + halfW, boss.base.y - halfH) &&
+			!IsTileWall(nextX - halfW, boss.base.y + halfH) &&
+			!IsTileWall(nextX + halfW, boss.base.y + halfH)) {
 			boss.base.x = nextX;
 			boss.base.hitBoxX = nextX;
 		}
 
 		float nextY = boss.base.y + ny;
-		if (!IsTileWall(boss.base.x - half, nextY - half) &&
-			!IsTileWall(boss.base.x + half, nextY - half) &&
-			!IsTileWall(boss.base.x - half, nextY + half) &&
-			!IsTileWall(boss.base.x + half, nextY + half)) {
+		if (!IsTileWall(boss.base.x - halfW, nextY - halfH) &&
+			!IsTileWall(boss.base.x + halfW, nextY - halfH) &&
+			!IsTileWall(boss.base.x - halfW, nextY + halfH) &&
+			!IsTileWall(boss.base.x + halfW, nextY + halfH)) {
 			boss.base.y = nextY;
 			boss.base.hitBoxY = nextY;
 		}

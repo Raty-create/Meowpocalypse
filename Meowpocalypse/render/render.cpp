@@ -14,7 +14,11 @@ IMAGE imgMapTiles[7];
 void InitRenderResources() {
 	LoadMyImage(&imgShadow, L"DEFAULT_SHADOW.png");
 	
-	//LoadMyImage(&imgMapTiles[MAP_WAITING], L"map_waiting.png");
+	LoadMyImage(&imgMapTiles[MAP_WAITING], L"map_waiting.png");
+	LoadMyImage(&imgMapTiles[MAP_FIRST_HALLWAY], L"hallway.png");
+	LoadMyImage(&imgMapTiles[MAP_FIRST_BOSS], L"first_boss_map.png");
+	LoadMyImage(&imgMapTiles[MAP_SECOND_BOSS], L"second_boss_map.png");
+	LoadMyImage(&imgMapTiles[MAP_THIRD_BOSS], L"third_boss_map.png");
 }
 
 HBRUSH hBrush, oldBrush;
@@ -51,43 +55,95 @@ void RenderTile(HDC hDC, int screenX, int screenY, COLORREF color) {
 // 맵 그리기
 void RenderCurrentMap(HDC hDC) {
 	MAPDATA* m = &maps[currentMapType];
-	IMAGE* pTileImg = &imgMapTiles[currentMapType];
+	IMAGE* pMapImg = &imgMapTiles[currentMapType];
 
-	for (int row = 0; row < m->rows; row++) {
-		for (int col = 0; col < m->cols; col++) {
+	// 화면 전체를 검은색으로 먼저 채워 여백 처리
+	hBrush = CreateSolidBrush(RGB(0, 0, 0));
+	oldBrush = (HBRUSH)SelectObject(hDC, hBrush);
+	hPen = CreatePen(PS_NULL, 0, 0);
+	oldPen = (HPEN)SelectObject(hDC, hPen);
 
-			// camera.zoom을 반영한 화면 좌표 계산
-			screenX = (int)((m->worldX + col * TILE_SIZE - camera.x) * camera.zoom);
-			screenY = (int)((m->worldY + row * TILE_SIZE - camera.y) * camera.zoom);
+	// 화면보다 약간 크게 그려서 테두리 잔상을 확실히 방지
+	Rectangle(hDC, -10, -10, SCREEN_WIDTH + 10, SCREEN_HEIGHT + 10);
 
-			// 확대된 타일 사이즈 계산
-			int scaledTileSize = (int)(TILE_SIZE * camera.zoom);
+	SelectObject(hDC, oldBrush); DeleteObject(hBrush);
+	SelectObject(hDC, oldPen); DeleteObject(hPen);
 
-			if (screenX + scaledTileSize < 0 || screenX > SCREEN_WIDTH) continue;
-			if (screenY + scaledTileSize < 0 || screenY > SCREEN_HEIGHT) continue;
+	// 이동 가능한 영역(바닥/문)의 범위(Bounding Box)를 계산
+	int minC = m->cols, maxC = 0, minR = m->rows, maxR = 0;
+	BOOL foundMovable = FALSE;
 
-			int tileType = m->tiles[row][col];
-			DOOR_STATE doorstate = DOOR_CLOSE;
-
-			if (tileType == TILE_DOOR) {
-				for (int d = 0; d < m->doorCount; d++) {
-					if (m->doors[d].row == row && m->doors[d].col == col) {
-						doorstate = m->doors[d].state;
-						break;
-					}
-				}
+	for (int r = 0; r < m->rows; r++) {
+		for (int c = 0; c < m->cols; c++) {
+			if (m->tiles[r][c] != TILE_WALL) {
+				if (c < minC) minC = c;
+				if (c > maxC) maxC = c;
+				if (r < minR) minR = r;
+				if (r > maxR) maxR = r;
+				foundMovable = TRUE;
 			}
+		}
+	}
 
-			// RenderTile 대신 직접 Rectangle을 크기에 맞게 그림
-			hBrush = CreateSolidBrush(TileColor(tileType, doorstate));
-			oldBrush = (HBRUSH)SelectObject(hDC, hBrush);
-			hPen = CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
-			oldPen = (HPEN)SelectObject(hDC, hPen);
+	// 배경 이미지가 있다면 계산된 이동 가능 영역에만 출력
+	if (!pMapImg->img.IsNull() && foundMovable) {
+		int startX = (int)((m->worldX + minC * TILE_SIZE - camera.x) * camera.zoom);
+		int startY = (int)((m->worldY + minR * TILE_SIZE - camera.y) * camera.zoom);
+		int drawW = (int)((maxC - minC + 1) * TILE_SIZE * camera.zoom);
+		int totalAreaH = (int)((maxR - minR + 1) * TILE_SIZE * camera.zoom);
 
-			Rectangle(hDC, screenX, screenY, screenX + scaledTileSize, screenY + scaledTileSize);
+		// 이미지를 가로 너비(drawW)에 맞췄을 때의 비율(Scale) 계산
+		/*float scale = (float)drawW / pMapImg->width;
+		int scaledImgH = (int)(pMapImg->height * scale);*/
 
-			SelectObject(hDC, oldBrush); DeleteObject(hBrush);
-			SelectObject(hDC, oldPen); DeleteObject(hPen);
+		DrawMyImage(pMapImg, hDC, startX, startY, drawW, totalAreaH, 0, 0, pMapImg->width, pMapImg->height);
+
+
+/*		// 영역의 높이가 끝날 때까지 이미지를 위에서부터 아래로 반복해서 그림
+		for (int currentY = 0; currentY < totalAreaH; currentY += scaledImgH) {
+			int remainingH = totalAreaH - currentY;
+			int currentDrawH = (remainingH < scaledImgH) ? remainingH : scaledImgH;
+
+			// 소스 이미지에서 가져올 높이 계산 (마지막 조각은 잘려나갈 수 있음)
+			int srcH = (int)(currentDrawH / scale);
+
+			DrawMyImage(pMapImg, hDC, startX, startY + currentY, drawW, currentDrawH, 0, 0, pMapImg->width, srcH);
+		}*/
+	}
+	else if (foundMovable) {
+		// 이미지가 없는 경우 (또는 못 찾은 경우) 타일별로 색상 칠하기
+		for (int row = minR; row <= maxR; row++) {
+			for (int col = minC; col <= maxC; col++) {
+				int tileType = m->tiles[row][col];
+				if (tileType == TILE_WALL) continue;
+
+				screenX = (int)((m->worldX + col * TILE_SIZE - camera.x) * camera.zoom);
+				screenY = (int)((m->worldY + row * TILE_SIZE - camera.y) * camera.zoom);
+				int scaledTileSize = (int)(TILE_SIZE * camera.zoom);
+
+				if (screenX + scaledTileSize < 0 || screenX > SCREEN_WIDTH) continue;
+				if (screenY + scaledTileSize < 0 || screenY > SCREEN_HEIGHT) continue;
+
+				DOOR_STATE doorstate = DOOR_CLOSE;
+				if (tileType == TILE_DOOR) {
+					for (int d = 0; d < m->doorCount; d++) {
+						if (m->doors[d].row == row && m->doors[d].col == col) {
+							doorstate = m->doors[d].state;
+							break;
+                        }
+                    }
+                }
+
+				hBrush = CreateSolidBrush(TileColor(tileType, doorstate));
+				oldBrush = (HBRUSH)SelectObject(hDC, hBrush);
+				hPen = CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
+				oldPen = (HPEN)SelectObject(hDC, hPen);
+
+				Rectangle(hDC, screenX, screenY, screenX + scaledTileSize, screenY + scaledTileSize);
+
+				SelectObject(hDC, oldBrush); DeleteObject(hBrush);
+				SelectObject(hDC, oldPen); DeleteObject(hPen);
+			}
 		}
 	}
 }
@@ -303,7 +359,8 @@ void RenderDashWarning(HDC hDC) {
 	// 깜빡임: 10프레임 단위로 켜짐/꺼짐
 	if ((dashWarn.timer / 10) % 2 == 0) return;
 
-	int half = (int)(BOSS_SIZE * camera.zoom / 2);
+	int halfW = (int)(BOSS_WIDTH * camera.zoom / 2);
+	int halfH = (int)(BOSS_HEIGHT * camera.zoom / 2);
 
 	// 경고 영역의 꼭짓점 4개 계산 (월드 → 화면 좌표)
 	// 끝점 중심
@@ -312,17 +369,17 @@ void RenderDashWarning(HDC hDC) {
 
 	POINT pts[4];
 	// P0: 시작 왼쪽 위
-	pts[0].x = (int)((dashWarn.startX - camera.x) * camera.zoom + dashWarn.perpX * half);
-	pts[0].y = (int)((dashWarn.startY - camera.y) * camera.zoom + dashWarn.perpY * half);
+	pts[0].x = (int)((dashWarn.startX - camera.x) * camera.zoom + dashWarn.perpX * halfW);
+	pts[0].y = (int)((dashWarn.startY - camera.y) * camera.zoom + dashWarn.perpY * halfH);
 	// P1: 끝   왼쪽 위
-	pts[1].x = (int)((ex - camera.x) * camera.zoom + dashWarn.perpX * half);
-	pts[1].y = (int)((ey - camera.y) * camera.zoom + dashWarn.perpY * half);
+	pts[1].x = (int)((ex - camera.x) * camera.zoom + dashWarn.perpX * halfW);
+	pts[1].y = (int)((ey - camera.y) * camera.zoom + dashWarn.perpY * halfH);
 	// P2: 끝   오른쪽 아래
-	pts[2].x = (int)((ex - camera.x) * camera.zoom - dashWarn.perpX * half);
-	pts[2].y = (int)((ey - camera.y) * camera.zoom - dashWarn.perpY * half);
+	pts[2].x = (int)((ex - camera.x) * camera.zoom - dashWarn.perpX * halfW);
+	pts[2].y = (int)((ey - camera.y) * camera.zoom - dashWarn.perpY * halfH);
 	// P3: 시작 오른쪽 아래
-	pts[3].x = (int)((dashWarn.startX - camera.x) * camera.zoom - dashWarn.perpX * half);
-	pts[3].y = (int)((dashWarn.startY - camera.y) * camera.zoom - dashWarn.perpY * half);
+	pts[3].x = (int)((dashWarn.startX - camera.x) * camera.zoom - dashWarn.perpX * halfW);
+	pts[3].y = (int)((dashWarn.startY - camera.y) * camera.zoom - dashWarn.perpY * halfH);
 
 	hBrush = CreateSolidBrush(RGB(255, 40, 40));
 	oldBrush = (HBRUSH)SelectObject(hDC, hBrush);
@@ -378,8 +435,8 @@ void RenderBoss(HDC hDC) {
 	// zoom을 적용한 스크린 좌표 및 크기 변환
 	screenX = (int)((boss.base.x - camera.x) * camera.zoom);
 	screenY = (int)((boss.base.y - camera.y + boss.jumpOffsetY) * camera.zoom);
-	int bw = (int)(BOSS_SIZE * camera.zoom);
-	int bh = (int)(BOSS_SIZE * camera.zoom);
+	int bw = (int)(BOSS_WIDTH * camera.zoom);
+	int bh = (int)(BOSS_HEIGHT * camera.zoom);
 
 	Rectangle(hDC, screenX - bw / 2, screenY - bh / 2, screenX + bw / 2, screenY + bh / 2);
 
