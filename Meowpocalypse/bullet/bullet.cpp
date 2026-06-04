@@ -64,10 +64,10 @@ void UpdateBullet() {
 		int halfW = BULLET_HITBOX_WIDTH / 2;
 		int halfH = BULLET_HITBOX_HEIGHT / 2;
 
-		if (IsTileWall(bullets[i].x - halfW, bullets[i].y - halfH) ||
-			IsTileWall(bullets[i].x + halfW, bullets[i].y - halfH) ||
-			IsTileWall(bullets[i].x - halfW, bullets[i].y + halfH) ||
-			IsTileWall(bullets[i].x + halfW, bullets[i].y + halfH))
+		if (IsTileBlocked(bullets[i].x - halfW, bullets[i].y - halfH) ||
+			IsTileBlocked(bullets[i].x + halfW, bullets[i].y - halfH) ||
+			IsTileBlocked(bullets[i].x - halfW, bullets[i].y + halfH) ||
+			IsTileBlocked(bullets[i].x + halfW, bullets[i].y + halfH))
 			bullets[i].isActive = INACTIVE;
 	}
 }
@@ -208,8 +208,8 @@ void UpdateChuru() {
 			int hh = (int)(churues[i].height / 2 + margin);
 			BOOL hitWall = FALSE;
 
-			if (IsTileWall(nextX - hw, nextY - hh) || IsTileWall(nextX + hw, nextY - hh) ||
-				IsTileWall(nextX - hw, nextY + hh) || IsTileWall(nextX + hw, nextY + hh)) {
+			if (IsTileBlocked(nextX - hw, nextY - hh) || IsTileBlocked(nextX + hw, nextY - hh) ||
+				IsTileBlocked(nextX - hw, nextY + hh) || IsTileBlocked(nextX + hw, nextY + hh)) {
 				hitWall = TRUE;
 			}
 

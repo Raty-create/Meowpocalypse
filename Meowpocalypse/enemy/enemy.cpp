@@ -79,10 +79,10 @@ void SpawnEnemy(MAP_TYPE type, int count) {
 		float spawnX = m->worldX + (rand() % (m->cols - ENEMY_COLS_SPAWN_MARGIN) + ENEMY_COLS_SPAWN_MARGIN) * TILE_SIZE + TILE_SIZE / 2.0f;
 		float spawnY = m->worldY + (rand() % (m->rows - ENEMY_ROWS_SPAWN_MARGIN * 3) + ENEMY_ROWS_SPAWN_MARGIN) * TILE_SIZE + TILE_SIZE / 2.0f;
 
-		if (IsTileWall(spawnX - halfW, spawnY - halfH) ||
-			IsTileWall(spawnX + halfW, spawnY - halfH) ||
-			IsTileWall(spawnX - halfW, spawnY + halfH) ||
-			IsTileWall(spawnX + halfW, spawnY + halfH)) continue;
+		if (IsTileBlocked(spawnX - halfW, spawnY - halfH) ||
+			IsTileBlocked(spawnX + halfW, spawnY - halfH) ||
+			IsTileBlocked(spawnX - halfW, spawnY + halfH) ||
+			IsTileBlocked(spawnX + halfW, spawnY + halfH)) continue;
 
 		if (IsOverlapWithEnemy(spawnX, spawnY)) continue;
 
@@ -301,15 +301,15 @@ void HandleEnemyKnockback(int i) {
 		else enemies[i].base.direction = DIR_UP;
 	}
 
-	if (!IsTileWall(nextX - halfW, ey - halfH) &&
-		!IsTileWall(nextX + halfW, ey - halfH) &&
-		!IsTileWall(nextX - halfW, ey + halfH) &&
-		!IsTileWall(nextX + halfW, ey + halfH)) enemies[i].base.x = enemies[i].base.hitBoxX = nextX;
+	if (!IsTileBlocked(nextX - halfW, ey - halfH) &&
+		!IsTileBlocked(nextX + halfW, ey - halfH) &&
+		!IsTileBlocked(nextX - halfW, ey + halfH) &&
+		!IsTileBlocked(nextX + halfW, ey + halfH)) enemies[i].base.x = enemies[i].base.hitBoxX = nextX;
 
-	if (!IsTileWall(ex - halfW, nextY - halfH) &&
-		!IsTileWall(ex + halfW, nextY - halfH) &&
-		!IsTileWall(ex - halfW, nextY + halfH) &&
-		!IsTileWall(ex + halfW, nextY + halfH)) enemies[i].base.y = enemies[i].base.hitBoxY = nextY;
+	if (!IsTileBlocked(ex - halfW, nextY - halfH) &&
+		!IsTileBlocked(ex + halfW, nextY - halfH) &&
+		!IsTileBlocked(ex - halfW, nextY + halfH) &&
+		!IsTileBlocked(ex + halfW, nextY + halfH)) enemies[i].base.y = enemies[i].base.hitBoxY = nextY;
 
 	enemies[i].base.kTimer--;
 }
@@ -377,15 +377,15 @@ void HandleEnemyChase(int i, float dx, float dy, float dist) {
 		float nextX = ex + finalNX;
 		float nextY = ey + finalNY;
 
-		if (!IsTileWall(nextX - halfW, ey - halfH) &&
-			!IsTileWall(nextX + halfW, ey - halfH) &&
-			!IsTileWall(nextX - halfW, ey + halfH) &&
-			!IsTileWall(nextX + halfW, ey + halfH)) enemies[i].base.x = enemies[i].base.hitBoxX = nextX;
+		if (!IsTileBlocked(nextX - halfW, ey - halfH) &&
+			!IsTileBlocked(nextX + halfW, ey - halfH) &&
+			!IsTileBlocked(nextX - halfW, ey + halfH) &&
+			!IsTileBlocked(nextX + halfW, ey + halfH)) enemies[i].base.x = enemies[i].base.hitBoxX = nextX;
 
-		if (!IsTileWall(ex - halfW, nextY - halfH) &&
-			!IsTileWall(ex + halfW, nextY - halfH) &&
-			!IsTileWall(ex - halfW, nextY + halfH) &&
-			!IsTileWall(ex + halfW, nextY + halfH)) enemies[i].base.y = enemies[i].base.hitBoxY = nextY;
+		if (!IsTileBlocked(ex - halfW, nextY - halfH) &&
+			!IsTileBlocked(ex + halfW, nextY - halfH) &&
+			!IsTileBlocked(ex - halfW, nextY + halfH) &&
+			!IsTileBlocked(ex + halfW, nextY + halfH)) enemies[i].base.y = enemies[i].base.hitBoxY = nextY;
 	}
 }
 
@@ -446,19 +446,19 @@ void HandleEnemyPatrol(int i) {
 	int halfW = ENEMY_HITBOX_WIDTH / 2;
 	int halfH = ENEMY_HITBOX_HEIGHT / 2;
 	float nextX = ex + enemies[i].base.dx;
-	if (!IsTileWall(nextX - halfW, ey - halfH) &&
-		!IsTileWall(nextX + halfW, ey - halfH) &&
-		!IsTileWall(nextX - halfW, ey + halfH) &&
-		!IsTileWall(nextX + halfW, ey + halfH))
+	if (!IsTileBlocked(nextX - halfW, ey - halfH) &&
+		!IsTileBlocked(nextX + halfW, ey - halfH) &&
+		!IsTileBlocked(nextX - halfW, ey + halfH) &&
+		!IsTileBlocked(nextX + halfW, ey + halfH))
 		enemies[i].base.x = enemies[i].base.hitBoxX = nextX;
 	else
 		enemies[i].moveTimer = 0;
 
 	float nextY = ey + enemies[i].base.dy;
-	if (!IsTileWall(ex - halfW, nextY - halfH) &&
-		!IsTileWall(ex + halfW, nextY - halfH) &&
-		!IsTileWall(ex - halfW, nextY + halfH) &&
-		!IsTileWall(ex + halfW, nextY + halfH))
+	if (!IsTileBlocked(ex - halfW, nextY - halfH) &&
+		!IsTileBlocked(ex + halfW, nextY - halfH) &&
+		!IsTileBlocked(ex - halfW, nextY + halfH) &&
+		!IsTileBlocked(ex + halfW, nextY + halfH))
 		enemies[i].base.y = enemies[i].base.hitBoxY = nextY;
 	else
 		enemies[i].moveTimer = 0;
@@ -521,15 +521,15 @@ void HandleEnemyAggro(int i, float tx, float ty) {
 		float nextX = ex + finalNX;
 		float nextY = ey + finalNY;
 
-		if (!IsTileWall(nextX - halfW, ey - halfH) &&
-			!IsTileWall(nextX + halfW, ey - halfH) &&
-			!IsTileWall(nextX - halfW, ey + halfH) &&
-			!IsTileWall(nextX + halfW, ey + halfH)) enemies[i].base.x = enemies[i].base.hitBoxX = nextX;
+		if (!IsTileBlocked(nextX - halfW, ey - halfH) &&
+			!IsTileBlocked(nextX + halfW, ey - halfH) &&
+			!IsTileBlocked(nextX - halfW, ey + halfH) &&
+			!IsTileBlocked(nextX + halfW, ey + halfH)) enemies[i].base.x = enemies[i].base.hitBoxX = nextX;
 
-		if (!IsTileWall(ex - halfW, nextY - halfH) &&
-			!IsTileWall(ex + halfW, nextY - halfH) &&
-			!IsTileWall(ex - halfW, nextY + halfH) &&
-			!IsTileWall(ex + halfW, nextY + halfH)) enemies[i].base.y = enemies[i].base.hitBoxY = nextY;
+		if (!IsTileBlocked(ex - halfW, nextY - halfH) &&
+			!IsTileBlocked(ex + halfW, nextY - halfH) &&
+			!IsTileBlocked(ex - halfW, nextY + halfH) &&
+			!IsTileBlocked(ex + halfW, nextY + halfH)) enemies[i].base.y = enemies[i].base.hitBoxY = nextY;
 	}
 }
 
@@ -548,10 +548,10 @@ void UpdateCatPaws() {
 		float catpawNextX = catpaw[i].x + catpaw[i].dx;
 		float catpawNextY = catpaw[i].y + catpaw[i].dy;
 
-		if (IsTileWall(catpaw[i].x, catpaw[i].y) ||
-			IsTileWall(catpawNextX, catpaw[i].y) ||
-			IsTileWall(catpaw[i].x, catpawNextY) ||
-			IsTileWall(catpawNextX, catpawNextY)) {
+		if (IsTileBlocked(catpaw[i].x, catpaw[i].y) ||
+			IsTileBlocked(catpawNextX, catpaw[i].y) ||
+			IsTileBlocked(catpaw[i].x, catpawNextY) ||
+			IsTileBlocked(catpawNextX, catpawNextY)) {
 			catpaw[i].isActive = INACTIVE;
 			continue;
 		}

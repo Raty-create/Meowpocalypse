@@ -33,6 +33,7 @@ COLORREF TileColor(int tileType, DOOR_STATE doorState) {
 	case TILE_FLOOR: return RGB(153, 76, 0);
 	case TILE_WALL: return RGB(0, 0, 0);
 	case TILE_DOOR: return(doorState == DOOR_OPEN) ? RGB(0, 200, 0) : RGB(139, 69, 0);
+	case TILE_OBSTACLE: return RGB(255, 0, 0);
 	default: return RGB(0, 0, 0);
 	}
 }

@@ -247,9 +247,9 @@ void StartDashWarning() {
 		float cx = dashWarn.startX + dashWarn.dirX * dist;
 		float cy = dashWarn.startY + dashWarn.dirY * dist;
 
-		if (IsTileWall(cx + dashWarn.perpX * halfW, cy + dashWarn.perpY * halfH) ||
-			IsTileWall(cx - dashWarn.perpX * halfW, cy - dashWarn.perpY * halfH) ||
-			IsTileWall(cx, cy)) {
+		if (IsTileBlocked(cx + dashWarn.perpX * halfW, cy + dashWarn.perpY * halfH) ||
+			IsTileBlocked(cx - dashWarn.perpX * halfW, cy - dashWarn.perpY * halfH) ||
+			IsTileBlocked(cx, cy)) {
 			dashWarn.stopDist = dist;
 			break;
 		}
@@ -330,10 +330,10 @@ void UpdateBossMove() {
 
 	// X축 이동 + 벽 충돌 체크
 	float nextX = boss.base.x + boss.moveDirX * BOSS_MOVE_SPEED;
-	if (!IsTileWall(nextX - half, boss.base.y - half) &&
-		!IsTileWall(nextX + half, boss.base.y - half) &&
-		!IsTileWall(nextX - half, boss.base.y + half) &&
-		!IsTileWall(nextX + half, boss.base.y + half)) {
+	if (!IsTileBlocked(nextX - half, boss.base.y - half) &&
+		!IsTileBlocked(nextX + half, boss.base.y - half) &&
+		!IsTileBlocked(nextX - half, boss.base.y + half) &&
+		!IsTileBlocked(nextX + half, boss.base.y + half)) {
 		boss.base.x = nextX;
 		boss.base.hitBoxX = nextX;
 	}
@@ -344,10 +344,10 @@ void UpdateBossMove() {
 
 	// Y축 이동 + 벽 충돌 체크
 	float nextY = boss.base.y + boss.moveDirY * BOSS_MOVE_SPEED;
-	if (!IsTileWall(boss.base.x - half, nextY - half) &&
-		!IsTileWall(boss.base.x + half, nextY - half) &&
-		!IsTileWall(boss.base.x - half, nextY + half) &&
-		!IsTileWall(boss.base.x + half, nextY + half)) {
+	if (!IsTileBlocked(boss.base.x - half, nextY - half) &&
+		!IsTileBlocked(boss.base.x + half, nextY - half) &&
+		!IsTileBlocked(boss.base.x - half, nextY + half) &&
+		!IsTileBlocked(boss.base.x + half, nextY + half)) {
 		boss.base.y = nextY;
 		boss.base.hitBoxY = nextY;
 	}
@@ -372,19 +372,19 @@ void UpdateBossChase() {
 	float ny = (dy / len) * BOSS_CHASE_SPEED;
 
 	float nextX = boss.base.x + nx;
-	if (!IsTileWall(nextX - halfW, boss.base.y - halfH) &&
-		!IsTileWall(nextX + halfW, boss.base.y - halfH) &&
-		!IsTileWall(nextX - halfW, boss.base.y + halfH) &&
-		!IsTileWall(nextX + halfW, boss.base.y + halfH)) {
+	if (!IsTileBlocked(nextX - halfW, boss.base.y - halfH) &&
+		!IsTileBlocked(nextX + halfW, boss.base.y - halfH) &&
+		!IsTileBlocked(nextX - halfW, boss.base.y + halfH) &&
+		!IsTileBlocked(nextX + halfW, boss.base.y + halfH)) {
 		boss.base.x = nextX;
 		boss.base.hitBoxX = nextX;
 	}
 
 	float nextY = boss.base.y + ny;
-	if (!IsTileWall(boss.base.x - halfW, nextY - halfH) &&
-		!IsTileWall(boss.base.x + halfW, nextY - halfH) &&
-		!IsTileWall(boss.base.x - halfW, nextY + halfH) &&
-		!IsTileWall(boss.base.x + halfW, nextY + halfH)) {
+	if (!IsTileBlocked(boss.base.x - halfW, nextY - halfH) &&
+		!IsTileBlocked(boss.base.x + halfW, nextY - halfH) &&
+		!IsTileBlocked(boss.base.x - halfW, nextY + halfH) &&
+		!IsTileBlocked(boss.base.x + halfW, nextY + halfH)) {
 		boss.base.y = nextY;
 		boss.base.hitBoxY = nextY;
 	}
@@ -410,7 +410,7 @@ void UpdateBossPaws() {
 		float edgeX = bossPaws[i].x + ndx * pawRadius;
 		float edgeY = bossPaws[i].y + ndy * pawRadius;
 
-		if (IsTileWall(edgeX, edgeY)) {
+		if (IsTileBlocked(edgeX, edgeY)) {
 			bossPaws[i].isActive = INACTIVE;
 			continue;
 		}
@@ -501,10 +501,10 @@ void UpdateDash(int is3rdPhase) {
 	int halfW = BOSS_WIDTH / 2;
 	int halfH = BOSS_HEIGHT / 2;
 
-	if (IsTileWall(nextX - halfW, nextY - halfH) ||
-		IsTileWall(nextX + halfW, nextY - halfH) ||
-		IsTileWall(nextX - halfW, nextY + halfH) ||
-		IsTileWall(nextX + halfW, nextY + halfH)) {
+	if (IsTileBlocked(nextX - halfW, nextY - halfH) ||
+		IsTileBlocked(nextX + halfW, nextY - halfH) ||
+		IsTileBlocked(nextX - halfW, nextY + halfH) ||
+		IsTileBlocked(nextX + halfW, nextY + halfH)) {
 		// 벽 충돌 -> 대쉬 종료
 		boss.isDashing = INACTIVE;
 		boss.base.state = is2nd3rdPhase ? BOSS_CHASE : BOSS_IDLE;
@@ -799,19 +799,19 @@ void HandleBossAggro(float tx, float ty) {
 		int halfW = BOSS_WIDTH / 2;
 		int halfH = BOSS_HEIGHT / 2;
 		float nextX = boss.base.x + nx;
-		if (!IsTileWall(nextX - halfW, boss.base.y - halfH) &&
-			!IsTileWall(nextX + halfW, boss.base.y - halfH) &&
-			!IsTileWall(nextX - halfW, boss.base.y + halfH) &&
-			!IsTileWall(nextX + halfW, boss.base.y + halfH)) {
+		if (!IsTileBlocked(nextX - halfW, boss.base.y - halfH) &&
+			!IsTileBlocked(nextX + halfW, boss.base.y - halfH) &&
+			!IsTileBlocked(nextX - halfW, boss.base.y + halfH) &&
+			!IsTileBlocked(nextX + halfW, boss.base.y + halfH)) {
 			boss.base.x = nextX;
 			boss.base.hitBoxX = nextX;
 		}
 
 		float nextY = boss.base.y + ny;
-		if (!IsTileWall(boss.base.x - halfW, nextY - halfH) &&
-			!IsTileWall(boss.base.x + halfW, nextY - halfH) &&
-			!IsTileWall(boss.base.x - halfW, nextY + halfH) &&
-			!IsTileWall(boss.base.x + halfW, nextY + halfH)) {
+		if (!IsTileBlocked(boss.base.x - halfW, nextY - halfH) &&
+			!IsTileBlocked(boss.base.x + halfW, nextY - halfH) &&
+			!IsTileBlocked(boss.base.x - halfW, nextY + halfH) &&
+			!IsTileBlocked(boss.base.x + halfW, nextY + halfH)) {
 			boss.base.y = nextY;
 			boss.base.hitBoxY = nextY;
 		}
