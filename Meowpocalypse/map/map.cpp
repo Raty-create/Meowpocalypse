@@ -108,6 +108,27 @@ void InitHallWayMap(MAPDATA* m, int worldY) {
 			}
 		}
 	}
+
+	// 좌
+	SetObstacleRect(m, WALL_THICKNESS + 1, WALL_THICKNESS + 1, m->rows - WALL_THICKNESS - 1, WALL_THICKNESS + 9);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 5, WALL_THICKNESS + 9, m->rows - WALL_THICKNESS - 1, WALL_THICKNESS + 10);
+	SetObstacleRect(m, (m->rows - WALL_THICKNESS - (((m->rows - (2 * WALL_THICKNESS)) / 2) / 2)) - 9, WALL_THICKNESS + 9, (m->rows - WALL_THICKNESS - (((m->rows - (2 * WALL_THICKNESS)) / 2) / 2)) + 8, WALL_THICKNESS + 10);
+	SetObstacleRect(m, (m->rows - WALL_THICKNESS - (((m->rows - (2 * WALL_THICKNESS)) / 2) / 2)) - 4, WALL_THICKNESS + 10, (m->rows - WALL_THICKNESS - (((m->rows - (2 * WALL_THICKNESS)) / 2) / 2)) - 1, WALL_THICKNESS + 11);
+	SetObstacleRect(m, ((m->rows - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 1, WALL_THICKNESS + 9, ((m->rows - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 4, WALL_THICKNESS + 10);
+	SetObstacleRect(m, (((m->rows - (2 * WALL_THICKNESS)) / 2) / 2) + WALL_THICKNESS - 6, WALL_THICKNESS + 9, (((m->rows - (2 * WALL_THICKNESS)) / 2) / 2) + WALL_THICKNESS + 11, WALL_THICKNESS + 10);
+	SetObstacleRect(m, (((m->rows - (2 * WALL_THICKNESS)) / 2) / 2) + WALL_THICKNESS + 3, WALL_THICKNESS + 10, (((m->rows - (2 * WALL_THICKNESS)) / 2) / 2) + WALL_THICKNESS + 6, WALL_THICKNESS + 11);
+	SetObstacleRect(m, WALL_THICKNESS + 1, WALL_THICKNESS + 9, WALL_THICKNESS + 6, WALL_THICKNESS + 10);
+
+	// 우
+	SetObstacleRect(m, WALL_THICKNESS + 1, m->cols - WALL_THICKNESS - 9, m->rows - WALL_THICKNESS - 1, m->cols - WALL_THICKNESS - 1);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 5, m->cols - WALL_THICKNESS - 10, m->rows - WALL_THICKNESS - 1, m->cols - WALL_THICKNESS - 9);
+	SetObstacleRect(m, (m->rows - WALL_THICKNESS - (((m->rows - (2 * WALL_THICKNESS)) / 2) / 2)) - 9, m->cols - WALL_THICKNESS - 10, (m->rows - WALL_THICKNESS - (((m->rows - (2 * WALL_THICKNESS)) / 2) / 2)) + 8, m->cols - WALL_THICKNESS - 9);
+	SetObstacleRect(m, (m->rows - WALL_THICKNESS - (((m->rows - (2 * WALL_THICKNESS)) / 2) / 2)) - 4, m->cols - WALL_THICKNESS - 11, (m->rows - WALL_THICKNESS - (((m->rows - (2 * WALL_THICKNESS)) / 2) / 2)) - 1, m->cols - WALL_THICKNESS - 10);
+	SetObstacleRect(m, ((m->rows - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 1, m->cols - WALL_THICKNESS - 10, ((m->rows - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 4, m->cols - WALL_THICKNESS - 9);
+	SetObstacleRect(m, (((m->rows - (2 * WALL_THICKNESS)) / 2) / 2) + WALL_THICKNESS - 6, m->cols - WALL_THICKNESS - 10, (((m->rows - (2 * WALL_THICKNESS)) / 2) / 2) + WALL_THICKNESS + 11, m->cols - WALL_THICKNESS - 9);
+	SetObstacleRect(m, (((m->rows - (2 * WALL_THICKNESS)) / 2) / 2) + WALL_THICKNESS + 3, m->cols - WALL_THICKNESS - 11, (((m->rows - (2 * WALL_THICKNESS)) / 2) / 2) + WALL_THICKNESS + 6, m->cols - WALL_THICKNESS - 10);
+	SetObstacleRect(m, WALL_THICKNESS + 1, m->cols - WALL_THICKNESS - 10, WALL_THICKNESS + 6, m->cols - WALL_THICKNESS - 9);
+
 	// 문
 	int doorRow = WALL_THICKNESS;
 	int doorCol = ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS;
@@ -125,7 +146,92 @@ void InitHallWayMap(MAPDATA* m, int worldY) {
 }
 
 // 보스맵
-void InitBossMap(MAPDATA* m, int worldY) {
+void InitFirstBossMap(MAPDATA* m, int worldY) {
+	m->rows = MIN(BOSSMAP_ROWS, MAX_MAP_ROWS);
+	m->cols = MIN(BOSSMAP_COLS, MAX_MAP_COLS);
+	m->worldX = 0;
+	m->worldY = (float)worldY;
+	m->doorCount = 0;
+
+	for (int row = 0; row < m->rows; row++) {
+		for (int col = 0; col < m->cols; col++) {
+			if (row <= WALL_THICKNESS || row >= m->rows - WALL_THICKNESS ||
+				col <= WALL_THICKNESS || col >= m->cols - WALL_THICKNESS)
+				// 벽
+				m->tiles[row][col] = TILE_WALL;
+			else
+				// 바닥
+				m->tiles[row][col] = TILE_FLOOR;
+		}
+	}
+
+	// 좌
+	SetObstacleRect(m, WALL_THICKNESS + 1, WALL_THICKNESS + 1, m->rows - WALL_THICKNESS - 1, WALL_THICKNESS + 4);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 14, WALL_THICKNESS + 4, m->rows - WALL_THICKNESS - 1, WALL_THICKNESS + 8);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 15, WALL_THICKNESS + 4, m->rows - WALL_THICKNESS - 14, WALL_THICKNESS + 7);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 16, WALL_THICKNESS + 4, m->rows - WALL_THICKNESS - 15, WALL_THICKNESS + 6);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 17, WALL_THICKNESS + 4, m->rows - WALL_THICKNESS - 16, WALL_THICKNESS + 5);
+	SetObstacleRect(m, (((m->rows - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS) - 5, WALL_THICKNESS + 4, (((m->rows - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS) + 4, WALL_THICKNESS + 8);
+
+	// 우
+	SetObstacleRect(m, WALL_THICKNESS + 1, m->cols - WALL_THICKNESS - 4, m->rows - WALL_THICKNESS - 1, m->cols - WALL_THICKNESS - 1);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 14, m->cols - WALL_THICKNESS - 8, m->rows - WALL_THICKNESS - 1, m->cols - WALL_THICKNESS - 4);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 15, m->cols - WALL_THICKNESS - 7, m->rows - WALL_THICKNESS - 14, m->cols - WALL_THICKNESS - 4);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 16, m->cols - WALL_THICKNESS - 6, m->rows - WALL_THICKNESS - 15, m->cols - WALL_THICKNESS - 4);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 17, m->cols - WALL_THICKNESS - 5, m->rows - WALL_THICKNESS - 16, m->cols - WALL_THICKNESS - 4);
+	SetObstacleRect(m, (((m->rows - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS) - 5, m->cols - WALL_THICKNESS - 8, (((m->rows - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS) + 4, m->cols - WALL_THICKNESS - 4);
+	
+	// 문
+	int doorRow = WALL_THICKNESS;
+	int doorCol = ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS;
+
+	if (doorRow >= 0 && doorRow + 1 < MAX_MAP_ROWS && doorCol - 1 >= 0 && doorCol + 1 < MAX_MAP_COLS) {
+
+		m->tiles[doorRow][doorCol - 1] = TILE_DOOR;
+		m->tiles[doorRow][doorCol] = TILE_DOOR;
+		m->tiles[doorRow][doorCol + 1] = TILE_DOOR;
+	}
+
+	InitDoor(m, doorRow, doorCol - 1);
+	InitDoor(m, doorRow, doorCol);
+	InitDoor(m, doorRow, doorCol + 1);
+}
+
+void InitSecondBossMap(MAPDATA* m, int worldY) {
+	m->rows = MIN(BOSSMAP_ROWS, MAX_MAP_ROWS);
+	m->cols = MIN(BOSSMAP_COLS, MAX_MAP_COLS);
+	m->worldX = 0;
+	m->worldY = (float)worldY;
+	m->doorCount = 0;
+
+	for (int row = 0; row < m->rows; row++) {
+		for (int col = 0; col < m->cols; col++) {
+			if (row <= WALL_THICKNESS || row >= m->rows - WALL_THICKNESS ||
+				col <= WALL_THICKNESS || col >= m->cols - WALL_THICKNESS)
+				// 벽
+				m->tiles[row][col] = TILE_WALL;
+			else
+				// 바닥
+				m->tiles[row][col] = TILE_FLOOR;
+		}
+	}
+	// 문
+	int doorRow = WALL_THICKNESS;
+	int doorCol = ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS;
+
+	if (doorRow >= 0 && doorRow + 1 < MAX_MAP_ROWS && doorCol - 1 >= 0 && doorCol + 1 < MAX_MAP_COLS) {
+
+		m->tiles[doorRow][doorCol - 1] = TILE_DOOR;
+		m->tiles[doorRow][doorCol] = TILE_DOOR;
+		m->tiles[doorRow][doorCol + 1] = TILE_DOOR;
+	}
+
+	InitDoor(m, doorRow, doorCol - 1);
+	InitDoor(m, doorRow, doorCol);
+	InitDoor(m, doorRow, doorCol + 1);
+}
+
+void InitThirdBossMap(MAPDATA* m, int worldY) {
 	m->rows = MIN(BOSSMAP_ROWS, MAX_MAP_ROWS);
 	m->cols = MIN(BOSSMAP_COLS, MAX_MAP_COLS);
 	m->worldX = 0;
@@ -164,11 +270,11 @@ void InitMap(MAP_TYPE type) {
 	switch (type) {
 	case MAP_WAITING: InitWaitingMap(m); break;
 	case MAP_FIRST_HALLWAY: InitHallWayMap(m, HALLWAY1_Y); break;
-	case MAP_FIRST_BOSS: InitBossMap(m, BOSS1_Y); break;
+	case MAP_FIRST_BOSS: InitFirstBossMap(m, BOSS1_Y); break;
 	case MAP_SECOND_HALLWAY: InitHallWayMap(m, HALLWAY2_Y); break;
-	case MAP_SECOND_BOSS: InitBossMap(m, BOSS2_Y); break;
+	case MAP_SECOND_BOSS: InitSecondBossMap(m, BOSS2_Y); break;
 	case MAP_THIRD_HALLWAY: InitHallWayMap(m, HALLWAY3_Y); break;
-	case MAP_THIRD_BOSS: InitBossMap(m, BOSS3_Y); break;
+	case MAP_THIRD_BOSS: InitThirdBossMap(m, BOSS3_Y); break;
 	}
 }
 
