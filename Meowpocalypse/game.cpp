@@ -51,6 +51,7 @@ void ReleaseGame() {
 	ReleasePlayer();
 	ReleaseBullet();
 	ReleaseEnemy();
+	ReleaseBoss();
 	ReleaseUI();
 }
 

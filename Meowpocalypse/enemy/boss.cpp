@@ -12,11 +12,27 @@
 #include "camera.h"
 
 BOSS boss;
+IMAGE imgBossSprite;
+IMAGE imgBossSkillPattrenEffect;
+
 BOSS_PAW bossPaws[BOSS_PAW_LIMIT];
+
 DASH_WARNING dashWarn;
 JUMP_WARNING jumpWarn;
 
 void InitBoss() {
+	if (imgBossSprite.img.IsNull()) {
+		LoadMyImage(&imgBossSprite, L"boss_sprite.png");
+	}
+	if (imgBossSkillPattrenEffect.img.IsNull()) {
+		LoadMyImage(&imgBossSkillPattrenEffect, L"boss_skill_pattern_effect.png");
+	}
+
+	int bFW = imgBossSprite.width / 5;
+	int bFH = imgBossSprite.height / 42;
+	int bspeFW = imgBossSkillPattrenEffect.width / 6;
+	int bspeFH = imgBossSkillPattrenEffect.height / 3;
+
 	boss.isActive = INACTIVE;
 	boss.base.width = BOSS_WIDTH;
 	boss.base.height = BOSS_HEIGHT;
@@ -37,7 +53,7 @@ void InitBoss() {
 	boss.dashDirX = 0;
 	boss.dashDirY = 0;
 
-	boss.moveTimer = BOSS_MOVE_INTERVAL;
+	boss.moveTimer = BOSS_MOVE_INTERVAL / 3;
 	boss.moveDirX = 0;
 	boss.moveDirY = 0;
 
@@ -71,6 +87,14 @@ void InitBoss() {
 
 	jumpWarn.isActive = INACTIVE;
 	jumpWarn.timer = 0;
+
+	InitAnimation(&boss.anim, &imgBossSprite, bFW, bFH, 5, 10);
+	InitAnimation(&boss.effectAnim, &imgBossSkillPattrenEffect, bspeFW, bspeFH, 6, 10, FALSE);
+}
+
+void ReleaseBoss() {
+	ReleaseMyImage(&imgBossSprite);
+	ReleaseMyImage(&imgBossSkillPattrenEffect);
 }
 
 void SpawnBoss(MAP_TYPE type) {
@@ -87,6 +111,7 @@ void SpawnBoss(MAP_TYPE type) {
 
 	// 1페이즈: 체력이 250 초과일 때만 MAP_FIRST_BOSS에서 스폰
 	if (type == MAP_FIRST_BOSS && boss.base.hp > (BOSS_HP * 0.75)) {
+
 		if (boss.isActive == INACTIVE) {
 			boss.isActive = ACTIVE;
 			boss.base.x = spawnX;
@@ -94,7 +119,8 @@ void SpawnBoss(MAP_TYPE type) {
 			boss.base.state = BOSS_IDLE;
 			boss.base.dx = 0;
 			boss.base.dy = 0;
-			boss.base.direction = DIR_DOWN;
+			boss.isEscaping = INACTIVE;
+			boss.jumpOffsetY = 0;
 		}
 	}
 
@@ -108,6 +134,10 @@ void SpawnBoss(MAP_TYPE type) {
 			boss.base.state = BOSS_CHASE;
 			boss.base.dx = 0;
 			boss.base.dy = 0;
+			boss.isEscaping = INACTIVE;
+			boss.jumpOffsetY = 0;
+			boss.invincibleTimer = 0;
+			boss.skillChargeTimer = 0;
 
 			// 상태 초기화
 			boss.moveTimer = BOSS_MOVE_INTERVAL;
@@ -133,6 +163,10 @@ void SpawnBoss(MAP_TYPE type) {
 			boss.base.state = BOSS_IDLE;
 			boss.base.dx = 0;
 			boss.base.dy = 0;
+			boss.isEscaping = INACTIVE;
+			boss.jumpOffsetY = 0;
+			boss.invincibleTimer = 0;
+			boss.skillChargeTimer = 0;
 
 			// 상태 초기화
 			boss.moveTimer = BOSS_MOVE_INTERVAL;
@@ -160,8 +194,8 @@ void SpawnBossPaws() {
 	boss.isActive = ACTIVE;
 	boss.isAttacking = 1;
 	boss.base.state = BOSS_THREE_WAY_CATPAW;
-	boss.base.direction = DIR_DOWN;
 	boss.attackEndTimer = BOSS_ATTACK_INTERVAL / 2; // 발사 후 이 프레임 동안 정지
+
 	float dx = player.base.x - boss.base.x;
 	float dy = player.base.y - boss.base.y;
 	float len = sqrtf(dx * dx + dy * dy);
@@ -169,6 +203,21 @@ void SpawnBossPaws() {
 	if (len == 0) return;
 	dx /= len;
 	dy /= len;
+
+	// 공격 방향 결정 (플레이어를 바라보게)
+	float angle = atan2f(dy, dx) * 180.0f / PI;
+	if (angle < 0) angle += 360.0f;
+
+	if (angle >= 337.5f || angle < 22.5f) boss.base.direction = DIR_RIGHT;
+	else if (angle >= 22.5f && angle < 67.5f) boss.base.direction = DIR_DOWN_RIGHT;
+	else if (angle >= 67.5f && angle < 112.5f) boss.base.direction = DIR_DOWN;
+	else if (angle >= 112.5f && angle < 157.5f) boss.base.direction = DIR_DOWN_LEFT;
+	else if (angle >= 157.5f && angle < 202.5f) boss.base.direction = DIR_LEFT;
+	else if (angle >= 202.5f && angle < 247.5f) boss.base.direction = DIR_UP_LEFT;
+	else if (angle >= 247.5f && angle < 292.5f) boss.base.direction = DIR_UP;
+	else if (angle >= 292.5f && angle < 337.5f) boss.base.direction = DIR_UP_RIGHT;
+
+	SetAnimationFrame(&boss.anim, 0);
 
 	float offsets[3] = { -0.1454f, 0.0f, 0.1454f };
 
@@ -259,6 +308,22 @@ void StartDashWarning() {
 	boss.dashDirX = dashWarn.dirX;
 	boss.dashDirY = dashWarn.dirY;
 	boss.base.state = BOSS_DASH;
+
+	// 방향 업데이트
+	if (fabsf(dashWarn.dirX) > fabsf(dashWarn.dirY) * 2) {
+		if (dashWarn.dirX > 0) boss.base.direction = DIR_RIGHT;
+		else boss.base.direction = DIR_LEFT;
+	}
+	else if (fabsf(dashWarn.dirY) > fabsf(dashWarn.dirX) * 2) {
+		if (dashWarn.dirY > 0) boss.base.direction = DIR_DOWN;
+		else boss.base.direction = DIR_UP;
+	}
+	else {
+		if (dashWarn.dirX > 0 && dashWarn.dirY > 0) boss.base.direction = DIR_DOWN_RIGHT;
+		else if (dashWarn.dirX > 0 && dashWarn.dirY < 0) boss.base.direction = DIR_UP_RIGHT;
+		else if (dashWarn.dirX < 0 && dashWarn.dirY > 0) boss.base.direction = DIR_DOWN_LEFT;
+		else if (dashWarn.dirX < 0 && dashWarn.dirY < 0) boss.base.direction = DIR_UP_LEFT;
+	}
 }
 
 // 점프스킬 착지 위치를 맵 안쪽으로 보정
@@ -369,6 +434,22 @@ void UpdateBossChase() {
 	float nx = (dx / len) * BOSS_CHASE_SPEED;
 	float ny = (dy / len) * BOSS_CHASE_SPEED;
 
+	// 방향 업데이트
+	if (fabsf(dx) > fabsf(dy) * 2) {
+		if (dx > 0) boss.base.direction = DIR_RIGHT;
+		else boss.base.direction = DIR_LEFT;
+	}
+	else if (fabsf(dy) > fabsf(dx) * 2) {
+		if (dy > 0) boss.base.direction = DIR_DOWN;
+		else boss.base.direction = DIR_UP;
+	}
+	else {
+		if (dx > 0 && dy > 0) boss.base.direction = DIR_DOWN_RIGHT;
+		else if (dx > 0 && dy < 0) boss.base.direction = DIR_UP_RIGHT;
+		else if (dx < 0 && dy > 0) boss.base.direction = DIR_DOWN_LEFT;
+		else if (dx < 0 && dy < 0) boss.base.direction = DIR_UP_LEFT;
+	}
+
 	float nextX = boss.base.x + nx;
 	if (!IsTileBlocked(nextX - halfW, boss.base.y - halfH) &&
 		!IsTileBlocked(nextX + halfW, boss.base.y - halfH) &&
@@ -430,10 +511,19 @@ int CheckPhaseTransition() {
 		if (boss.escapingDelay > 0) {
 			boss.escapingDelay--;
 			boss.invincibleTimer = 10; // 매 프레임 무적 갱신
+
+			UpdateAnimation(&boss.anim);
+			
+			if (boss.anim.currFrame > 1) {
+				SetAnimationFrame(&boss.anim, 0);
+			}
+
 			return 1;
 		}
 
-		float escapeSpeed = 60.0f;
+		SetAnimationFrame(&boss.anim, 2);
+
+		float escapeSpeed = 20.0f;
 		boss.jumpOffsetY -= escapeSpeed;
 
 		// 화면 밖으로 충분히 올라갔으면(오프셋이 화면 높이 이상) 실제로 비활성화 + 문 열기
@@ -459,7 +549,8 @@ int CheckPhaseTransition() {
 		boss.isEscaping = ACTIVE;
 		boss.escapingDelay = 60;
 		boss.jumpOffsetY = 0;
-		boss.base.state = BOSS_IDLE;
+		boss.base.state = BOSS_JUMP;
+		SetAnimationFrame(&boss.anim, 0);
 		dashWarn.isActive = INACTIVE;
 		jumpWarn.isActive = INACTIVE;
 		return 1;
@@ -469,7 +560,8 @@ int CheckPhaseTransition() {
 		boss.isEscaping = ACTIVE;
 		boss.escapingDelay = 60;
 		boss.jumpOffsetY = 0;
-		boss.base.state = BOSS_CHASE;
+		boss.base.state = BOSS_JUMP;
+		SetAnimationFrame(&boss.anim, 0);
 		dashWarn.isActive = INACTIVE;
 		jumpWarn.isActive = INACTIVE;
 		return 1;
@@ -492,6 +584,11 @@ int CheckPhaseTransition() {
 void UpdateDash(int is3rdPhase) {
 	int is2nd3rdPhase = (currentMapType == MAP_SECOND_BOSS || currentMapType == MAP_THIRD_BOSS);
 
+	// [이동 중] 2~4프레임 (인덱스 1, 2, 3) 반복
+	if (boss.anim.currFrame < 1 || boss.anim.currFrame > 3) {
+		SetAnimationFrame(&boss.anim, 1);
+	}
+
 	HandleBossDashPlayerCollision(&player);
 
 	float nextX = boss.base.x + boss.dashDirX * DASH_SPEED;
@@ -508,6 +605,29 @@ void UpdateDash(int is3rdPhase) {
 		boss.base.state = is2nd3rdPhase ? BOSS_CHASE : BOSS_IDLE;
 		boss.attackTimer = BOSS_ATTACK_INTERVAL;
 		boss.doubleDashPhase = 0; // 3페이즈 연속 대시도 종료
+
+		// [도착 시] 5프레임 (인덱스 4) 고정
+		SetAnimationFrame(&boss.anim, 4);
+
+		// 다음 이동 방향으로 시선 변경
+		float dx = player.base.x - boss.base.x;
+		float dy = player.base.y - boss.base.y;
+		if (is2nd3rdPhase) {
+			if (fabsf(dx) > fabsf(dy) * 2) {
+				if (dx > 0) boss.base.direction = DIR_RIGHT;
+				else boss.base.direction = DIR_LEFT;
+			}
+			else if (fabsf(dy) > fabsf(dx) * 2) {
+				if (dy > 0) boss.base.direction = DIR_DOWN;
+				else boss.base.direction = DIR_UP;
+			}
+			else {
+				if (dx > 0 && dy > 0) boss.base.direction = DIR_DOWN_RIGHT;
+				else if (dx > 0 && dy < 0) boss.base.direction = DIR_UP_RIGHT;
+				else if (dx < 0 && dy > 0) boss.base.direction = DIR_DOWN_LEFT;
+				else if (dx < 0 && dy < 0) boss.base.direction = DIR_UP_LEFT;
+			}
+		}
 	}
 	else {
 		boss.base.x = nextX;
@@ -531,12 +651,40 @@ void UpdateDash(int is3rdPhase) {
 				boss.attackTimer = BOSS_ATTACK_INTERVAL;
 				boss.doubleDashPhase = 0;
 			}
+
+			// [도착 시] 5프레임 (인덱스 4) 고정
+			SetAnimationFrame(&boss.anim, 4);
+
+			// 다음 이동 방향으로 시선 변경
+			float dx = player.base.x - boss.base.x;
+			float dy = player.base.y - boss.base.y;
+			if (is2nd3rdPhase) {
+				if (fabsf(dx) > fabsf(dy) * 2) {
+					if (dx > 0) boss.base.direction = DIR_RIGHT;
+					else boss.base.direction = DIR_LEFT;
+				}
+				else if (fabsf(dy) > fabsf(dx) * 2) {
+					if (dy > 0) boss.base.direction = DIR_DOWN;
+					else boss.base.direction = DIR_UP;
+				}
+				else {
+					if (dx > 0 && dy > 0) boss.base.direction = DIR_DOWN_RIGHT;
+					else if (dx > 0 && dy < 0) boss.base.direction = DIR_UP_RIGHT;
+					else if (dx < 0 && dy > 0) boss.base.direction = DIR_DOWN_LEFT;
+					else if (dx < 0 && dy < 0) boss.base.direction = DIR_UP_LEFT;
+				}
+			}
 		}
 	}
 }
 
 // 대시 경고 카운트다운
 void UpdateDashWarningCountdown() {
+	// [준비 중] 1프레임 (인덱스 0) 반복
+	if (boss.anim.currFrame > 0) {
+		SetAnimationFrame(&boss.anim, 0);
+	}
+
 	dashWarn.timer--;
 	if (dashWarn.timer <= 0) {
 		dashWarn.isActive = INACTIVE;
@@ -549,6 +697,12 @@ void UpdateJumpLanding(int is2nd3rdPhase) {
 	float jumpSpeed = 40.0f;
 
 	if (boss.jumpPhase == 0) {
+		if (boss.anim.currFrame > 1) {
+			SetAnimationFrame(&boss.anim, 0);
+		}
+
+		boss.invincibleTimer = 10; // 점프 준비 중 무적
+
 		if (jumpWarn.timer <= 60) {
 			boss.jumpPhase = 1;
 		}
@@ -557,6 +711,10 @@ void UpdateJumpLanding(int is2nd3rdPhase) {
 	}
 	// [Phase 1] 하늘 위로 빠르게 상승
 	else if (boss.jumpPhase == 1) {
+		SetAnimationFrame(&boss.anim, 2);
+
+		boss.invincibleTimer = 10; // 상승 중 무적
+
 		jumpWarn.timer--;
 		boss.jumpOffsetY -= jumpSpeed;
 
@@ -570,6 +728,10 @@ void UpdateJumpLanding(int is2nd3rdPhase) {
 		}
 	}
 	else if (boss.jumpPhase == 2) {
+		SetAnimationFrame(&boss.anim, 3);
+
+		boss.invincibleTimer = 10; // 하강 중 무적
+
 		boss.jumpOffsetY += jumpSpeed;
 
 		boss.base.x = jumpWarn.targetX;
@@ -584,6 +746,7 @@ void UpdateJumpLanding(int is2nd3rdPhase) {
 
 			// 착지하는 순간 바로 종료하지 않고 Phase 3으로 넘김.
 			boss.jumpPhase = 3;
+			boss.invincibleTimer = 0; // 착지 시 무적 해제
 
 			boss.attackEndTimer = 50;
 
@@ -592,6 +755,10 @@ void UpdateJumpLanding(int is2nd3rdPhase) {
 	}
 	// [Phase 3] 착지 완료 후 땅에서 1초 동안 멈춰서 대기
 	else if (boss.jumpPhase == 3) {
+		SetAnimationFrame(&boss.anim, 4);
+
+		boss.invincibleTimer = 0; // 대기 중에는 데미지 입음
+
 		boss.attackEndTimer--;			// 1초 카운트다운
 
 		// 대기하는 동안 플레이어가 밀치거나 움직여도 보스 본체 및 히트박스는 착지점 고정
@@ -707,7 +874,7 @@ void UpdateSpiralPaws(int is2nd3rdPhase) {
 // 3페이즈 회오리 PAW 시작
 void StartSpiralPaws() {
 	boss.isSpiralActive = 1;
-	boss.base.state = BOSS_SPIRAL_PAWS;
+	boss.base.state = BOSS_SPIRAL_CATPAW;
 	boss.base.direction = DIR_DOWN;
 	boss.spiralIndex = 0;
 	boss.spiralTimer = 0;
@@ -741,8 +908,11 @@ void SelectPattern(int is2nd3rdPhase) {
 			boss.attackTimer = BOSS_ATTACK_INTERVAL;
 		}
 		else if (pattern <= 5) {
-			SpawnCircularPaws();
-			boss.attackTimer = BOSS_ATTACK_INTERVAL;
+			boss.skillChargeTimer = BOSS_SKILL_CHARGE_TIME;
+			boss.nextSkillState = BOSS_CIRCULAR_CATPAW;
+			boss.base.state = BOSS_IDLE;
+
+			SetAnimationFrame(&boss.effectAnim, 0);
 		}
 		else if (pattern == 6) {
 			StartDashWarning();
@@ -759,15 +929,25 @@ void SelectPattern(int is2nd3rdPhase) {
 			boss.attackTimer = BOSS_ATTACK_INTERVAL;
 		}
 		else if (pattern <= 4) {
-			SpawnCircularPaws();
-			boss.attackTimer = BOSS_ATTACK_INTERVAL;
+			boss.skillChargeTimer = BOSS_SKILL_CHARGE_TIME;
+			boss.nextSkillState = BOSS_CIRCULAR_CATPAW;
+			boss.base.state = BOSS_IDLE;
+
+			SetAnimationFrame(&boss.effectAnim, 0);
 		}
 		else if (pattern <= 6) {
-			SpawnRandomCircularPaws();
-			boss.attackTimer = BOSS_ATTACK_INTERVAL;
+			boss.skillChargeTimer = BOSS_SKILL_CHARGE_TIME;
+			boss.nextSkillState = BOSS_RANDOM_CATPAW;
+			boss.base.state = BOSS_IDLE;
+
+			SetAnimationFrame(&boss.effectAnim, 0);
 		}
 		else if (pattern == 7) {
-			StartSpiralPaws();
+			boss.skillChargeTimer = BOSS_SKILL_CHARGE_TIME;
+			boss.nextSkillState = BOSS_SPIRAL_CATPAW;
+			boss.base.state = BOSS_IDLE;
+
+			SetAnimationFrame(&boss.effectAnim, 0);
 		}
 		else if (pattern == 8) {
 			StartDoubleDashWarning();
@@ -820,15 +1000,47 @@ void UpdateBoss() {
 	if (currentMapType == MAP_WAITING ||
 		currentMapType == MAP_HALLWAY) return;
 
-	// 보스방 카메라 확대 연출 중에는 보스가 행동하지 않고 가만히 대기합니다.
+	UpdateBossPaws();
+
+	if (boss.isActive == INACTIVE) return;
+
+	if (boss.invincibleTimer > 0) boss.invincibleTimer--;
+
+	if (boss.skillChargeTimer > 0) {
+		boss.skillChargeTimer--;
+
+		int frameIdx = (BOSS_SKILL_CHARGE_TIME - boss.skillChargeTimer) / BOSS_SKILL_CHARGE_UPDATE_FRAME;
+		if (frameIdx > 5) frameIdx = 5;			// 마지막이 되면 6프레임(인덱스 5) 고정
+
+		SetAnimationFrame(&boss.effectAnim, frameIdx);
+
+		if (boss.skillChargeTimer <= 0) {
+			boss.skillChargeTimer = 0;
+
+			SetAnimationFrame(&boss.effectAnim, 0);
+
+			if (boss.nextSkillState == BOSS_CIRCULAR_CATPAW) {
+				SpawnCircularPaws();
+				boss.attackTimer = BOSS_ATTACK_INTERVAL;
+			}
+			else if (boss.nextSkillState == BOSS_RANDOM_CATPAW) {
+				SpawnRandomCircularPaws();
+				boss.attackTimer = BOSS_ATTACK_INTERVAL;
+			}
+			else if (boss.nextSkillState == BOSS_SPIRAL_CATPAW) {
+				StartSpiralPaws();
+				boss.attackTimer = BOSS_ATTACK_INTERVAL;
+			}
+		}
+
+		return;
+	}
+
+	// 보스방 카메라 확대 연출 중에는 보스가 행동하지 않고 가만히 대기
 	if (camera.isIntroActive == ACTIVE) {
 		boss.base.state = BOSS_IDLE;
 		return;
 	}
-
-	UpdateBossPaws();
-
-	if (boss.isActive == INACTIVE) return;
 
 	// 플레이어가 죽었으면 모든 공격과 추적을 중지
 	if (player.base.state == PLAYER_DEAD) {
@@ -845,6 +1057,8 @@ void UpdateBoss() {
 	int is3rdPhase = (currentMapType == MAP_THIRD_BOSS);
 
 	if (CheckPhaseTransition()) return;
+
+	UpdateAnimation(&boss.anim);
 
 	// 3페이즈 회오리 PAW는 다른 스킬과 무관하게 프레임마다 처리
 	if (is3rdPhase) UpdateSpiralPaws(is2nd3rdPhase);
@@ -869,9 +1083,26 @@ void UpdateBoss() {
 				boss.dashDirX = dx / len;
 				boss.dashDirY = dy / len;
 			}
+
+			// 방향 업데이트
+			if (fabsf(dx) > fabsf(dy) * 2) {
+				if (dx > 0) boss.base.direction = DIR_RIGHT;
+				else boss.base.direction = DIR_LEFT;
+			}
+			else if (fabsf(dy) > fabsf(dx) * 2) {
+				if (dy > 0) boss.base.direction = DIR_DOWN;
+				else boss.base.direction = DIR_UP;
+			}
+			else {
+				if (dx > 0 && dy > 0) boss.base.direction = DIR_DOWN_RIGHT;
+				else if (dx > 0 && dy < 0) boss.base.direction = DIR_UP_RIGHT;
+				else if (dx < 0 && dy > 0) boss.base.direction = DIR_DOWN_LEFT;
+				else if (dx < 0 && dy < 0) boss.base.direction = DIR_UP_LEFT;
+			}
+
 			boss.isDashing = ACTIVE;
 			boss.dashTimer = DASH_INTERVAL;
-			boss.doubleDashPhase = 0; // 두 번째 대시 시작, 이후 UpdateDash에서 완료 처리
+			boss.doubleDashPhase = 0;				// 두 번째 대시 시작, 이후 UpdateDash에서 완료 처리
 			boss.base.state = BOSS_DASH;
 		}
 	}
@@ -885,6 +1116,46 @@ void UpdateBoss() {
 	}
 	// PAW 발사 직후 정지 구간
 	else if (boss.isAttacking) {
+		// Three-way 공격 중에는 첫 번째 프레임(인덱스 0)으로 고정
+		if (boss.base.state == BOSS_THREE_WAY_CATPAW) {
+			SetAnimationFrame(&boss.anim, 0);
+
+			// 발사 직후 절반의 시간 동안만 플레이어를 바라보고, 그 이후에는 이동 방향을 바라보게 함
+			if (boss.attackEndTimer < (BOSS_ATTACK_INTERVAL / 6)) {
+				float dx = player.base.x - boss.base.x;
+				float dy = player.base.y - boss.base.y;
+				
+				// 페이즈에 따라 추적 또는 랜덤 이동 방향 계산
+				if (is2nd3rdPhase) {
+					// 추적 방향으로 시선 변경
+					if (fabsf(dx) > fabsf(dy) * 2) {
+						if (dx > 0) boss.base.direction = DIR_RIGHT;
+						else boss.base.direction = DIR_LEFT;
+					}
+					else if (fabsf(dy) > fabsf(dx) * 2) {
+						if (dy > 0) boss.base.direction = DIR_DOWN;
+						else boss.base.direction = DIR_UP;
+					}
+					else {
+						if (dx > 0 && dy > 0) boss.base.direction = DIR_DOWN_RIGHT;
+						else if (dx > 0 && dy < 0) boss.base.direction = DIR_UP_RIGHT;
+						else if (dx < 0 && dy > 0) boss.base.direction = DIR_DOWN_LEFT;
+						else if (dx < 0 && dy < 0) boss.base.direction = DIR_UP_LEFT;
+					}
+				}
+				else {
+					if (boss.moveDirX == 1 && boss.moveDirY == 0) boss.base.direction = DIR_RIGHT;
+					else if (boss.moveDirX == -1 && boss.moveDirY == 0) boss.base.direction = DIR_LEFT;
+					else if (boss.moveDirX == 0 && boss.moveDirY == 1) boss.base.direction = DIR_DOWN;
+					else if (boss.moveDirX == 0 && boss.moveDirY == -1) boss.base.direction = DIR_UP;
+					else if (boss.moveDirX == -1 && boss.moveDirY == -1) boss.base.direction = DIR_UP_LEFT;
+					else if (boss.moveDirX == 1 && boss.moveDirY == -1) boss.base.direction = DIR_UP_RIGHT;
+					else if (boss.moveDirX == -1 && boss.moveDirY == 1) boss.base.direction = DIR_DOWN_LEFT;
+					else if (boss.moveDirX == 1 && boss.moveDirY == 1) boss.base.direction = DIR_DOWN_RIGHT;
+				}
+			}
+		}
+
 		boss.attackEndTimer--;
 		if (boss.attackEndTimer <= 0) {
 			boss.isAttacking = 0;
@@ -894,9 +1165,9 @@ void UpdateBoss() {
 	}
 
 	else {
-		// 츄르 어그로 체크 (1페이즈 보스 중심)
+		// 츄르 어그로 체크
 		BOOL aggroFound = FALSE;
-		if (currentMapType == MAP_FIRST_BOSS) {
+		if (currentMapType == MAP_FIRST_BOSS || currentMapType == MAP_SECOND_BOSS || currentMapType == MAP_THIRD_BOSS) {
 			for (int j = 0; j < CHURU_MAX; j++) {
 				if (churues[j].isActive == ACTIVE && churues[j].isDropped == DROPPED) {
 					float cdx = churues[j].x - boss.base.x;
@@ -905,6 +1176,22 @@ void UpdateBoss() {
 
 					if (cDist < CHURU_AGGRO_RANGE) {
 						boss.base.state = BOSS_AGGRO;
+
+						if (fabsf(cdx) > fabsf(cdy) * 2) {
+							if (cdx > 0) boss.base.direction = DIR_RIGHT;
+							else boss.base.direction = DIR_LEFT;
+						}
+						else if (fabsf(cdy) > fabsf(cdx) * 2) {
+							if (cdy > 0) boss.base.direction = DIR_DOWN;
+							else boss.base.direction = DIR_UP;
+						}
+						else {
+							if (cdx > 0 && cdy > 0) boss.base.direction = DIR_DOWN_RIGHT;
+							else if (cdx > 0 && cdy < 0) boss.base.direction = DIR_UP_RIGHT;
+							else if (cdx < 0 && cdy > 0) boss.base.direction = DIR_DOWN_LEFT;
+							else if (cdx < 0 && cdy < 0) boss.base.direction = DIR_UP_LEFT;
+						}
+
 						HandleBossAggro(churues[j].x, churues[j].y);
 						aggroFound = TRUE;
 						break;

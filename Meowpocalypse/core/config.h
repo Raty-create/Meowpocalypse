@@ -51,9 +51,9 @@
 #define PLAYER_HITBOX_WIDTH 24
 #define PLAYER_HITBOX_HEIGHT 46
 
-#define PLAYER_HP 100
+#define PLAYER_HP 10
 #define PLAYER_MP 100
-#define PLAYER_SPEED 8.5f
+#define PLAYER_SPEED 20.5f
 
 #define PLAYER_INVINCIBLE_TIME 60
 #define PLAYER_DEATH_TIME 120
@@ -87,8 +87,8 @@
 #define CAT_PAW_INTERVAL 180
 
 // BOSS
-#define BOSS_WIDTH (TILE_SIZE * 7)
-#define BOSS_HEIGHT (TILE_SIZE * 8)
+#define BOSS_WIDTH (TILE_SIZE * 3)
+#define BOSS_HEIGHT (TILE_SIZE * 3)
 #define BOSS_HP 500
 #define BOSS_PAW_SIZE 32
 #define BOSS_HITBOX_WIDTH (BOSS_WIDTH - 20)
@@ -104,6 +104,8 @@
 #define DASH_INTERVAL 50
 
 #define BOSS_ATTACK_INTERVAL 60
+#define BOSS_SKILL_CHARGE_TIME 120				// 총 2초 (20프레임 * 6단계)
+#define BOSS_SKILL_CHARGE_UPDATE_FRAME 6		// 0.1초(6프레임)마다 프레임 변경
 
 #define BOSS_MOVE_SPEED 3.0f
 #define BOSS_MOVE_INTERVAL 180
@@ -112,18 +114,23 @@
 
 #define BOSS_JUMP_WARN_INTERVAL 100
 #define BOSS_JUMP_LAND_SIZE (BOSS_WIDTH * 2)
+#define BOSS_JUMP_LAND_SIZE_W_RATIO 0.8f
+#define BOSS_JUMP_LAND_SIZE_H_RATIO 0.4f
+#define JUMPWARN_Y_OFFSET 50.0f
 
 #define BOSS_CONTACT_DAMAGE    20
-#define BOSS_DASH_KNOCKBACK    30.0f
-#define BOSS_JUMP_KNOCKBACK    15.0f
+#define BOSS_DASH_DAMAGE 25
+#define BOSS_JUMP_DAMAGE 30
+
 #define BOSS_NORMAL_KNOCKBACK  10.0f
+#define BOSS_DASH_KNOCKBACK    30.0f
+#define BOSS_JUMP_KNOCKBACK    25.0f
 
 #define BOSS_SPIRAL_COUNT      36      // 회오리 한 바퀴 발사 수
 #define BOSS_SPIRAL_INTERVAL   4       // 발사 간격 (프레임)
 #define BOSS_SPIRAL_ROTATIONS  3       // 총 회전 수
 
 #define BOSS_DOUBLE_DASH_DELAY  10     // 첫 대시 종료 후 두 번째 대시까지 딜레이 (프레임)
-
 
 #define BOSS_RANDOM_CIRCULARPAWS_COUNT 96
 

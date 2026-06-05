@@ -12,7 +12,7 @@ IMAGE imgShadow;
 IMAGE imgMapTiles[7];
 
 void InitRenderResources() {
-	LoadMyImage(&imgShadow, L"DEFAULT_SHADOW.png");
+	LoadMyImage(&imgShadow, L"SHADOW.png");
 	
 	LoadMyImage(&imgMapTiles[MAP_WAITING], L"map_waiting.png");
 	LoadMyImage(&imgMapTiles[MAP_HALLWAY], L"hallway.png");
@@ -154,10 +154,10 @@ void RenderObjectShadow(HDC hDC, float x, float y, int objW) {
 	if (imgShadow.img.IsNull()) return;
 
 	int shadowX = (int)((x - camera.x) * camera.zoom);
-	int shadowY = (int)((y - camera.y + (float)objW / 3.0f) * camera.zoom);
+	int shadowY = (int)((y - camera.y + (float)objW / 3.3f) * camera.zoom);
 
-	int sw = (int)(objW * 0.6f * camera.zoom);
-	int sh = sw;
+	int sw = (int)(objW * 0.4f * camera.zoom);
+	int sh = sw / 2;
 
 	DrawMyImage(&imgShadow, hDC, shadowX - sw / 2, shadowY - sh / 2, sw, sh, 0, 0, imgShadow.width, imgShadow.height);
 }
@@ -353,7 +353,7 @@ void RenderCatPawHitBox(HDC hDC) {
 	}
 }
 
-//보스 대시 경고 - Polygon으로 경고 영역 한 번에 그리기
+// 보스 대시 경고 - Polygon으로 경고 영역 한 번에 그리기
 void RenderDashWarning(HDC hDC) {
 	if (dashWarn.isActive == INACTIVE) return;
 
@@ -395,23 +395,25 @@ void RenderDashWarning(HDC hDC) {
 	DeleteObject(hBrush);
 }
 
-// 보스 점프 착지 경고 - 원형 표시
+// 보스 점프 착지 경고 - 타원형 표시
 void RenderJumpWarning(HDC hDC) {
 	if (jumpWarn.isActive == INACTIVE) return;
 
 	// 깜빡임: 10프레임 단위
 	if ((jumpWarn.timer / 10) % 2 == 0) return;
 
-	int r = (int)(BOSS_JUMP_LAND_SIZE * camera.zoom / 2);
+	// 타원형 반지름 설정 (충돌 로직과 동일한 비율)
+	int rx = (int)(BOSS_JUMP_LAND_SIZE * BOSS_JUMP_LAND_SIZE_W_RATIO * camera.zoom);
+	int ry = (int)(BOSS_JUMP_LAND_SIZE * BOSS_JUMP_LAND_SIZE_H_RATIO * camera.zoom);
 	int sx = (int)((jumpWarn.targetX - camera.x) * camera.zoom);
-	int sy = (int)((jumpWarn.targetY - camera.y) * camera.zoom);
+	int sy = (int)((jumpWarn.targetY + 40.0f - camera.y) * camera.zoom);
 
 	hBrush = CreateSolidBrush(RGB(255, 40, 40));
 	oldBrush = (HBRUSH)SelectObject(hDC, hBrush);
 	hPen = CreatePen(PS_NULL, 0, 0);
 	oldPen = (HPEN)SelectObject(hDC, hPen);
 
-	Ellipse(hDC, sx - r, sy - r, sx + r, sy + r);
+	Ellipse(hDC, sx - rx, sy - ry, sx + rx, sy + ry);
 
 	SelectObject(hDC, oldPen);
 	SelectObject(hDC, oldBrush);
@@ -429,20 +431,115 @@ void RenderBoss(HDC hDC) {
 		RenderJumpWarning(hDC);
 	}
 
-	COLORREF bossColor = boss.isDashing ? RGB(255, 220, 0) : RGB(0, 255, 0);
-	hBrush = CreateSolidBrush(bossColor);
-	oldBrush = (HBRUSH)SelectObject(hDC, hBrush);
-
 	// zoom을 적용한 스크린 좌표 및 크기 변환
 	screenX = (int)((boss.base.x - camera.x) * camera.zoom);
 	screenY = (int)((boss.base.y - camera.y + boss.jumpOffsetY) * camera.zoom);
-	int bw = (int)(BOSS_WIDTH * camera.zoom);
-	int bh = (int)(BOSS_HEIGHT * camera.zoom);
+	int bw = (int)(boss.base.width * 2.5f * camera.zoom);
+	int bh = (int)(boss.base.height * 2.5f * camera.zoom);
 
-	Rectangle(hDC, screenX - bw / 2, screenY - bh / 2, screenX + bw / 2, screenY + bh / 2);
+	// 대쉬 중일 때는 크기를 더 키움
+	if (boss.base.state == BOSS_DASH) {
+		bw = (int)(boss.base.width * 3.5f * camera.zoom);
+		bh = (int)(boss.base.height * 3.5f * camera.zoom);
+	}
 
-	SelectObject(hDC, oldBrush);
-	DeleteObject(hBrush);
+	// 점프 중일 때는 크기를 더 키움
+	if (boss.base.state == BOSS_JUMP) {
+		bw = (int)(boss.base.width * 4.5f * camera.zoom);
+		bh = (int)(boss.base.height * 4.5f * camera.zoom);
+	}
+
+	// 탄막 스킬 이펙트 그리기
+	if (boss.skillChargeTimer > 0) {
+		int ew = (int)(boss.base.width * 7.0f * camera.zoom);
+		int eh = (int)(boss.base.height * 7.0f * camera.zoom);
+
+		float offsetX = 0.0f;
+		float offsetY = 0.0f;
+
+		int effectRow = 0;
+		
+		if (boss.nextSkillState == BOSS_CIRCULAR_CATPAW) {
+			effectRow = 0;
+			offsetX = -10.0f;
+		}
+		else if (boss.nextSkillState == BOSS_RANDOM_CATPAW) {
+			effectRow = 1;
+			offsetX = -10.0f;
+			offsetY = -15.0f;
+		}
+		else if (boss.nextSkillState == BOSS_SPIRAL_CATPAW) {
+			effectRow = 2;
+			offsetX = -15.0f;
+			offsetY = -10.0f;
+		}
+
+		int finalEffX = screenX + (int)(offsetX * camera.zoom);
+		int finalEffY = screenY + (int)(offsetY * camera.zoom);
+
+		RenderAnimation(&boss.effectAnim, hDC, finalEffX, finalEffY, ew, eh, effectRow);
+	}
+
+	// 보스 본체 그리기
+	int finalRow = 0;
+	BOOL isDeadState = FALSE;
+
+	switch (boss.base.state) {
+	case BOSS_IDLE:
+		finalRow = 0;
+		break;
+	case BOSS_MOVE:
+	case BOSS_CHASE:
+	case BOSS_AGGRO:
+		switch (boss.base.direction) {
+		case DIR_DOWN:
+			finalRow = 1;
+			break;
+		case DIR_UP:
+			finalRow = 2;
+			break;
+		case DIR_LEFT:
+			finalRow = 3;
+			break;
+		case DIR_RIGHT:
+			finalRow = 4;
+			break;
+		case DIR_UP_LEFT:
+			finalRow = 5;
+			break;
+		case DIR_UP_RIGHT:
+			finalRow = 6;
+			break;
+		case DIR_DOWN_LEFT:
+			finalRow = 7;
+			break;
+		case DIR_DOWN_RIGHT:
+			finalRow = 8;
+			break;
+		}
+		break;
+	case BOSS_DASH:
+		finalRow = 17 + (int)boss.base.direction;
+		break;
+	case BOSS_MELEE:
+		finalRow = 25 + (int)boss.base.direction;
+		break;
+	case BOSS_THREE_WAY_CATPAW:
+		finalRow = 34 + (int)boss.base.direction;
+		break;
+	case BOSS_JUMP:
+		finalRow = 33;
+		break;
+	case BOSS_DEAD:
+		finalRow = 9 + (int)boss.base.direction;
+		isDeadState = TRUE;
+		break;
+	default:
+		finalRow = 0;
+		break;
+	}
+
+	RenderAnimation(&boss.anim, hDC, screenX, screenY, bw, bh, finalRow);
 }
 
 // 보스 hitBox
