@@ -20,6 +20,7 @@
 #define TILE_FLOOR 0
 #define TILE_WALL 1
 #define TILE_DOOR 2
+#define TILE_OBSTACLE 3
 
 #define WALL_THICKNESS 5
 
@@ -63,7 +64,7 @@
 #define ENEMY_HITBOX_WIDTH 34
 #define ENEMY_HITBOX_HEIGHT 68
 #define ENEMY_HP 30
-#define ENEMY_LIMIT 25
+#define ENEMY_LIMIT 1
 
 #define ENEMY_COLS_SPAWN_MARGIN 20
 #define ENEMY_ROWS_SPAWN_MARGIN 10

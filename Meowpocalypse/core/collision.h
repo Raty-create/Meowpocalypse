@@ -8,7 +8,7 @@
 
 int IsObjectCollision(float ax, float ay, int aw, int ah, float bx, float by, int bw, int bh);		// AABB 충돌 체크 함수
 
-int IsTileWall(float x, float y);
+int IsTileBlocked(float x, float y);
 int IsPlayerOnDoor();
 void HandlePlayerWallCollision();
 int IsOverlapWithEnemy(float x, float y);

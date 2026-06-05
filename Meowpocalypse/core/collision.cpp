@@ -15,8 +15,8 @@ int IsObjectCollision(float ax, float ay, int aw, int ah, float bx, float by, in
 		ay + ah / 2 > by - bh / 2);
 }
 
-// 플레이어 - 벽 충돌 체크
-int IsTileWall(float x, float y) {
+// 플레이어 - 벽 및 장애물 충돌 체크
+int IsTileBlocked(float x, float y) {
 	MAPDATA* m = &maps[currentMapType];
 
 	int col = (int)((x - m->worldX) / TILE_SIZE);
@@ -26,7 +26,7 @@ int IsTileWall(float x, float y) {
 	if (col < 0 || col >= m->cols) return 1;
 
 	int tile = m->tiles[row][col];
-	return tile == TILE_WALL;
+	return (tile == TILE_WALL || tile == TILE_OBSTACLE);
 }
 
 // 플레이어 - 문
@@ -66,12 +66,12 @@ void HandlePlayerWallCollision() {
 
 	int playerHalfW = PLAYER_WIDTH / 2;
 	int playerHalfH = PLAYER_HEIGHT;
-	if (!IsTileWall(playerNextX - playerHalfW, player.base.y + playerHalfH) &&
-		!IsTileWall(playerNextX + playerHalfW, player.base.y + playerHalfH))
+	if (!IsTileBlocked(playerNextX - playerHalfW, player.base.y + playerHalfH) &&
+		!IsTileBlocked(playerNextX + playerHalfW, player.base.y + playerHalfH))
 		player.base.x = player.base.hitBoxX = playerNextX;
 
-	if (!IsTileWall(player.base.x - playerHalfW, playerNextY + playerHalfH) &&
-		!IsTileWall(player.base.x + playerHalfW, playerNextY + playerHalfH))
+	if (!IsTileBlocked(player.base.x - playerHalfW, playerNextY + playerHalfH) &&
+		!IsTileBlocked(player.base.x + playerHalfW, playerNextY + playerHalfH))
 		player.base.y = player.base.hitBoxY = playerNextY;
 }
 

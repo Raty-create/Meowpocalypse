@@ -15,7 +15,7 @@ void InitRenderResources() {
 	LoadMyImage(&imgShadow, L"DEFAULT_SHADOW.png");
 	
 	LoadMyImage(&imgMapTiles[MAP_WAITING], L"map_waiting.png");
-	LoadMyImage(&imgMapTiles[MAP_FIRST_HALLWAY], L"hallway.png");
+	LoadMyImage(&imgMapTiles[MAP_HALLWAY], L"hallway.png");
 	LoadMyImage(&imgMapTiles[MAP_FIRST_BOSS], L"first_boss_map.png");
 	LoadMyImage(&imgMapTiles[MAP_SECOND_BOSS], L"second_boss_map.png");
 	LoadMyImage(&imgMapTiles[MAP_THIRD_BOSS], L"third_boss_map.png");
@@ -33,6 +33,7 @@ COLORREF TileColor(int tileType, DOOR_STATE doorState) {
 	case TILE_FLOOR: return RGB(153, 76, 0);
 	case TILE_WALL: return RGB(0, 0, 0);
 	case TILE_DOOR: return(doorState == DOOR_OPEN) ? RGB(0, 200, 0) : RGB(139, 69, 0);
+	case TILE_OBSTACLE: return RGB(255, 0, 0);
 	default: return RGB(0, 0, 0);
 	}
 }
