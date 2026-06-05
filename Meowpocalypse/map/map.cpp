@@ -172,6 +172,10 @@ void InitFirstBossMap(MAPDATA* m, int worldY) {
 	SetObstacleRect(m, m->rows - WALL_THICKNESS - 16, WALL_THICKNESS + 4, m->rows - WALL_THICKNESS - 15, WALL_THICKNESS + 6);
 	SetObstacleRect(m, m->rows - WALL_THICKNESS - 17, WALL_THICKNESS + 4, m->rows - WALL_THICKNESS - 16, WALL_THICKNESS + 5);
 	SetObstacleRect(m, (((m->rows - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS) - 5, WALL_THICKNESS + 4, (((m->rows - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS) + 4, WALL_THICKNESS + 8);
+	SetObstacleRect(m, WALL_THICKNESS + 1, WALL_THICKNESS + 4, WALL_THICKNESS + 14, WALL_THICKNESS + 8);
+	SetObstacleRect(m, WALL_THICKNESS + 15, WALL_THICKNESS + 4, WALL_THICKNESS + 16, WALL_THICKNESS + 7);
+	SetObstacleRect(m, WALL_THICKNESS + 16, WALL_THICKNESS + 4, WALL_THICKNESS + 17, WALL_THICKNESS + 6);
+	SetObstacleRect(m, WALL_THICKNESS + 17, WALL_THICKNESS + 4, WALL_THICKNESS + 18, WALL_THICKNESS + 5);
 
 	// 우
 	SetObstacleRect(m, WALL_THICKNESS + 1, m->cols - WALL_THICKNESS - 4, m->rows - WALL_THICKNESS - 1, m->cols - WALL_THICKNESS - 1);
@@ -180,6 +184,10 @@ void InitFirstBossMap(MAPDATA* m, int worldY) {
 	SetObstacleRect(m, m->rows - WALL_THICKNESS - 16, m->cols - WALL_THICKNESS - 6, m->rows - WALL_THICKNESS - 15, m->cols - WALL_THICKNESS - 4);
 	SetObstacleRect(m, m->rows - WALL_THICKNESS - 17, m->cols - WALL_THICKNESS - 5, m->rows - WALL_THICKNESS - 16, m->cols - WALL_THICKNESS - 4);
 	SetObstacleRect(m, (((m->rows - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS) - 5, m->cols - WALL_THICKNESS - 8, (((m->rows - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS) + 4, m->cols - WALL_THICKNESS - 4);
+	SetObstacleRect(m, WALL_THICKNESS + 1, m->cols - WALL_THICKNESS - 8, WALL_THICKNESS + 14, m->cols - WALL_THICKNESS - 4);
+	SetObstacleRect(m, WALL_THICKNESS + 15, m->cols - WALL_THICKNESS - 7, WALL_THICKNESS + 16, m->cols - WALL_THICKNESS - 4);
+	SetObstacleRect(m, WALL_THICKNESS + 16, m->cols - WALL_THICKNESS - 6, WALL_THICKNESS + 17, m->cols - WALL_THICKNESS - 4);
+	SetObstacleRect(m, WALL_THICKNESS + 17, m->cols - WALL_THICKNESS - 5, WALL_THICKNESS + 18, m->cols - WALL_THICKNESS - 4);
 	
 	// 문
 	int doorRow = WALL_THICKNESS;
