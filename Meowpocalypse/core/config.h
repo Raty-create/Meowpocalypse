@@ -51,7 +51,7 @@
 #define PLAYER_HITBOX_WIDTH 24
 #define PLAYER_HITBOX_HEIGHT 46
 
-#define PLAYER_HP 10
+#define PLAYER_HP 100
 #define PLAYER_MP 100
 #define PLAYER_SPEED 20.5f
 

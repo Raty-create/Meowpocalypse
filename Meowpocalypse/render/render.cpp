@@ -76,7 +76,7 @@ void RenderCurrentMap(HDC hDC) {
 
 	for (int r = 0; r < m->rows; r++) {
 		for (int c = 0; c < m->cols; c++) {
-			if (m->tiles[r][c] != TILE_WALL) {
+			if (m->tiles[r][c] == TILE_FLOOR || m->tiles[r][c] == TILE_OBSTACLE) {
 				if (c < minC) minC = c;
 				if (c > maxC) maxC = c;
 				if (r < minR) minR = r;
