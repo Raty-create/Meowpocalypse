@@ -15,7 +15,7 @@ int IsObjectCollision(float ax, float ay, int aw, int ah, float bx, float by, in
 		ay + ah / 2 > by - bh / 2);
 }
 
-// 플레이어 - 벽 충돌 체크
+// 플레이어 - 벽 및 장애물 충돌 체크
 int IsTileBlocked(float x, float y) {
 	MAPDATA* m = &maps[currentMapType];
 

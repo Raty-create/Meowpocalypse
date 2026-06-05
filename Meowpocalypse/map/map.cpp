@@ -9,7 +9,7 @@
 
 MAP_TYPE currentMapType = MAP_WAITING;
 MAPDATA maps[MAP_COUNT];
-static int g_hallwayStage = 0;
+int g_hallwayStage = 0;
 
 void InitDoor(MAPDATA* m, int row, int col) {
 	if (m->doorCount >= MAX_DOORS) return;
