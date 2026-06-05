@@ -20,7 +20,7 @@ typedef struct {
 } MAPDATA;
 
 extern MAP_TYPE currentMapType;
-extern MAPDATA maps[7];
+extern MAPDATA maps[MAP_COUNT];
 
 MAP_TYPE GetNextMap(MAP_TYPE type);
 

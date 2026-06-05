@@ -75,9 +75,7 @@ void InitBoss() {
 
 void SpawnBoss(MAP_TYPE type) {
 	if (type == MAP_WAITING ||
-		type == MAP_FIRST_HALLWAY ||
-		type == MAP_SECOND_HALLWAY ||
-		type == MAP_THIRD_HALLWAY) return;
+		type == MAP_HALLWAY) return;
 
 	MAPDATA* m = &maps[type];
 
@@ -820,9 +818,7 @@ void HandleBossAggro(float tx, float ty) {
 
 void UpdateBoss() {
 	if (currentMapType == MAP_WAITING ||
-		currentMapType == MAP_FIRST_HALLWAY ||
-		currentMapType == MAP_SECOND_HALLWAY ||
-		currentMapType == MAP_THIRD_HALLWAY) return;
+		currentMapType == MAP_HALLWAY) return;
 
 	// 보스방 카메라 확대 연출 중에는 보스가 행동하지 않고 가만히 대기합니다.
 	if (camera.isIntroActive == ACTIVE) {

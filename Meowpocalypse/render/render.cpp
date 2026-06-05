@@ -15,7 +15,7 @@ void InitRenderResources() {
 	LoadMyImage(&imgShadow, L"DEFAULT_SHADOW.png");
 	
 	LoadMyImage(&imgMapTiles[MAP_WAITING], L"map_waiting.png");
-	LoadMyImage(&imgMapTiles[MAP_FIRST_HALLWAY], L"hallway.png");
+	LoadMyImage(&imgMapTiles[MAP_HALLWAY], L"hallway.png");
 	LoadMyImage(&imgMapTiles[MAP_FIRST_BOSS], L"first_boss_map.png");
 	LoadMyImage(&imgMapTiles[MAP_SECOND_BOSS], L"second_boss_map.png");
 	LoadMyImage(&imgMapTiles[MAP_THIRD_BOSS], L"third_boss_map.png");

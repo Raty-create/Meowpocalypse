@@ -5,8 +5,11 @@
 #include "camera.h"
 #include "collision.h"
 
+#include <stdlib.h>
+
 MAP_TYPE currentMapType = MAP_WAITING;
-MAPDATA maps[7];
+MAPDATA maps[MAP_COUNT];
+static int g_hallwayStage = 0;
 
 void InitDoor(MAPDATA* m, int row, int col) {
 	if (m->doorCount >= MAX_DOORS) return;
@@ -189,6 +192,38 @@ void InitFirstBossMap(MAPDATA* m, int worldY) {
 	SetObstacleRect(m, WALL_THICKNESS + 16, m->cols - WALL_THICKNESS - 6, WALL_THICKNESS + 17, m->cols - WALL_THICKNESS - 4);
 	SetObstacleRect(m, WALL_THICKNESS + 17, m->cols - WALL_THICKNESS - 5, WALL_THICKNESS + 18, m->cols - WALL_THICKNESS - 4);
 	
+	// 위 
+	SetObstacleRect(m, WALL_THICKNESS + 1, WALL_THICKNESS + 1, WALL_THICKNESS + 5, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 3);
+	SetObstacleRect(m, WALL_THICKNESS + 1, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 3, WALL_THICKNESS + 5, m->cols - WALL_THICKNESS - 1);
+	SetObstacleRect(m, WALL_THICKNESS + 6, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 9, WALL_THICKNESS + 7, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 5);
+	SetObstacleRect(m, WALL_THICKNESS + 5, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 10, WALL_THICKNESS + 6, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 9);
+	SetObstacleRect(m, WALL_THICKNESS + 6, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 5, WALL_THICKNESS + 7, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 9);
+	SetObstacleRect(m, WALL_THICKNESS + 5, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 9, WALL_THICKNESS + 6, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 10);
+	SetObstacleRect(m, WALL_THICKNESS + 6, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 16, WALL_THICKNESS + 7, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 14);
+	SetObstacleRect(m, WALL_THICKNESS + 5, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 17, WALL_THICKNESS + 6, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 16);
+	SetObstacleRect(m, WALL_THICKNESS + 6, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 14, WALL_THICKNESS + 7, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 16);
+	SetObstacleRect(m, WALL_THICKNESS + 5, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 16, WALL_THICKNESS + 6, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 17);
+	SetObstacleRect(m, WALL_THICKNESS + 6, WALL_THICKNESS + 8, WALL_THICKNESS + 8, WALL_THICKNESS + 12);
+	SetObstacleRect(m, WALL_THICKNESS + 6, m->cols - WALL_THICKNESS - 12, WALL_THICKNESS + 8, m->cols - WALL_THICKNESS - 8);
+
+	// 아래
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 6, WALL_THICKNESS + 1, m->rows - WALL_THICKNESS - 1, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 4);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 6, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 4, m->rows - WALL_THICKNESS - 1, m->cols - WALL_THICKNESS - 1);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 8, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 15, m->rows - WALL_THICKNESS - 6, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 4);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 8, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 4, m->rows - WALL_THICKNESS - 6, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 15);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 14, m->rows - WALL_THICKNESS - 7, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 8);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 8, m->rows - WALL_THICKNESS - 7, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 14);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 8, WALL_THICKNESS + 8, m->rows - WALL_THICKNESS - 7, WALL_THICKNESS + 12);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 8, m->cols - WALL_THICKNESS - 12, m->rows - WALL_THICKNESS - 7, m->cols - WALL_THICKNESS - 8);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 9, WALL_THICKNESS + 8, m->rows - WALL_THICKNESS - 8, WALL_THICKNESS + 11);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 9, m->cols - WALL_THICKNESS - 11, m->rows - WALL_THICKNESS - 8, m->cols - WALL_THICKNESS - 8);
+
+	// 중앙
+	SetObstacleRect(m, WALL_THICKNESS + 9, WALL_THICKNESS + 16, WALL_THICKNESS + 21, WALL_THICKNESS + 34);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 22, WALL_THICKNESS + 16, m->rows - WALL_THICKNESS - 10, WALL_THICKNESS + 34);
+	SetObstacleRect(m, WALL_THICKNESS + 9, m->cols - 39, WALL_THICKNESS + 21, m->cols - WALL_THICKNESS - 16);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 22, m->cols - WALL_THICKNESS - 34, m->rows - WALL_THICKNESS - 10, m->cols - WALL_THICKNESS - 16);
+
 	// 문
 	int doorRow = WALL_THICKNESS;
 	int doorCol = ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS;
@@ -223,6 +258,71 @@ void InitSecondBossMap(MAPDATA* m, int worldY) {
 				m->tiles[row][col] = TILE_FLOOR;
 		}
 	}
+	// 위
+	SetObstacleRect(m, WALL_THICKNESS + 1, WALL_THICKNESS + 1, WALL_THICKNESS + 7, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 4);
+	SetObstacleRect(m, WALL_THICKNESS + 1, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 4, WALL_THICKNESS + 7, m->cols - WALL_THICKNESS - 1);
+	SetObstacleRect(m, WALL_THICKNESS + 7, WALL_THICKNESS + 1, WALL_THICKNESS + 8, WALL_THICKNESS + 21);
+	SetObstacleRect(m, WALL_THICKNESS + 7, m->cols - WALL_THICKNESS - 21, WALL_THICKNESS + 8, m->cols - WALL_THICKNESS - 1);
+	SetObstacleRect(m, WALL_THICKNESS + 7, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 7, WALL_THICKNESS + 8, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 4);
+	SetObstacleRect(m, WALL_THICKNESS + 7, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 4, WALL_THICKNESS + 8, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 7);
+	SetObstacleRect(m, WALL_THICKNESS + 8, WALL_THICKNESS + 1, WALL_THICKNESS + 9, WALL_THICKNESS + 20);
+	SetObstacleRect(m, WALL_THICKNESS + 8, m->cols - WALL_THICKNESS - 20, WALL_THICKNESS + 9, m->cols - WALL_THICKNESS - 1);
+	SetObstacleRect(m, WALL_THICKNESS + 8, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 5, WALL_THICKNESS + 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 4);
+	SetObstacleRect(m, WALL_THICKNESS + 8, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 4, WALL_THICKNESS + 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 5);
+	SetObstacleRect(m, WALL_THICKNESS + 9, WALL_THICKNESS + 14, WALL_THICKNESS + 10, WALL_THICKNESS + 18);
+	SetObstacleRect(m, WALL_THICKNESS + 9, m->cols - WALL_THICKNESS - 18, WALL_THICKNESS + 10, m->cols - WALL_THICKNESS - 14);
+	SetObstacleRect(m, WALL_THICKNESS + 10, WALL_THICKNESS + 15, WALL_THICKNESS + 11, WALL_THICKNESS + 17);
+	SetObstacleRect(m, WALL_THICKNESS + 10, m->cols - WALL_THICKNESS - 17, WALL_THICKNESS + 11, m->cols - WALL_THICKNESS - 15);
+	SetObstacleRect(m, WALL_THICKNESS + 7, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 16, WALL_THICKNESS + 8, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 15);
+	SetObstacleRect(m, WALL_THICKNESS + 7, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 23, WALL_THICKNESS + 8, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 22);
+	SetObstacleRect(m, WALL_THICKNESS + 7, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 30, WALL_THICKNESS + 8, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 29);
+	SetObstacleRect(m, WALL_THICKNESS + 7, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 15, WALL_THICKNESS + 8, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 16);
+	SetObstacleRect(m, WALL_THICKNESS + 7, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 22, WALL_THICKNESS + 8, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 23);
+	SetObstacleRect(m, WALL_THICKNESS + 7, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 29, WALL_THICKNESS + 8, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 30);
+
+	// 아래
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 7, WALL_THICKNESS + 1, m->rows - WALL_THICKNESS - 1, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 4);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 7, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 4, m->rows - WALL_THICKNESS - 1, m->cols - WALL_THICKNESS - 1);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 8, WALL_THICKNESS + 1, m->rows - WALL_THICKNESS - 7, WALL_THICKNESS + 21);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 8, m->cols - WALL_THICKNESS - 21, m->rows - WALL_THICKNESS - 7, m->cols - WALL_THICKNESS - 1);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 8, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 4, m->rows - WALL_THICKNESS - 7, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 4);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 8, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 4, m->rows - WALL_THICKNESS - 7, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 4);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 9, WALL_THICKNESS + 1, m->rows - WALL_THICKNESS - 8, WALL_THICKNESS + 20);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 9, m->cols - WALL_THICKNESS - 20, m->rows - WALL_THICKNESS - 8, m->cols - WALL_THICKNESS - 1);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 4, m->rows - WALL_THICKNESS - 8, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 4);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 4, m->rows - WALL_THICKNESS - 8, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 4);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 10, WALL_THICKNESS + 14, m->rows - WALL_THICKNESS - 9, WALL_THICKNESS + 18);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 10, m->cols - WALL_THICKNESS - 18, m->rows - WALL_THICKNESS - 9, m->cols - WALL_THICKNESS - 14);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 11, WALL_THICKNESS + 15, m->rows - WALL_THICKNESS - 10, WALL_THICKNESS + 17);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 11, m->cols - WALL_THICKNESS - 17, m->rows - WALL_THICKNESS - 10, m->cols - WALL_THICKNESS - 15);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 8, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 7, m->rows - WALL_THICKNESS - 7, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 6);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 8, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 16, m->rows - WALL_THICKNESS - 7, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 15);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 8, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 23, m->rows - WALL_THICKNESS - 7, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 22);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 8, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 30, m->rows - WALL_THICKNESS - 7, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 29);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 8, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 6, m->rows - WALL_THICKNESS - 7, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 7);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 8, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 15, m->rows - WALL_THICKNESS - 7, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 16);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 8, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 22, m->rows - WALL_THICKNESS - 7, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 23);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 8, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 29, m->rows - WALL_THICKNESS - 7, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 30);
+
+	// 좌
+	SetObstacleRect(m, WALL_THICKNESS + 1, WALL_THICKNESS + 1, m->rows - WALL_THICKNESS - 1, WALL_THICKNESS + 7);
+	SetObstacleRect(m, WALL_THICKNESS + 9, WALL_THICKNESS + 7,WALL_THICKNESS + 18, WALL_THICKNESS + 8);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 18, WALL_THICKNESS + 7, m->rows - WALL_THICKNESS - 9, WALL_THICKNESS + 8);
+	SetObstacleRect(m, WALL_THICKNESS + 9, WALL_THICKNESS + 8, WALL_THICKNESS + 10, WALL_THICKNESS + 9);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 10, WALL_THICKNESS + 8, m->rows - WALL_THICKNESS - 9, WALL_THICKNESS + 9);
+	SetObstacleRect(m, ((m->rows - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 4, WALL_THICKNESS + 7, ((m->rows - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 4, WALL_THICKNESS + 8);
+	SetObstacleRect(m, ((m->rows - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 3, WALL_THICKNESS + 8, ((m->rows - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 3, WALL_THICKNESS + 10);
+
+	// 우
+	SetObstacleRect(m, WALL_THICKNESS + 1, m->cols - WALL_THICKNESS - 7, m->rows - WALL_THICKNESS - 1, m->cols - WALL_THICKNESS - 1);
+	SetObstacleRect(m, WALL_THICKNESS + 9, m->cols - WALL_THICKNESS - 8, WALL_THICKNESS + 18, m->cols - WALL_THICKNESS - 7);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 18, m->cols - WALL_THICKNESS - 8, m->rows - WALL_THICKNESS - 9, m->cols - WALL_THICKNESS - 7);
+	SetObstacleRect(m, WALL_THICKNESS + 9, m->cols - WALL_THICKNESS - 9, WALL_THICKNESS + 10, m->cols - WALL_THICKNESS - 8);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 10, m->cols - WALL_THICKNESS - 9, m->rows - WALL_THICKNESS - 9, m->cols - WALL_THICKNESS - 8);
+	SetObstacleRect(m, ((m->rows - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 4, m->cols - WALL_THICKNESS - 8, ((m->rows - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 4, m->cols - WALL_THICKNESS - 7);
+	SetObstacleRect(m, ((m->rows - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 3, m->cols - WALL_THICKNESS - 10, ((m->rows - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 3, m->cols - WALL_THICKNESS - 8);
+
+
 	// 문
 	int doorRow = WALL_THICKNESS;
 	int doorCol = ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS;
@@ -257,6 +357,60 @@ void InitThirdBossMap(MAPDATA* m, int worldY) {
 				m->tiles[row][col] = TILE_FLOOR;
 		}
 	}
+	// 위
+	SetObstacleRect(m, WALL_THICKNESS + 1, WALL_THICKNESS + 1, WALL_THICKNESS + 8, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 4);
+	SetObstacleRect(m, WALL_THICKNESS + 1, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 4, WALL_THICKNESS + 8, m->cols - WALL_THICKNESS - 1);
+	SetObstacleRect(m, WALL_THICKNESS + 8, WALL_THICKNESS + 1, WALL_THICKNESS + 9, WALL_THICKNESS + 20);
+	SetObstacleRect(m, WALL_THICKNESS + 8, m->cols - WALL_THICKNESS - 20, WALL_THICKNESS + 9, m->cols - WALL_THICKNESS - 1);
+	SetObstacleRect(m, WALL_THICKNESS + 9, WALL_THICKNESS + 12, WALL_THICKNESS + 11, WALL_THICKNESS + 16);
+	SetObstacleRect(m, WALL_THICKNESS + 9, m->cols - WALL_THICKNESS - 16, WALL_THICKNESS + 11, m->cols - WALL_THICKNESS - 12);
+	SetObstacleRect(m, WALL_THICKNESS + 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 6, WALL_THICKNESS + 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 4);
+	SetObstacleRect(m, WALL_THICKNESS + 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 4, WALL_THICKNESS + 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 6);
+	SetObstacleRect(m, WALL_THICKNESS + 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 17, WALL_THICKNESS + 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 16);
+	SetObstacleRect(m, WALL_THICKNESS + 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 24, WALL_THICKNESS + 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 23);
+	SetObstacleRect(m, WALL_THICKNESS + 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 31, WALL_THICKNESS + 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 30);
+	SetObstacleRect(m, WALL_THICKNESS + 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 16, WALL_THICKNESS + 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 17);
+	SetObstacleRect(m, WALL_THICKNESS + 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 23, WALL_THICKNESS + 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 24);
+	SetObstacleRect(m, WALL_THICKNESS + 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 30, WALL_THICKNESS + 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 31);
+
+	// 아래
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 9, WALL_THICKNESS + 1, m->rows - WALL_THICKNESS - 1, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 4);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 4, m->rows - WALL_THICKNESS - 1, m->cols - WALL_THICKNESS - 1);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 10, WALL_THICKNESS + 1, m->rows - WALL_THICKNESS - 9, WALL_THICKNESS + 20);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 10, m->cols - WALL_THICKNESS - 20, m->rows - WALL_THICKNESS - 9, m->cols - WALL_THICKNESS - 1);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 11, WALL_THICKNESS + 1, m->rows - WALL_THICKNESS - 10, WALL_THICKNESS + 19);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 11, m->cols - WALL_THICKNESS - 19, m->rows - WALL_THICKNESS - 10, m->cols - WALL_THICKNESS - 1);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 12, WALL_THICKNESS + 12, WALL_THICKNESS + m->rows - WALL_THICKNESS - 11, WALL_THICKNESS + 16);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 12, m->cols - WALL_THICKNESS - 16, WALL_THICKNESS + m->rows - WALL_THICKNESS - 11, m->cols - WALL_THICKNESS - 12);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 10, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 4, m->rows - WALL_THICKNESS - 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 4);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 10, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 4, m->rows - WALL_THICKNESS - 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 4);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 10, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 17, m->rows - WALL_THICKNESS - 10, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 16);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 10, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 24, m->rows - WALL_THICKNESS - 10, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 23);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 10, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 31, m->rows - WALL_THICKNESS - 10, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 30);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 10, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 16, m->rows - WALL_THICKNESS - 10, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 17);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 10, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 23, m->rows - WALL_THICKNESS - 10, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 24);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 10, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 30, m->rows - WALL_THICKNESS - 10, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 31);
+
+	// 좌
+	SetObstacleRect(m, WALL_THICKNESS + 1, WALL_THICKNESS + 1, m->rows - WALL_THICKNESS - 1, WALL_THICKNESS + 4);
+	SetObstacleRect(m, WALL_THICKNESS + 1, WALL_THICKNESS + 4, WALL_THICKNESS + 18, WALL_THICKNESS + 5);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 19, WALL_THICKNESS + 4, m->rows - WALL_THICKNESS - 1, WALL_THICKNESS + 5);
+	SetObstacleRect(m, WALL_THICKNESS + 1, WALL_THICKNESS + 5, WALL_THICKNESS + 17, WALL_THICKNESS + 6);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 18, WALL_THICKNESS + 5, m->rows - WALL_THICKNESS - 1, WALL_THICKNESS + 6);
+	SetObstacleRect(m, ((m->rows - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 5, WALL_THICKNESS + 5, ((m->rows - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 3, WALL_THICKNESS + 6);
+	SetObstacleRect(m, ((m->rows - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 4, WALL_THICKNESS + 7, ((m->rows - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 2, WALL_THICKNESS + 7);
+	SetObstacleRect(m, ((m->rows - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 3, WALL_THICKNESS + 8, ((m->rows - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 1, WALL_THICKNESS + 8);
+	
+	// 우
+	SetObstacleRect(m, WALL_THICKNESS + 1, m->cols - WALL_THICKNESS - 4, m->rows - WALL_THICKNESS - 1, m->cols - WALL_THICKNESS - 1);
+	SetObstacleRect(m, WALL_THICKNESS + 1, m->cols - WALL_THICKNESS - 5, WALL_THICKNESS + 18, m->cols - WALL_THICKNESS - 4);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 19, m->cols - WALL_THICKNESS - 5, m->rows - WALL_THICKNESS - 1, m->cols - WALL_THICKNESS - 4);
+	SetObstacleRect(m, WALL_THICKNESS + 1, m->cols - WALL_THICKNESS - 6, WALL_THICKNESS + 17, m->cols - WALL_THICKNESS - 5);
+	SetObstacleRect(m, m->rows - WALL_THICKNESS - 18, m->cols - WALL_THICKNESS - 6, m->rows - WALL_THICKNESS - 1, m->cols - WALL_THICKNESS - 5);
+	SetObstacleRect(m, ((m->rows - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 5, m->cols - WALL_THICKNESS - 6, ((m->rows - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 3, m->cols - WALL_THICKNESS - 5);
+	SetObstacleRect(m, ((m->rows - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 4, m->cols - WALL_THICKNESS - 7, ((m->rows - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 2, m->cols - WALL_THICKNESS - 7);
+	SetObstacleRect(m, ((m->rows - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 3, m->cols - WALL_THICKNESS - 8, ((m->rows - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 1, m->cols - WALL_THICKNESS - 8);
+
 	// 문
 	int doorRow = WALL_THICKNESS;
 	int doorCol = ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS;
@@ -277,11 +431,9 @@ void InitMap(MAP_TYPE type) {
 	MAPDATA* m = &maps[type];
 	switch (type) {
 	case MAP_WAITING: InitWaitingMap(m); break;
-	case MAP_FIRST_HALLWAY: InitHallWayMap(m, HALLWAY1_Y); break;
+	case MAP_HALLWAY: InitHallWayMap(m, HALLWAY1_Y); break;
 	case MAP_FIRST_BOSS: InitFirstBossMap(m, BOSS1_Y); break;
-	case MAP_SECOND_HALLWAY: InitHallWayMap(m, HALLWAY2_Y); break;
 	case MAP_SECOND_BOSS: InitSecondBossMap(m, BOSS2_Y); break;
-	case MAP_THIRD_HALLWAY: InitHallWayMap(m, HALLWAY3_Y); break;
 	case MAP_THIRD_BOSS: InitThirdBossMap(m, BOSS3_Y); break;
 	}
 }
@@ -295,14 +447,11 @@ void SetDoorState(MAP_TYPE type, DOOR_STATE state) {
 }
 
 void InitAllMap() {
-	for (int i = 0; i < 7; i++) {
+	g_hallwayStage = 0;
+	for (int i = 0; i < MAP_COUNT; i++) {
 		InitMap((MAP_TYPE)i);
-		// 대기방 외에는 문을 닫아둠
-		if (i != MAP_WAITING) {
-			SetDoorState((MAP_TYPE)i, DOOR_CLOSE);
-		}
+		if (i != MAP_WAITING) SetDoorState((MAP_TYPE)i, DOOR_CLOSE);
 	}
-
 	SetDoorState(MAP_WAITING, DOOR_OPEN);
 }
 
@@ -312,12 +461,14 @@ void UpdateDoors(MAP_TYPE type, int allEnemiesDead) {
 
 MAP_TYPE GetNextMap(MAP_TYPE type) {
 	switch (type) {
-	case MAP_WAITING: return MAP_FIRST_HALLWAY; break;
-	case MAP_FIRST_HALLWAY: return MAP_FIRST_BOSS; break;
-	case MAP_FIRST_BOSS: return MAP_SECOND_HALLWAY; break;
-	case MAP_SECOND_HALLWAY: return MAP_SECOND_BOSS; break;
-	case MAP_SECOND_BOSS: return MAP_THIRD_HALLWAY; break;
-	case MAP_THIRD_HALLWAY: return MAP_THIRD_BOSS; break;
+	case MAP_WAITING:     return MAP_HALLWAY;
+	case MAP_HALLWAY:
+		if (g_hallwayStage == 0)      return MAP_FIRST_BOSS;
+		else if (g_hallwayStage == 1) return MAP_SECOND_BOSS;
+		else                          return MAP_THIRD_BOSS;
+	case MAP_FIRST_BOSS:  return MAP_HALLWAY;
+	case MAP_SECOND_BOSS: return MAP_HALLWAY;
+	case MAP_THIRD_BOSS:  return MAP_THIRD_BOSS;   // 마지막
 	default: return type;
 	}
 }
@@ -326,15 +477,18 @@ MAP_TYPE GetNextMap(MAP_TYPE type) {
 void MapTransition() {
 	if (!IsPlayerOnDoor()) return;
 
-	MAP_TYPE nextMap = GetNextMap(currentMapType);
-	if (nextMap == currentMapType) return;
+	MAP_TYPE prevMap = currentMapType;
+	MAP_TYPE nextMap = GetNextMap(prevMap);
+	if (nextMap == prevMap) return;
+
+	// 보스 클리어 후 떠날 때 다음 단계로
+	if (prevMap == MAP_FIRST_BOSS)       g_hallwayStage = 1;
+	else if (prevMap == MAP_SECOND_BOSS) g_hallwayStage = 2;
 
 	currentMapType = nextMap;
 
-	// 새 맵으로 갈 때 문을 일단 닫음 (대기방 제외)
-	if (currentMapType != MAP_WAITING) {
+	if (currentMapType != MAP_WAITING)
 		SetDoorState(currentMapType, DOOR_CLOSE);
-	}
 
 	float spawnX, spawnY;
 	GetSpawnPos(nextMap, &spawnX, &spawnY);
@@ -343,7 +497,7 @@ void MapTransition() {
 
 	if (currentMapType == MAP_FIRST_BOSS || currentMapType == MAP_SECOND_BOSS || currentMapType == MAP_THIRD_BOSS) {
 		camera.isIntroActive = ACTIVE;
-		camera.introTimer = 180; // 6ms 타이머 기준 180프레임 = 약 1초 초반이므로 정확히 3초를 원하시면 300~400으로 조절 가능
+		camera.introTimer = 180;
 		camera.zoom = 2.0f;
 	}
 
@@ -353,10 +507,8 @@ void MapTransition() {
 
 	ClearEnemies();
 	int spawnCount = 0;
-	switch (currentMapType) {
-	case MAP_FIRST_HALLWAY: spawnCount = 15; break;
-	case MAP_SECOND_HALLWAY: spawnCount = 20; break;
-	case MAP_THIRD_HALLWAY: spawnCount = 25; break;
+	if (currentMapType == MAP_HALLWAY) {
+		spawnCount = 15 + rand() % 11;   // 15 ~ 25 랜덤
 	}
 	SpawnEnemy(currentMapType, spawnCount);
 }
