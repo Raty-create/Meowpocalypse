@@ -18,7 +18,7 @@ void InitDoor(MAPDATA* m, int row, int col) {
 	m->tiles[row][col] = TILE_DOOR;
 	m->doors[m->doorCount].row = row;
 	m->doors[m->doorCount].col = col;
-	m->doors[m->doorCount].state = DOOR_CLOSE;
+	m->doors[m->doorCount].state = DOOR_OPEN;
 	m->doorCount++;
 }
 
@@ -70,7 +70,7 @@ void InitWaitingMap(MAPDATA* m) {
 	SetObstacleRect(m, ((m->rows - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 2, m->cols - WALL_THICKNESS - 3, ((m->rows - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 2, m->cols - WALL_THICKNESS - 2);
 
 	// 문
-	int doorRow = WALL_THICKNESS + 3;
+	int doorRow = WALL_THICKNESS + 4;
 	int doorCol = ((m->cols - ( 2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS;
 
 	if (doorRow >= 0 && doorRow + 1 < MAX_MAP_ROWS && doorCol - 1 >= 0 && doorCol + 1 < MAX_MAP_COLS) {
@@ -94,7 +94,7 @@ void InitHallWayMap(MAPDATA* m, int worldY) {
 	m->rows = MIN(HALLWAYMAP_ROWS, MAX_MAP_ROWS);
 	m->cols = MIN(HALLWAYMAP_COLS, MAX_MAP_COLS);
 	m->worldX = 0;
-	m->worldY = (float)worldY;;
+	m->worldY = (float)worldY;
 	m->doorCount = 0;
 
 
@@ -133,7 +133,7 @@ void InitHallWayMap(MAPDATA* m, int worldY) {
 	SetObstacleRect(m, WALL_THICKNESS + 1, m->cols - WALL_THICKNESS - 10, WALL_THICKNESS + 6, m->cols - WALL_THICKNESS - 9);
 
 	// 문
-	int doorRow = WALL_THICKNESS;
+	int doorRow = WALL_THICKNESS + 1;
 	int doorCol = ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS;
 
 	if (doorRow >= 0 && doorRow + 1 < MAX_MAP_ROWS && doorCol - 1 >= 0 && doorCol + 1 < MAX_MAP_COLS) {
@@ -225,7 +225,7 @@ void InitFirstBossMap(MAPDATA* m, int worldY) {
 	SetObstacleRect(m, m->rows - WALL_THICKNESS - 22, m->cols - WALL_THICKNESS - 34, m->rows - WALL_THICKNESS - 10, m->cols - WALL_THICKNESS - 16);
 
 	// 문
-	int doorRow = WALL_THICKNESS;
+	int doorRow = WALL_THICKNESS + 5;
 	int doorCol = ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS;
 
 	if (doorRow >= 0 && doorRow + 1 < MAX_MAP_ROWS && doorCol - 1 >= 0 && doorCol + 1 < MAX_MAP_COLS) {
@@ -258,6 +258,7 @@ void InitSecondBossMap(MAPDATA* m, int worldY) {
 				m->tiles[row][col] = TILE_FLOOR;
 		}
 	}
+
 	// 위
 	SetObstacleRect(m, WALL_THICKNESS + 1, WALL_THICKNESS + 1, WALL_THICKNESS + 7, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 4);
 	SetObstacleRect(m, WALL_THICKNESS + 1, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 4, WALL_THICKNESS + 7, m->cols - WALL_THICKNESS - 1);
@@ -279,6 +280,8 @@ void InitSecondBossMap(MAPDATA* m, int worldY) {
 	SetObstacleRect(m, WALL_THICKNESS + 7, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 15, WALL_THICKNESS + 8, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 16);
 	SetObstacleRect(m, WALL_THICKNESS + 7, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 22, WALL_THICKNESS + 8, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 23);
 	SetObstacleRect(m, WALL_THICKNESS + 7, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 29, WALL_THICKNESS + 8, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 30);
+	SetObstacleRect(m, WALL_THICKNESS + 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 3, WALL_THICKNESS + 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 3);
+	SetObstacleRect(m, WALL_THICKNESS + 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 3, WALL_THICKNESS + 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 3);
 
 	// 아래
 	SetObstacleRect(m, m->rows - WALL_THICKNESS - 7, WALL_THICKNESS + 1, m->rows - WALL_THICKNESS - 1, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 4);
@@ -324,7 +327,7 @@ void InitSecondBossMap(MAPDATA* m, int worldY) {
 
 
 	// 문
-	int doorRow = WALL_THICKNESS;
+	int doorRow = WALL_THICKNESS + 9;
 	int doorCol = ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS;
 
 	if (doorRow >= 0 && doorRow + 1 < MAX_MAP_ROWS && doorCol - 1 >= 0 && doorCol + 1 < MAX_MAP_COLS) {
@@ -357,6 +360,7 @@ void InitThirdBossMap(MAPDATA* m, int worldY) {
 				m->tiles[row][col] = TILE_FLOOR;
 		}
 	}
+
 	// 위
 	SetObstacleRect(m, WALL_THICKNESS + 1, WALL_THICKNESS + 1, WALL_THICKNESS + 8, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 4);
 	SetObstacleRect(m, WALL_THICKNESS + 1, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 4, WALL_THICKNESS + 8, m->cols - WALL_THICKNESS - 1);
@@ -372,6 +376,8 @@ void InitThirdBossMap(MAPDATA* m, int worldY) {
 	SetObstacleRect(m, WALL_THICKNESS + 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 16, WALL_THICKNESS + 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 17);
 	SetObstacleRect(m, WALL_THICKNESS + 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 23, WALL_THICKNESS + 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 24);
 	SetObstacleRect(m, WALL_THICKNESS + 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 30, WALL_THICKNESS + 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 31);
+	SetObstacleRect(m, WALL_THICKNESS + 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 3, WALL_THICKNESS + 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 3);
+	SetObstacleRect(m, WALL_THICKNESS + 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 3, WALL_THICKNESS + 9, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 3);
 
 	// 아래
 	SetObstacleRect(m, m->rows - WALL_THICKNESS - 9, WALL_THICKNESS + 1, m->rows - WALL_THICKNESS - 1, ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 4);
@@ -412,7 +418,7 @@ void InitThirdBossMap(MAPDATA* m, int worldY) {
 	SetObstacleRect(m, ((m->rows - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS - 3, m->cols - WALL_THICKNESS - 8, ((m->rows - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS + 1, m->cols - WALL_THICKNESS - 8);
 
 	// 문
-	int doorRow = WALL_THICKNESS;
+	int doorRow = WALL_THICKNESS + 9;
 	int doorCol = ((m->cols - (2 * WALL_THICKNESS)) / 2) + WALL_THICKNESS;
 
 	if (doorRow >= 0 && doorRow + 1 < MAX_MAP_ROWS && doorCol - 1 >= 0 && doorCol + 1 < MAX_MAP_COLS) {
@@ -429,6 +435,11 @@ void InitThirdBossMap(MAPDATA* m, int worldY) {
 
 void InitMap(MAP_TYPE type) {
 	MAPDATA* m = &maps[type];
+
+	m->doorAnimTimer = 0.0f;
+	m->doorAnimFrame = 0;
+	m->doorOffsetY = 0.0f;
+
 	switch (type) {
 	case MAP_WAITING: InitWaitingMap(m); break;
 	case MAP_HALLWAY: InitHallWayMap(m, HALLWAY1_Y); break;
@@ -440,10 +451,18 @@ void InitMap(MAP_TYPE type) {
 
 void SetDoorState(MAP_TYPE type, DOOR_STATE state) {
 	MAPDATA* m = &maps[type];
+
+	if (m->doors[0].state == state) return;
+
 	for (int i = 0; i < m->doorCount; i++) {
 		m->doors[i].state = state;
 		m->tiles[m->doors[i].row][m->doors[i].col] = (state == DOOR_OPEN) ? TILE_DOOR : TILE_WALL;
 	}
+
+	// 상태가 열리거나 닫힐 때 모두 프레임과 타이머를 초기화
+	m->doorAnimTimer = 0.0f;
+	m->doorAnimFrame = 0;
+	m->doorOffsetY = 0.0f;
 }
 
 void InitAllMap() {
@@ -457,6 +476,37 @@ void InitAllMap() {
 
 void UpdateDoors(MAP_TYPE type, int allEnemiesDead) {
 	SetDoorState(type, allEnemiesDead ? DOOR_OPEN : DOOR_CLOSE);
+}
+
+void UpdateMapDoors() {
+	MAPDATA* m = &maps[currentMapType];
+
+	if (m->doorCount == 0 || m->doors->state == DOOR_CLOSE) return;
+
+	m->doorAnimTimer += 1.0f;
+
+	if (currentMapType == MAP_WAITING || currentMapType == MAP_HALLWAY || currentMapType == MAP_FIRST_BOSS) {
+		if ((int)m->doorAnimTimer % 5 == 0) {
+			m->doorAnimFrame++;
+
+			if (currentMapType == MAP_WAITING) {
+				if (m->doorAnimFrame >= MAP_WAITING_DOOR_MAX_FRAME) m->doorAnimFrame = MAP_WAITING_DOOR_MAX_FRAME;
+			}
+			else if (currentMapType == MAP_HALLWAY) {
+				if (m->doorAnimFrame >= MAP_HALLWAY_DOOR_MAX_FRAME) m->doorAnimFrame = MAP_HALLWAY_DOOR_MAX_FRAME;
+			}
+			else if (currentMapType == MAP_FIRST_BOSS) {
+				if (m->doorAnimFrame >= MAP_FIRST_BOSS_MAX_DOOR_FRAME) m->doorAnimFrame = MAP_FIRST_BOSS_MAX_DOOR_FRAME;
+			}
+		}
+	}
+	else if (currentMapType == MAP_SECOND_BOSS || currentMapType == MAP_THIRD_BOSS) {
+		m->doorAnimFrame = 0;
+
+		if (m->doorOffsetY > -150.0f) {
+			m->doorOffsetY -= 3.0f;
+		}
+	}
 }
 
 MAP_TYPE GetNextMap(MAP_TYPE type) {
@@ -485,6 +535,7 @@ void MapTransition() {
 	if (prevMap == MAP_FIRST_BOSS)       g_hallwayStage = 1;
 	else if (prevMap == MAP_SECOND_BOSS) g_hallwayStage = 2;
 
+	camera.zoom = CAMERA_ZOOM_RATIO;
 	currentMapType = nextMap;
 
 	if (currentMapType != MAP_WAITING)

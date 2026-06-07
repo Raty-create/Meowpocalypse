@@ -94,6 +94,15 @@
     <Filter Include="ui\소스 파일">
       <UniqueIdentifier>{db5d4843-9fb8-48a7-ae1b-7d90448b34b0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="sound">
+      <UniqueIdentifier>{5ebaefd4-3439-444e-8e79-f67a5f414591}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sound\헤더 파일">
+      <UniqueIdentifier>{26e31ea6-efc7-4ecc-8acd-70180f869ab0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sound\소스 파일">
+      <UniqueIdentifier>{fd02be9f-6341-4f42-aa70-054891545a68}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="game.cpp">
@@ -137,6 +146,9 @@
     </ClCompile>
     <ClCompile Include="ui\ui.cpp">
       <Filter>ui\소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="sound\sound.cpp">
+      <Filter>sound\소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -190,6 +202,9 @@
     </ClInclude>
     <ClInclude Include="ui\ui.h">
       <Filter>ui\헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="sound\sound.h">
+      <Filter>sound\헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -22,4 +22,4 @@ int HandleBossPawPlayerCollision(BOSS_PAW* bp, PLAYER* p);
 
 int HandleBossPlayerCollision(PLAYER* p);       // 일반: 반대 방향 넉백
 int HandleBossDashPlayerCollision(PLAYER* p);   // 대시 중: 대시 방향 넉백, 보스는 계속 진행
-int HandleBossJumpPlayerCollision(PLAYER* p);   // 점프 착지: 랜덤 4방향 넉백
+int HandleBossJumpPlayerCollision(PLAYER* p);   // 점프 착지: 반대 방향 넉백

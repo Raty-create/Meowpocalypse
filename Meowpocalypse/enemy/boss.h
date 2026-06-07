@@ -55,6 +55,8 @@ typedef struct {
     int skillChargeTimer;               // 기 모으는 타이머
     int nextSkillState;                 // 기 모은 후 실행할 스킬 상태
 
+    int deathTimer;
+
     ANIMATION anim;
     ANIMATION effectAnim;               // 탄막 스킬 이펙트 전용 애니메이션
 } BOSS;
@@ -62,7 +64,12 @@ typedef struct {
 typedef struct {
     float x, y;
     float dx, dy;
+    int width, height;
+    float hitBoxX, hitBoxY;
+    int hitBoxW, hitBoxH;
     int isActive;
+    int dirRow;
+    ANIMATION anim;
 } BOSS_PAW;
 
 typedef struct {

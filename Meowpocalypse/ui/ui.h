@@ -8,6 +8,8 @@
 #include "input.h"
 #include "image.h"
 #include "animation.h"
+#include "player.h"
+#include "boss.h"
 #include "game.h"
 
 typedef struct {
@@ -38,8 +40,10 @@ typedef struct {
 typedef struct {
 	UI_ELEMENT hpBarFrame;
 	UI_ELEMENT hpBar;
+	float playerVisualHp;
 	UI_ELEMENT mpBarFrame;
 	UI_ELEMENT mpBar;
+	float playerVisualMp;
 
 	UI_ELEMENT skill_item_sq[5];
 	UI_ELEMENT skill_item_ban_sq[5];
@@ -48,8 +52,11 @@ typedef struct {
 	UI_ELEMENT hpPotion;
 	UI_ELEMENT mpPotion;
 
+	UI_ELEMENT bossHpBarFrame;
 	UI_ELEMENT bossHpBar;
+	float bossVisualHp;
 	BOOL showBossHp;
+	UI_ELEMENT bossEmblem;
 
 	UI_ELEMENT logo_Icon;
 } HUD_DATA;
@@ -82,9 +89,14 @@ typedef struct {
 extern UI_SYSTEM g_UI;
 
 void InitUI();
+
 void UpdateTitle(HWND hWnd);
 void UpdatePause(HWND hWnd);
 void UpdateKeyGuide(HWND hWnd);
+void UpdateHpBar();						// 플레이어 HP 바 부드러운 감소 업데이트
+void UpdateMpBar();						// 플레이어 MP 바 부드러운 감소 업데이트
+void UpdateBossHpBar();					// 보스 HP 바 부드러운 감소 업데이트
+
 void ReleaseTitle();
 void ReleaseUI();
 
@@ -103,7 +115,11 @@ void SkillAndItemBanSq();
 void SkillUI();
 void HpPotionUI();
 void MpPotionUI();
-void LogoIconUI();				// GUI 로고
+void LogoIconUI();						// GUI 로고
+
+void BossHpBarFrame();
+void BossHpBarUI();
+void BossEmblem();
 
 // PAUSE
 void PauseMenuBg();

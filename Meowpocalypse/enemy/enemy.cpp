@@ -143,7 +143,7 @@ void SpawnCatPaw(int i) {
 	SetAnimationFrame(&enemies[i].anim, 0);
 
 	int fw = imgProjectile.width / 4;
-	int fh = imgProjectile.height / 17;
+	int fh = imgProjectile.height / 18;
 
 	// 실제 총알 생성
 	for (int j = 0; j < CAT_PAW_LIMIT; j++) {
@@ -213,6 +213,7 @@ void UpdateEnemyState(int i) {
 
 		enemies[i].deathTimer--;
 		if (enemies[i].deathTimer <= 0) {
+			enemies[i].deathTimer = 0;
 			enemies[i].isActive = INACTIVE;
 		}
 		return;
@@ -292,13 +293,19 @@ void HandleEnemyKnockback(int i) {
 	float toPlayerX = player.base.x - ex;
 	float toPlayerY = player.base.y - ey;
 
-	if (fabsf(toPlayerX) > fabsf(toPlayerY)) {
+	if (fabsf(toPlayerX) > fabsf(toPlayerY) * 2) {
 		if (toPlayerX > 0) enemies[i].base.direction = DIR_RIGHT;
 		else enemies[i].base.direction = DIR_LEFT;
 	}
-	else {
+	else if (fabsf(toPlayerY) > fabsf(toPlayerX) * 2) {
 		if (toPlayerY > 0) enemies[i].base.direction = DIR_DOWN;
 		else enemies[i].base.direction = DIR_UP;
+	}
+	else {
+		if (toPlayerX < 0 && toPlayerY < 0) enemies[i].base.direction = DIR_UP_LEFT;
+		else if (toPlayerX > 0 && toPlayerY < 0) enemies[i].base.direction = DIR_UP_RIGHT;
+		else if (toPlayerX < 0 && toPlayerY > 0) enemies[i].base.direction = DIR_DOWN_LEFT;
+		else if (toPlayerX < 0 && toPlayerY < 0) enemies[i].base.direction = DIR_DOWN_RIGHT;
 	}
 
 	if (!IsTileBlocked(nextX - halfW, ey - halfH) &&
@@ -516,8 +523,8 @@ void HandleEnemyAggro(int i, float tx, float ty) {
 			else if (finalNY < 0) enemies[i].base.direction = DIR_UP;
 		}
 		
-			int halfW = ENEMY_HITBOX_WIDTH / 2;
-			int halfH = ENEMY_HITBOX_HEIGHT / 2;
+		int halfW = ENEMY_HITBOX_WIDTH / 2;
+		int halfH = ENEMY_HITBOX_HEIGHT / 2;
 		float nextX = ex + finalNX;
 		float nextY = ey + finalNY;
 

@@ -9,6 +9,9 @@ void RenderTile(HDC hDC, int screenX, int screenY, COLORREF color);
 // 맵
 void RenderCurrentMap(HDC hDC);
 
+// 문
+void RenderDoors(HDC hDC);
+
 // 그림자
 void InitRenderResources();
 void RenderObjectShadow(HDC hDC, float x, float y, int objW);
@@ -27,10 +30,11 @@ void RenderCatPawHitBox(HDC hDC);
 
 // 보스
 void RenderBoss(HDC hDC);
+void RenderBossHitBox(HDC hDC);
 void RenderBossPaws(HDC hDC);
+void RenderBossPawsHitBox(HDC hDC);
 void RenderDashWarning(HDC hDC);
 void RenderJumpWarning(HDC hDC);
-void RenderBossHitBox(HDC hDC);
 
 // 총알
 void RenderBullets(HDC hDC);
@@ -43,6 +47,7 @@ void RenderChuru(HDC hDC);
 void RenderUI(HDC hDC);
 void RenderTitle(HDC hDC);
 void RenderHUD(HDC hDC);
+void RenderBossHUD(HDC hDC);
 void RenderPause(HDC hDC);
 void RenderKeyGuide(HDC hDC);
 

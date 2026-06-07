@@ -1,4 +1,4 @@
-﻿#include "ui.h"
+#include "ui.h"
 
 UI_SYSTEM g_UI;
 
@@ -34,6 +34,16 @@ void InitUI() {
 	HpPotionUI();
 	MpPotionUI();
 	LogoIconUI();
+
+	BossHpBarFrame();
+	BossHpBarUI();
+	BossEmblem();
+
+	g_UI.hud.bossVisualHp = (float)BOSS_HP;
+	g_UI.hud.showBossHp = FALSE;
+
+	g_UI.hud.playerVisualHp = (float)PLAYER_HP;
+	g_UI.hud.playerVisualMp = (float)PLAYER_MP;
 
 	PauseMenuBg();
 	PauseMenuButton();
@@ -181,6 +191,40 @@ void UpdatePause(HWND hWnd) {
 void UpdateKeyGuide(HWND hWnd) {
 	if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) {
 		g_UI.gameState = PAUSE;
+	}
+}
+
+// 플레이어 HP 바 부드러운 감소 업데이트
+void UpdateHpBar() {
+	g_UI.hud.playerVisualHp += ((float)player.base.hp - g_UI.hud.playerVisualHp) * 0.05f;
+
+	if (fabsf(g_UI.hud.playerVisualHp - (float)player.base.hp) < 0.1f) {
+		g_UI.hud.playerVisualHp = (float)player.base.hp;
+	}
+}
+
+// 플레이어 MP 바 부드러운 감소 업데이트
+void UpdateMpBar() {
+	g_UI.hud.playerVisualMp += ((float)player.mp - g_UI.hud.playerVisualMp) * 0.05f;
+
+	if (fabsf(g_UI.hud.playerVisualMp - (float)player.mp) < 0.1f) {
+		g_UI.hud.playerVisualMp = (float)player.mp;
+	}
+}
+
+// 보스 HP 바 부드러운 감소 업데이트
+void UpdateBossHpBar() {
+	if (g_UI.hud.showBossHp && boss.isActive == ACTIVE) {
+		g_UI.hud.bossVisualHp += ((float)boss.base.hp - g_UI.hud.bossVisualHp) * 0.05f;
+
+		// 차이가 아주 작아지면 실제 HP와 일치시킴
+		if (fabsf(g_UI.hud.bossVisualHp - (float)boss.base.hp) < 0.1f) {
+			g_UI.hud.bossVisualHp = (float)boss.base.hp;
+		}
+	}
+	else {
+		// 보스가 없거나 안 보일 때는 즉시 리셋
+		g_UI.hud.bossVisualHp = (float)BOSS_HP;
 	}
 }
 
@@ -478,6 +522,55 @@ void LogoIconUI() {
 	g_UI.hud.logo_Icon.width = 96;
 	g_UI.hud.logo_Icon.height = 96;
 }
+
+// 보스 HP 바 배경 프레임
+void BossHpBarFrame() {
+	// 보스 HP 바 배경 프레임 원본 크기
+	g_UI.hud.bossHpBarFrame.srcX = 0;
+	g_UI.hud.bossHpBarFrame.srcY = 716;
+	g_UI.hud.bossHpBarFrame.srcW = 423;
+	g_UI.hud.bossHpBarFrame.srcH = 32;
+
+	// 보스 HP 바 배경 프레임 위치 및 크기 조절
+	g_UI.hud.bossHpBarFrame.x = SCREEN_WIDTH / 2;
+	g_UI.hud.bossHpBarFrame.y = BOSS_HP_BAR_FRAME_HEIGHT_MARGIN;
+	g_UI.hud.bossHpBarFrame.width = (int)(g_UI.hud.bossHpBarFrame.srcW * 1.5f);
+	g_UI.hud.bossHpBarFrame.height = (int)(g_UI.hud.bossHpBarFrame.srcH * 1.5f);
+}
+
+// 보스 HP 바
+void BossHpBarUI() {
+	// 보스 HP 바 원본 크기
+	g_UI.hud.bossHpBar.srcX = 0;
+	g_UI.hud.bossHpBar.srcY = 781;
+	g_UI.hud.bossHpBar.srcW = 415;
+	g_UI.hud.bossHpBar.srcH = 32;
+
+	// 보스 HP 바 위치 및 크기 조절
+	g_UI.hud.bossHpBar.x = SCREEN_WIDTH / 2 - (g_UI.hud.bossHpBarFrame.srcW - g_UI.hud.bossHpBar.srcW);
+	g_UI.hud.bossHpBar.y = g_UI.hud.bossHpBarFrame.y + 0.5f;
+	g_UI.hud.bossHpBar.width = (int)(g_UI.hud.bossHpBar.srcW * 1.5f);
+	g_UI.hud.bossHpBar.height = (int)(g_UI.hud.bossHpBar.srcH * 1.5f);
+}
+
+// 보스 엠블럼
+void BossEmblem() {
+	// 보스 엠블럼 원본 크기
+	g_UI.hud.bossEmblem.srcX = 0;
+	g_UI.hud.bossEmblem.srcY = 563;
+	g_UI.hud.bossEmblem.srcW = 128;
+	g_UI.hud.bossEmblem.srcH = 128;
+
+	// 보스 엠블럼 위치 및 크기 조절
+	g_UI.hud.bossEmblem.x = SCREEN_WIDTH / 2 - g_UI.hud.bossHpBarFrame.width / 2 - g_UI.hud.bossEmblem.srcW / 4;
+	g_UI.hud.bossEmblem.y = BOSS_HP_BAR_FRAME_HEIGHT_MARGIN - 3;
+	g_UI.hud.bossEmblem.width = (int)(g_UI.hud.bossEmblem.srcW * 1.5f);
+	g_UI.hud.bossEmblem.height = (int)(g_UI.hud.bossEmblem.srcH * 1.5f);
+}
+
+
+
+
 
 // PAUSE
 //

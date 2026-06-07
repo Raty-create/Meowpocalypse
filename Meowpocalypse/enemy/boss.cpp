@@ -10,6 +10,7 @@
 #include "boss.h"
 #include "enum.h"
 #include "camera.h"
+#include "bullet.h"
 
 BOSS boss;
 IMAGE imgBossSprite;
@@ -88,8 +89,11 @@ void InitBoss() {
 	jumpWarn.isActive = INACTIVE;
 	jumpWarn.timer = 0;
 
+	boss.skillChargeTimer = 0;
+	boss.deathTimer = 0;
+
 	InitAnimation(&boss.anim, &imgBossSprite, bFW, bFH, 5, 10);
-	InitAnimation(&boss.effectAnim, &imgBossSkillPattrenEffect, bspeFW, bspeFH, 6, 10, FALSE);
+	InitAnimation(&boss.effectAnim, &imgBossSkillPattrenEffect, bspeFW, bspeFH, 6, 0, FALSE);
 }
 
 void ReleaseBoss() {
@@ -101,13 +105,13 @@ void SpawnBoss(MAP_TYPE type) {
 	if (type == MAP_WAITING ||
 		type == MAP_HALLWAY) return;
 
+	// 죽은 상태거나 체력이 없으면 스폰하지 않음
+	if (boss.base.state == BOSS_DEAD || boss.base.hp <= 0) return;
+
 	MAPDATA* m = &maps[type];
 
 	float spawnX = m->worldX + (BOSSMAP_COLS / 2) * TILE_SIZE + TILE_SIZE / 2;
-	float spawnY = m->worldY + (BOSSMAP_ROWS / 2) * TILE_SIZE;
-
-	// 죽은 상태라면 스폰하지 않음
-	if (boss.base.state == BOSS_DEAD) return;
+	float spawnY = m->worldY + (BOSSMAP_ROWS / 2) * TILE_SIZE - TILE_SIZE * 3;
 
 	// 1페이즈: 체력이 250 초과일 때만 MAP_FIRST_BOSS에서 스폰
 	if (type == MAP_FIRST_BOSS && boss.base.hp > (BOSS_HP * 0.75)) {
@@ -233,6 +237,18 @@ void SpawnBossPaws() {
 				bossPaws[i].y = boss.base.y;
 				bossPaws[i].dx = vx * BOSS_PAW_SPEED;
 				bossPaws[i].dy = vy * BOSS_PAW_SPEED;
+				bossPaws[i].width = BOSS_PAW_WIDTH;
+				bossPaws[i].height = BOSS_PAW_HEIGHT;
+				bossPaws[i].hitBoxX = boss.base.x;
+				bossPaws[i].hitBoxY = boss.base.y;
+				bossPaws[i].hitBoxW = BOSS_PAW_HITBOX_W;
+				bossPaws[i].hitBoxH = BOSS_PAW_HITBOX_H;
+
+				int fw = imgProjectile.width / 4;
+				int fh = imgProjectile.height / 18;
+				bossPaws[i].dirRow = 17;
+				InitAnimation(&bossPaws[i].anim, &imgProjectile, fw, fh, 1, 0, FALSE);
+				
 				break;
 			}
 		}
@@ -260,6 +276,18 @@ void SpawnCircularPaws() {
 				bossPaws[j].y = boss.base.y;
 				bossPaws[j].dx = cosf(currAngle) * BOSS_PAW_SPEED;
 				bossPaws[j].dy = sinf(currAngle) * BOSS_PAW_SPEED;
+				bossPaws[j].width = BOSS_PAW_WIDTH;
+				bossPaws[j].height = BOSS_PAW_HEIGHT;
+				bossPaws[j].hitBoxX = boss.base.x;
+				bossPaws[j].hitBoxY = boss.base.y;
+				bossPaws[j].hitBoxW = BOSS_PAW_HITBOX_W;
+				bossPaws[j].hitBoxH = BOSS_PAW_HITBOX_H;
+
+				int fw = imgProjectile.width / 4;
+				int fh = imgProjectile.height / 18;
+				bossPaws[j].dirRow = 17;
+				InitAnimation(&bossPaws[j].anim, &imgProjectile, fw, fh, 1, 0, FALSE);
+				
 				break;
 			}
 		}
@@ -284,9 +312,9 @@ void StartDashWarning() {
 	dashWarn.perpX = -dashWarn.dirY;
 	dashWarn.perpY = dashWarn.dirX;
 
-	// 벽까지 거리 계산 - render.cpp 대신 여기서 한 번만 계산
-	int halfW = BOSS_WIDTH / 2;
-	int halfH = BOSS_HEIGHT / 2;
+	// 벽까지 거리 계산
+	int halfW = (int)(BOSS_WIDTH * BOSS_DASH_SCALE / 2);
+	int halfH = (int)(BOSS_HEIGHT * BOSS_DASH_SCALE / 2);
 	int maxDist = DASH_WARN_TILES * TILE_SIZE;
 	dashWarn.stopDist = maxDist;
 
@@ -329,13 +357,13 @@ void StartDashWarning() {
 // 점프스킬 착지 위치를 맵 안쪽으로 보정
 void ClampBossLanding(float* x, float* y) {
 	MAPDATA* m = &maps[currentMapType];
-	int halfW = BOSS_WIDTH / 2;   // 이동 충돌과 동일한 기준 사용
-	int halfH = BOSS_HEIGHT / 2;   // 이동 충돌과 동일한 기준 사용
+	int halfW = (int)(BOSS_WIDTH * BOSS_JUMP_SCALE / 2);
+	int halfH = (int)(BOSS_HEIGHT * BOSS_JUMP_SCALE / 2);
 
-	float minX = m->worldX + (float)(WALL_THICKNESS + 1) * TILE_SIZE + halfW;
-	float maxX = m->worldX + (float)(m->cols - WALL_THICKNESS) * TILE_SIZE - halfW - 1;
-	float minY = m->worldY + (float)(WALL_THICKNESS + 1) * TILE_SIZE + halfH;
-	float maxY = m->worldY + (float)(m->rows - WALL_THICKNESS) * TILE_SIZE - halfH - 1;
+	float minX = m->worldX + (float)(WALL_THICKNESS + 2) * TILE_SIZE + halfW;
+	float maxX = m->worldX + (float)(m->cols - WALL_THICKNESS - 1) * TILE_SIZE - halfW - 1;
+	float minY = m->worldY + (float)(WALL_THICKNESS + 2) * TILE_SIZE + halfH;
+	float maxY = m->worldY + (float)(m->rows - WALL_THICKNESS - 1) * TILE_SIZE - halfH - 1;
 
 	if (*x < minX) *x = minX;
 	if (*x > maxX) *x = maxX;
@@ -370,7 +398,6 @@ void StartJumpWarning() {
 // 보스 랜덤 이동 처리 (벽 충돌 시 방향 전환)
 void UpdateBossMove() {
 	boss.base.state = BOSS_MOVE;
-	int half = BOSS_WIDTH / 2;
 
 	// 방향 전환 타이머
 	boss.moveTimer--;
@@ -379,24 +406,34 @@ void UpdateBossMove() {
 
 		// 상하좌우 중 랜덤 선택
 		int dir = rand() % 8;
+		float diagSpeed = BOSS_MOVE_SPEED * 0.7071f;		// 0.7071 ≒ ( 1/√2 )
 		switch (dir) {
 		case 0: boss.moveDirX = 1; boss.moveDirY = 0; boss.base.direction = DIR_RIGHT; break;
 		case 1: boss.moveDirX = -1; boss.moveDirY = 0; boss.base.direction = DIR_LEFT; break;
 		case 2: boss.moveDirX = 0; boss.moveDirY = 1; boss.base.direction = DIR_DOWN; break;
 		case 3: boss.moveDirX = 0; boss.moveDirY = -1; boss.base.direction = DIR_UP; break;
-		case 4: boss.moveDirX = -1; boss.moveDirY = -1; boss.base.direction = DIR_UP_LEFT; break;
-		case 5: boss.moveDirX = 1; boss.moveDirY = -1; boss.base.direction = DIR_UP_RIGHT; break;
-		case 6: boss.moveDirX = -1; boss.moveDirY = 1; boss.base.direction = DIR_DOWN_LEFT; break;
-		case 7: boss.moveDirX = 1; boss.moveDirY = 1; boss.base.direction = DIR_DOWN_RIGHT; break;
+		case 4: boss.moveDirX = -1; boss.moveDirY = -1; boss.base.dx = -diagSpeed; boss.base.dy = -diagSpeed; boss.base.direction = DIR_UP_LEFT; break;
+		case 5: boss.moveDirX = 1; boss.moveDirY = -1; boss.base.dx = diagSpeed; boss.base.dy = -diagSpeed; boss.base.direction = DIR_UP_RIGHT; break;
+		case 6: boss.moveDirX = -1; boss.moveDirY = 1; boss.base.dx = -diagSpeed; boss.base.dy = diagSpeed; boss.base.direction = DIR_DOWN_LEFT; break;
+		case 7: boss.moveDirX = 1; boss.moveDirY = 1; boss.base.dx = diagSpeed; boss.base.dy = diagSpeed; boss.base.direction = DIR_DOWN_RIGHT; break;
 		}
 	}
 
+	int halfW = (int)(BOSS_WIDTH * BOSS_IDLE_SCALE / 2);
+	int halfH = (int)(BOSS_HEIGHT * BOSS_IDLE_SCALE / 2);
+
 	// X축 이동 + 벽 충돌 체크
 	float nextX = boss.base.x + boss.moveDirX * BOSS_MOVE_SPEED;
-	if (!IsTileBlocked(nextX - half, boss.base.y - half) &&
-		!IsTileBlocked(nextX + half, boss.base.y - half) &&
-		!IsTileBlocked(nextX - half, boss.base.y + half) &&
-		!IsTileBlocked(nextX + half, boss.base.y + half)) {
+	BOOL xBlocked = FALSE;
+
+	if (boss.moveDirX > 0) {
+		if (IsTileBlocked(nextX + halfW, boss.base.y - halfH + 2) || IsTileBlocked(nextX + halfW, boss.base.y + halfH - 2)) xBlocked = TRUE;
+	}
+	else if (boss.moveDirX < 0) {
+		if (IsTileBlocked(nextX - halfW, boss.base.y - halfH + 2) || IsTileBlocked(nextX - halfW, boss.base.y + halfH - 2)) xBlocked = TRUE;
+	}
+
+	if (!xBlocked) {
 		boss.base.x = nextX;
 		boss.base.hitBoxX = nextX;
 	}
@@ -407,10 +444,16 @@ void UpdateBossMove() {
 
 	// Y축 이동 + 벽 충돌 체크
 	float nextY = boss.base.y + boss.moveDirY * BOSS_MOVE_SPEED;
-	if (!IsTileBlocked(boss.base.x - half, nextY - half) &&
-		!IsTileBlocked(boss.base.x + half, nextY - half) &&
-		!IsTileBlocked(boss.base.x - half, nextY + half) &&
-		!IsTileBlocked(boss.base.x + half, nextY + half)) {
+	BOOL yBlocked = FALSE;
+
+	if (boss.moveDirY > 0) {
+		if (IsTileBlocked(boss.base.x - halfW + 2, nextY + halfH) || IsTileBlocked(boss.base.x + halfW - 2, nextY + halfH)) yBlocked = TRUE;
+	}
+	else if (boss.moveDirY < 0) {
+		if (IsTileBlocked(boss.base.x - halfW + 2, nextY - halfH) || IsTileBlocked(boss.base.x + halfW - 2, nextY - halfH)) yBlocked = TRUE;
+	}
+
+	if (!yBlocked) {
 		boss.base.y = nextY;
 		boss.base.hitBoxY = nextY;
 	}
@@ -423,8 +466,6 @@ void UpdateBossMove() {
 // 보스(플레이어 추적 이동)
 void UpdateBossChase() {
 	boss.base.state = BOSS_CHASE;
-	int halfW = BOSS_WIDTH / 2;
-	int halfH = BOSS_HEIGHT / 2;
 
 	float dx = player.base.x - boss.base.x;
 	float dy = player.base.y - boss.base.y;
@@ -433,6 +474,9 @@ void UpdateBossChase() {
 
 	float nx = (dx / len) * BOSS_CHASE_SPEED;
 	float ny = (dy / len) * BOSS_CHASE_SPEED;
+
+	int halfW = (int)(BOSS_WIDTH * BOSS_IDLE_SCALE / 2);
+	int halfH = (int)(BOSS_HEIGHT * BOSS_IDLE_SCALE / 2);
 
 	// 방향 업데이트
 	if (fabsf(dx) > fabsf(dy) * 2) {
@@ -451,19 +495,31 @@ void UpdateBossChase() {
 	}
 
 	float nextX = boss.base.x + nx;
-	if (!IsTileBlocked(nextX - halfW, boss.base.y - halfH) &&
-		!IsTileBlocked(nextX + halfW, boss.base.y - halfH) &&
-		!IsTileBlocked(nextX - halfW, boss.base.y + halfH) &&
-		!IsTileBlocked(nextX + halfW, boss.base.y + halfH)) {
+	BOOL xBlocked = FALSE;
+
+	if (nx > 0) {
+		if (IsTileBlocked(nextX + halfW, boss.base.y - halfH + 2) || IsTileBlocked(nextX + halfW, boss.base.y + halfH - 2)) xBlocked = TRUE;
+	}
+	else if (nx < 0) {
+		if (IsTileBlocked(nextX - halfW, boss.base.y - halfH + 2) || IsTileBlocked(nextX - halfW, boss.base.y + halfH - 2)) xBlocked = TRUE;
+	}
+
+	if (!xBlocked) {
 		boss.base.x = nextX;
 		boss.base.hitBoxX = nextX;
 	}
 
 	float nextY = boss.base.y + ny;
-	if (!IsTileBlocked(boss.base.x - halfW, nextY - halfH) &&
-		!IsTileBlocked(boss.base.x + halfW, nextY - halfH) &&
-		!IsTileBlocked(boss.base.x - halfW, nextY + halfH) &&
-		!IsTileBlocked(boss.base.x + halfW, nextY + halfH)) {
+	BOOL yBlocked = FALSE;
+
+	if (ny > 0) {
+		if (IsTileBlocked(boss.base.x - halfW + 2, nextY + halfH) || IsTileBlocked(boss.base.x + halfW - 2, nextY + halfH)) yBlocked = TRUE;
+	}
+	else if (ny < 0) {
+		if (IsTileBlocked(boss.base.x - halfW + 2, nextY - halfH) || IsTileBlocked(boss.base.x + halfW - 2, nextY - halfH)) yBlocked = TRUE;
+	}
+
+	if (!yBlocked) {
 		boss.base.y = nextY;
 		boss.base.hitBoxY = nextY;
 	}
@@ -471,12 +527,15 @@ void UpdateBossChase() {
 
 // BOSSPAW 이동 + 충돌처리
 void UpdateBossPaws() {
-	int pawRadius = BOSS_PAW_SIZE / 2;
+	int pawRadiusW = BOSS_PAW_WIDTH / 2;
+	int pawRadiusH = BOSS_PAW_HEIGHT / 2;
 	for (int i = 0; i < BOSS_PAW_LIMIT; i++) {
 		if (!bossPaws[i].isActive) continue;
 
 		bossPaws[i].x += bossPaws[i].dx;
 		bossPaws[i].y += bossPaws[i].dy;
+		bossPaws[i].hitBoxX += bossPaws[i].dx;
+		bossPaws[i].hitBoxY += bossPaws[i].dy;
 
 		float speed = sqrtf(bossPaws[i].dx * bossPaws[i].dx + bossPaws[i].dy * bossPaws[i].dy);
 		if (speed == 0) {
@@ -486,8 +545,8 @@ void UpdateBossPaws() {
 		float ndx = bossPaws[i].dx / speed;
 		float ndy = bossPaws[i].dy / speed;
 
-		float edgeX = bossPaws[i].x + ndx * pawRadius;
-		float edgeY = bossPaws[i].y + ndy * pawRadius;
+		float edgeX = bossPaws[i].x + ndx * pawRadiusW;
+		float edgeY = bossPaws[i].y + ndy * pawRadiusH;
 
 		if (IsTileBlocked(edgeX, edgeY)) {
 			bossPaws[i].isActive = INACTIVE;
@@ -510,7 +569,7 @@ int CheckPhaseTransition() {
 		// 대기 중 (무적 상태로 바닥에 있음)
 		if (boss.escapingDelay > 0) {
 			boss.escapingDelay--;
-			boss.invincibleTimer = 10; // 매 프레임 무적 갱신
+			boss.invincibleTimer = 120; // 매 프레임 무적 갱신
 
 			UpdateAnimation(&boss.anim);
 			
@@ -568,8 +627,12 @@ int CheckPhaseTransition() {
 	}
 
 	if (currentMapType == MAP_THIRD_BOSS && boss.base.hp <= 0) {
-		boss.isActive = INACTIVE;
+		boss.deathTimer = BOSS_DEATH_TIMER;
 		boss.base.state = BOSS_DEAD;
+		boss.jumpOffsetY = 0;					// 공중 사망 방지
+		boss.isJumping = INACTIVE;
+		boss.isDashing = INACTIVE;
+		SetAnimationFrame(&boss.anim, 0);		// 사망 애니메이션 프레임 초기화
 		dashWarn.isActive = INACTIVE;
 		jumpWarn.isActive = INACTIVE;
 		boss.isSpiralActive = 0;
@@ -591,15 +654,34 @@ void UpdateDash(int is3rdPhase) {
 
 	HandleBossDashPlayerCollision(&player);
 
-	float nextX = boss.base.x + boss.dashDirX * DASH_SPEED;
-	float nextY = boss.base.y + boss.dashDirY * DASH_SPEED;
-	int halfW = BOSS_WIDTH / 2;
-	int halfH = BOSS_HEIGHT / 2;
+	float nx = boss.dashDirX * DASH_SPEED;
+	float ny = boss.dashDirY * DASH_SPEED;
+	float nextX = boss.base.x + nx;
+	float nextY = boss.base.y + ny;
 
-	if (IsTileBlocked(nextX - halfW, nextY - halfH) ||
-		IsTileBlocked(nextX + halfW, nextY - halfH) ||
-		IsTileBlocked(nextX - halfW, nextY + halfH) ||
-		IsTileBlocked(nextX + halfW, nextY + halfH)) {
+	int halfW = (int)(BOSS_WIDTH * BOSS_DASH_SCALE / 2);
+	int halfH = (int)(BOSS_HEIGHT * BOSS_DASH_SCALE / 2);
+
+	BOOL blocked = FALSE;
+	// X축 충돌 체크 (이동 방향만)
+	if (nx > 0) { // 오른쪽
+		if (IsTileBlocked(nextX + halfW, boss.base.y - halfH + 2) || IsTileBlocked(nextX + halfW, boss.base.y + halfH - 2)) blocked = TRUE;
+	}
+	else if (nx < 0) { // 왼쪽
+		if (IsTileBlocked(nextX - halfW, boss.base.y - halfH + 2) || IsTileBlocked(nextX - halfW, boss.base.y + halfH - 2)) blocked = TRUE;
+	}
+
+	// Y축 충돌 체크 (이동 방향만)
+	if (!blocked) {
+		if (ny > 0) { // 아래
+			if (IsTileBlocked(boss.base.x - halfW + 2, nextY + halfH) || IsTileBlocked(boss.base.x + halfW - 2, nextY + halfH)) blocked = TRUE;
+		}
+		else if (ny < 0) { // 위
+			if (IsTileBlocked(boss.base.x - halfW + 2, nextY - halfH) || IsTileBlocked(boss.base.x + halfW - 2, nextY - halfH)) blocked = TRUE;
+		}
+	}
+
+	if (blocked) {
 		// 벽 충돌 -> 대쉬 종료
 		boss.isDashing = INACTIVE;
 		boss.base.state = is2nd3rdPhase ? BOSS_CHASE : BOSS_IDLE;
@@ -793,6 +875,18 @@ void FireRandomCircularPhase(int phase) {
 				bossPaws[j].y = boss.base.y;
 				bossPaws[j].dx = cosf(currAngle) * BOSS_PAW_SPEED;
 				bossPaws[j].dy = sinf(currAngle) * BOSS_PAW_SPEED;
+				bossPaws[j].width = BOSS_PAW_WIDTH;
+				bossPaws[j].height = BOSS_PAW_HEIGHT;
+				bossPaws[j].hitBoxX = boss.base.x;
+				bossPaws[j].hitBoxY = boss.base.y;
+				bossPaws[j].hitBoxW = BOSS_PAW_HITBOX_W;
+				bossPaws[j].hitBoxH = BOSS_PAW_HITBOX_H;
+
+				int fw = imgProjectile.width / 4;
+				int fh = imgProjectile.height / 18;
+				bossPaws[j].dirRow = 17;
+				InitAnimation(&bossPaws[j].anim, &imgProjectile, fw, fh, 1, 0, FALSE);
+
 				break;
 			}
 		}
@@ -858,13 +952,25 @@ void UpdateSpiralPaws(int is2nd3rdPhase) {
 	float vx = cosf(angle);
 	float vy = sinf(angle);
 
-	for (int j = 0; j < BOSS_PAW_LIMIT; j++) {
-		if (bossPaws[j].isActive == INACTIVE) {
-			bossPaws[j].isActive = ACTIVE;
-			bossPaws[j].x = boss.base.x;
-			bossPaws[j].y = boss.base.y;
-			bossPaws[j].dx = vx * BOSS_PAW_SPEED;
-			bossPaws[j].dy = vy * BOSS_PAW_SPEED;
+	for (int i = 0; i < BOSS_PAW_LIMIT; i++) {
+		if (bossPaws[i].isActive == INACTIVE) {
+			bossPaws[i].isActive = ACTIVE;
+			bossPaws[i].x = boss.base.x;
+			bossPaws[i].y = boss.base.y;
+			bossPaws[i].dx = vx * BOSS_PAW_SPEED;
+			bossPaws[i].dy = vy * BOSS_PAW_SPEED;
+			bossPaws[i].width = BOSS_PAW_WIDTH;
+			bossPaws[i].height = BOSS_PAW_HEIGHT;
+			bossPaws[i].hitBoxX = boss.base.x;
+			bossPaws[i].hitBoxY = boss.base.y;
+			bossPaws[i].hitBoxW = BOSS_PAW_HITBOX_W;
+			bossPaws[i].hitBoxH = BOSS_PAW_HITBOX_H;
+
+			int fw = imgProjectile.width / 4;
+			int fh = imgProjectile.height / 18;
+			bossPaws[i].dirRow = 17;
+			InitAnimation(&bossPaws[i].anim, &imgProjectile, fw, fh, 1, 0, FALSE);
+
 			break;
 		}
 	}
@@ -974,22 +1080,35 @@ void HandleBossAggro(float tx, float ty) {
 			ny = (dy / dist) * (BOSS_MOVE_SPEED * 0.5f);
 		}
 
-		int halfW = BOSS_WIDTH / 2;
-		int halfH = BOSS_HEIGHT / 2;
+		int halfW = (int)(BOSS_WIDTH * BOSS_IDLE_SCALE / 2);
+		int halfH = (int)(BOSS_HEIGHT * BOSS_IDLE_SCALE / 2);
+
 		float nextX = boss.base.x + nx;
-		if (!IsTileBlocked(nextX - halfW, boss.base.y - halfH) &&
-			!IsTileBlocked(nextX + halfW, boss.base.y - halfH) &&
-			!IsTileBlocked(nextX - halfW, boss.base.y + halfH) &&
-			!IsTileBlocked(nextX + halfW, boss.base.y + halfH)) {
+		BOOL xBlocked = FALSE;
+
+		if (nx > 0) {
+			if (IsTileBlocked(nextX + halfW, boss.base.y - halfH + 2) || IsTileBlocked(nextX + halfW, boss.base.y + halfH - 2)) xBlocked = TRUE;
+		}
+		else if (nx < 0) {
+			if (IsTileBlocked(nextX - halfW, boss.base.y - halfH + 2) || IsTileBlocked(nextX - halfW, boss.base.y + halfH - 2)) xBlocked = TRUE;
+		}
+
+		if (!xBlocked) {
 			boss.base.x = nextX;
 			boss.base.hitBoxX = nextX;
 		}
 
 		float nextY = boss.base.y + ny;
-		if (!IsTileBlocked(boss.base.x - halfW, nextY - halfH) &&
-			!IsTileBlocked(boss.base.x + halfW, nextY - halfH) &&
-			!IsTileBlocked(boss.base.x - halfW, nextY + halfH) &&
-			!IsTileBlocked(boss.base.x + halfW, nextY + halfH)) {
+		BOOL yBlocked = FALSE;
+
+		if (ny > 0) {
+			if (IsTileBlocked(boss.base.x - halfW + 2, nextY + halfH) || IsTileBlocked(boss.base.x + halfW - 2, nextY + halfH)) yBlocked = TRUE;
+		}
+		else if (ny < 0) {
+			if (IsTileBlocked(boss.base.x - halfW + 2, nextY - halfH) || IsTileBlocked(boss.base.x + halfW - 2, nextY - halfH)) yBlocked = TRUE;
+		}
+
+		if (!yBlocked) {
 			boss.base.y = nextY;
 			boss.base.hitBoxY = nextY;
 		}
@@ -1002,6 +1121,20 @@ void UpdateBoss() {
 
 	UpdateBossPaws();
 
+	// 사망 상태 처리
+	if (boss.base.state == BOSS_DEAD) {
+		boss.anim.isLoop = FALSE;
+
+		UpdateAnimation(&boss.anim);
+
+		boss.deathTimer--;
+		if (boss.deathTimer <= 0) {
+			boss.deathTimer = 0;
+			boss.isActive = INACTIVE;
+		}
+		return;
+	}
+
 	if (boss.isActive == INACTIVE) return;
 
 	if (boss.invincibleTimer > 0) boss.invincibleTimer--;
@@ -1013,6 +1146,7 @@ void UpdateBoss() {
 		if (frameIdx > 5) frameIdx = 5;			// 마지막이 되면 6프레임(인덱스 5) 고정
 
 		SetAnimationFrame(&boss.effectAnim, frameIdx);
+		UpdateAnimation(&boss.anim);
 
 		if (boss.skillChargeTimer <= 0) {
 			boss.skillChargeTimer = 0;
@@ -1039,17 +1173,23 @@ void UpdateBoss() {
 	// 보스방 카메라 확대 연출 중에는 보스가 행동하지 않고 가만히 대기
 	if (camera.isIntroActive == ACTIVE) {
 		boss.base.state = BOSS_IDLE;
+		UpdateAnimation(&boss.anim);
 		return;
 	}
 
-	// 플레이어가 죽었으면 모든 공격과 추적을 중지
+	// 플레이어가 죽었어도 보스는 멈추지 않고 자유롭게 배회
 	if (player.base.state == PLAYER_DEAD) {
 		dashWarn.isActive = INACTIVE;
 		jumpWarn.isActive = INACTIVE;
 		boss.isDashing = 0;
 		boss.isJumping = 0;
 		boss.isSpiralActive = 0;
-		boss.base.state = BOSS_IDLE;
+		boss.isRandomCircularActive = 0;
+		boss.isAttacking = 0;
+		boss.skillChargeTimer = 0;
+
+		UpdateBossMove();
+		UpdateAnimation(&boss.anim);
 		return;
 	}
 

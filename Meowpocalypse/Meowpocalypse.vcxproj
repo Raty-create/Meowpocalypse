@@ -147,6 +147,7 @@
     <ClCompile Include="map\map.cpp" />
     <ClCompile Include="player\player.cpp" />
     <ClCompile Include="render\render.cpp" />
+    <ClCompile Include="sound\sound.cpp" />
     <ClCompile Include="ui\ui.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -166,6 +167,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="player\player.h" />
     <ClInclude Include="render\render.h" />
+    <ClInclude Include="sound\sound.h" />
     <ClInclude Include="ui\ui.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

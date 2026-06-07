@@ -17,8 +17,15 @@ void InputEsc() {
 	BOOL currEscPressed = (GetAsyncKeyState(VK_ESCAPE) & 0x8000) != 0;
 
 	if (!prevEscPressed && currEscPressed) {
-		if (g_UI.gameState == INGAME) g_UI.gameState = PAUSE;
-		else if (g_UI.gameState == PAUSE) g_UI.gameState = INGAME;
+		if (g_UI.gameState == INGAME) {
+			// 카메라 연출 중 ESC 막기
+			if (camera.isIntroActive == ACTIVE) return;
+
+			g_UI.gameState = PAUSE;
+		}
+		else if (g_UI.gameState == PAUSE) {
+			g_UI.gameState = INGAME;
+		}
 	}
 	prevEscPressed = currEscPressed;
 }

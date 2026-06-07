@@ -202,7 +202,25 @@ int HandleBulletBossCollision(BULLET* bullet, BOSS* boss) {
 
 		if (boss->base.hp <= 0) {
 			boss->base.hp = 0;
-			boss->base.state = BOSS_DEAD;
+
+			// 총알을 맞은 방향(발사체 반대 방향)을 바라보게 설정
+			float tdx = -bullet->dx;
+			float tdy = -bullet->dy;
+
+			if (fabsf(tdx) > fabsf(tdy) * 2) {
+				if (tdx > 0) boss->base.direction = DIR_RIGHT;
+				else boss->base.direction = DIR_LEFT;
+			}
+			else if (fabsf(tdy) > fabsf(tdx) * 2) {
+				if (tdy > 0) boss->base.direction = DIR_DOWN;
+				else boss->base.direction = DIR_UP;
+			}
+			else {
+				if (tdx > 0 && tdy > 0) boss->base.direction = DIR_DOWN_RIGHT;
+				else if (tdx > 0 && tdy < 0) boss->base.direction = DIR_UP_RIGHT;
+				else if (tdx < 0 && tdy > 0) boss->base.direction = DIR_DOWN_LEFT;
+				else if (tdx < 0 && tdy < 0) boss->base.direction = DIR_UP_LEFT;
+			}
 		}
 		return 1;
 	}
@@ -241,7 +259,7 @@ int HandleChuruBossCollision(CHURU* churues, BOSS* boss) {
 int HandleBossPawPlayerCollision(BOSS_PAW* bp, PLAYER* p) {
 	if (!bp->isActive || p->invincibleTimer > 0) return 0;
 
-	if (IsObjectCollision(bp->x, bp->y, BOSS_PAW_SIZE, BOSS_PAW_SIZE,
+	if (IsObjectCollision(bp->x, bp->y, BOSS_PAW_HITBOX_W, BOSS_PAW_HITBOX_H,
 		p->base.hitBoxX, p->base.hitBoxY, p->base.hitBoxW, p->base.hitBoxH)) {
 
 		bp->isActive = INACTIVE;
