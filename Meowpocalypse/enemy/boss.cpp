@@ -11,6 +11,7 @@
 #include "enum.h"
 #include "camera.h"
 #include "bullet.h"
+#include "sound.h"
 
 BOSS boss;
 IMAGE imgBossSprite;
@@ -772,6 +773,7 @@ void UpdateDashWarningCountdown() {
 		dashWarn.isActive = INACTIVE;
 		boss.isDashing = ACTIVE;
 		boss.dashTimer = DASH_INTERVAL;
+		PlaySFX(SFX_BOSS_DASH);
 	}
 }
 
@@ -787,6 +789,8 @@ void UpdateJumpLanding(int is2nd3rdPhase) {
 
 		if (jumpWarn.timer <= 60) {
 			boss.jumpPhase = 1;
+
+			PlaySFX(SFX_BOSS_JUMP);
 		}
 
 		jumpWarn.timer--;
@@ -833,6 +837,8 @@ void UpdateJumpLanding(int is2nd3rdPhase) {
 			boss.attackEndTimer = 50;
 
 			HandleBossJumpPlayerCollision(&player);
+
+			PlaySFX(SFX_BOSS_JUMP_LAND);
 		}
 	}
 	// [Phase 3] 착지 완료 후 땅에서 1초 동안 멈춰서 대기
@@ -1244,6 +1250,7 @@ void UpdateBoss() {
 			boss.dashTimer = DASH_INTERVAL;
 			boss.doubleDashPhase = 0;				// 두 번째 대시 시작, 이후 UpdateDash에서 완료 처리
 			boss.base.state = BOSS_DASH;
+			PlaySFX(SFX_BOSS_DASH);
 		}
 	}
 	else if (boss.isJumping == ACTIVE) {

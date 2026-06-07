@@ -105,7 +105,7 @@
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)core;$(ProjectDir)player;$(ProjectDir)enemy;$(ProjectDir)map;$(ProjectDir)camera;$(ProjectDir)render;$(ProjectDir)bullet;$(ProjectDir)enum;$(ProjectDir)graphics;$(ProjectDir)ui</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)core;$(ProjectDir)player;$(ProjectDir)enemy;$(ProjectDir)map;$(ProjectDir)camera;$(ProjectDir)render;$(ProjectDir)bullet;$(ProjectDir)enum;$(ProjectDir)graphics;$(ProjectDir)ui;$(ProjectDir)sound</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>

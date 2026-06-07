@@ -1,5 +1,6 @@
 #include "input.h"
 #include "config.h"
+#include "sound.h"
 
 INPUT_STATE g_Input;
 
@@ -22,9 +23,11 @@ void InputEsc() {
 			if (camera.isIntroActive == ACTIVE) return;
 
 			g_UI.gameState = PAUSE;
+			PauseBGM();
 		}
 		else if (g_UI.gameState == PAUSE) {
 			g_UI.gameState = INGAME;
+			ResumeBGM();
 		}
 	}
 	prevEscPressed = currEscPressed;
