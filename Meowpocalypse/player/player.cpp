@@ -8,6 +8,7 @@
 #include "collision.h"
 #include "bullet.h"
 #include "input.h"
+#include "sound.h"
 
 PLAYER player;
 IMAGE imgPlayerSprite;
@@ -46,6 +47,7 @@ void InitPlayer() {
 	player.hpPotionCount = POTION_LIMIT;
 	player.mpPotionCount = POTION_LIMIT;
 
+	player.base.state = PLAYER_IDLE;
 	player.base.direction = DIR_DOWN;
 
 	player.base.kx = player.base.ky = 0;
@@ -252,6 +254,16 @@ void HandlePlayerMovement() {
 		float moveY = g_Input.moveY;
 
 		if (moveX != 0 || moveY != 0) {
+
+			static int footstepTimer = 0;
+			if (g_Input.moveX != 0 || g_Input.moveY != 0) {
+				if (footstepTimer <= 0) {
+					PlaySFX(SFX_PLAYER_FOOTSTEP);
+					footstepTimer = 18;   // 약 18프레임마다 (타이머가 6ms라 빠르면 값 키우세요)
+				}
+			}
+			if (footstepTimer > 0) footstepTimer--;
+
 			float length = sqrtf(moveX * moveX + moveY * moveY);
 			float speed = PLAYER_SPEED;
 

@@ -10,6 +10,7 @@
 #include "enum.h"
 #include "input.h"
 #include "ui.h"
+#include "sound.h"
 
 // 전역 렌더링 리소스
 HDC g_hGameDC = NULL;
@@ -39,6 +40,8 @@ void InitGame() {
 	InitBullet();								// 총알
 	InitChuru();								// 츄르
 	InitUI();									// UI
+	InitSound();
+	PlayBGM(BGM_TITLE, TRUE);
 }
 
 void ReleaseGame() {
@@ -53,10 +56,12 @@ void ReleaseGame() {
 	ReleaseEnemy();
 	ReleaseBoss();
 	ReleaseUI();
+	ReleaseSound();
 }
 
 void Update(HWND hWnd) {
 	UpdateInput(hWnd);				// 입력 업데이트
+	UpdateSound();
 
 	// Fade Out - Fade In 효과 업데이트 (상태와 상관없이 매 프레임 수행)
 	if (g_UI.isFadeOut) {
@@ -67,6 +72,7 @@ void Update(HWND hWnd) {
 			g_UI.isFadeIn = TRUE;
 			g_UI.gameState = INGAME;
 			ReleaseTitle();
+			PlayBGM(BGM_WAITING, TRUE);
 		}
 	}
 	else if (g_UI.isFadeIn) {
