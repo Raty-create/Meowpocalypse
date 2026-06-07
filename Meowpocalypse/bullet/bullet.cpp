@@ -8,6 +8,7 @@
 #include "collision.h"
 #include "enum.h"
 #include "input.h"
+#include "sound.h"
 
 BULLET bullets[BULLET_MAX];
 CHURU churues[CHURU_MAX];
@@ -125,6 +126,8 @@ void ShootBullet() {
 
 				InitAnimation(&bullets[i].anim, &imgProjectile, fw, fh, 1, 0, FALSE);
 				bullets[i].dirRow = 0;
+
+				PlaySFX(SFX_PLAYER_SHOOT);
 
 				// 발사 쿨타임 설정
 				float cooldown = PLAYER_FIRE_COOLDOWN;

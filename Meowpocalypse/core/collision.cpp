@@ -4,6 +4,7 @@
 #include "player.h"
 #include "enemy.h"
 #include "boss.h"
+#include "sound.h"
 
 #include <math.h>
 
@@ -103,6 +104,7 @@ int HandleBulletEnemyCollision(BULLET* bullet, ENEMY* enemy) {
 		}
 		else {
 			enemy->base.state = ENEMY_HIT;
+			PlaySFX(SFX_ENEMY_HIT);
 		}
 
 		// 넉백 적용: 총알의 이동 방향으로 밀려남
@@ -137,6 +139,7 @@ int HandleCatPawPlayerCollision(CATPAW* cp, PLAYER* p) {
 		}
 		else {
 			p->base.state = PLAYER_HIT;
+			PlaySFX(SFX_PLAYER_HIT);
 		}
 
 		// 넉백 적용: 투사체의 이동 방향으로 밀려남
@@ -170,6 +173,7 @@ int HandleEnemyPlayerCollision(ENEMY* enemy, PLAYER* p) {
 		}
 		else {
 			p->base.state = PLAYER_HIT;
+			PlaySFX(SFX_PLAYER_HIT);
 		}
 
 		// 넉백 적용: 적 -> 플레이어 방향으로 밀려남
@@ -255,6 +259,7 @@ int HandleBossPawPlayerCollision(BOSS_PAW* bp, PLAYER* p) {
 		}
 		else {
 			p->base.state = PLAYER_HIT;
+			PlaySFX(SFX_PLAYER_HIT);
 		}
 
 		// 넉백: 발사체 방향으로 밀려남
@@ -286,7 +291,10 @@ int HandleBossPlayerCollision(PLAYER* p) {
 			p->base.state = PLAYER_DEAD;
 			p->deathTimer = PLAYER_DEATH_TIME;
 		}
-		else p->base.state = PLAYER_HIT;
+		else {
+			p->base.state = PLAYER_HIT;
+			PlaySFX(SFX_PLAYER_HIT);
+		}
 
 		// 보스 -> 플레이어 방향의 반대로 밀려남
 		float dx = p->base.x - boss.base.x;
@@ -319,7 +327,10 @@ int HandleBossDashPlayerCollision(PLAYER* p) {
 			p->base.state = PLAYER_DEAD;
 			p->deathTimer = PLAYER_DEATH_TIME;
 		}
-		else p->base.state = PLAYER_HIT;
+		else {
+			p->base.state = PLAYER_HIT;
+			PlaySFX(SFX_PLAYER_HIT);
+		}
 
 		// 대시 방향으로 강하게 밀려남 (보스는 계속 진행 - 넉백 적용 없음)
 		p->base.kx = boss.dashDirX * BOSS_DASH_KNOCKBACK;
@@ -359,7 +370,10 @@ int HandleBossJumpPlayerCollision(PLAYER* p) {
 			p->base.state = PLAYER_DEAD;
 			p->deathTimer = PLAYER_DEATH_TIME;
 		}
-		else p->base.state = PLAYER_HIT;
+		else {
+			p->base.state = PLAYER_HIT;
+			PlaySFX(SFX_PLAYER_HIT);
+		}
 
 		// 보스 -> 플레이어 방향의 반대로 밀려남
 		float dx = p->base.x - boss.base.x;

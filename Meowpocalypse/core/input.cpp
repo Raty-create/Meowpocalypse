@@ -1,5 +1,6 @@
 #include "input.h"
 #include "config.h"
+#include "sound.h"
 
 INPUT_STATE g_Input;
 
@@ -17,8 +18,14 @@ void InputEsc() {
 	BOOL currEscPressed = (GetAsyncKeyState(VK_ESCAPE) & 0x8000) != 0;
 
 	if (!prevEscPressed && currEscPressed) {
-		if (g_UI.gameState == INGAME) g_UI.gameState = PAUSE;
-		else if (g_UI.gameState == PAUSE) g_UI.gameState = INGAME;
+		if (g_UI.gameState == INGAME) {
+			g_UI.gameState = PAUSE;
+			PauseBGM();
+		}
+		else if (g_UI.gameState == PAUSE) {
+			g_UI.gameState = INGAME;
+			ResumeBGM();
+		}
 	}
 	prevEscPressed = currEscPressed;
 }

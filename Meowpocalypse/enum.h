@@ -24,3 +24,19 @@ typedef enum { BOSS_DASH = 6, BOSS_MELEE, BOSS_THREE_WAY_CATPAW, BOSS_CIRCULAR_C
 
 // CHURU
 typedef enum { AIRBORNE, DROPPED } CHURU_STATE;
+
+// SOUND
+typedef enum { BGM_TITLE, BGM_WAITING, BGM_HALLWAY, BGM_BOSS1, BGM_BOSS2,  BGM_BOSS3, BGM_COUNT } BGM_TYPE;
+typedef enum {
+    SFX_PLAYER_SHOOT,       // 총알 발사
+    SFX_PLAYER_FOOTSTEP,    // 발소리
+    SFX_PLAYER_HIT,         // 플레이어 피격
+    SFX_PLAYER_SKILL,       // 스킬 사용
+    SFX_BOSS_PAW,           // 보스 탄막(젤리) 발사
+    SFX_BOSS_DASH,          // 보스 대시
+    SFX_BOSS_JUMP,          // 보스 점프
+    SFX_BOSS_JUMP_LAND,          // 보스 착지
+    SFX_ENEMY_HIT,          // 잡몹 피격
+    SFX_DOOR_OPEN,          // 문 열림
+    SFX_COUNT
+} SFX_TYPE;
