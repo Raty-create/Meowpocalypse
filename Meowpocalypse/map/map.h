@@ -17,6 +17,10 @@ typedef struct {
     float worldY;
     DOOR_INFO doors[MAX_DOORS];
     int doorCount;
+
+    float doorAnimTimer;
+    int doorAnimFrame;
+    float doorOffsetY;
 } MAPDATA;
 
 extern MAP_TYPE currentMapType;
@@ -34,3 +38,5 @@ void SetDoorState(MAP_TYPE type, DOOR_STATE state);
 void UpdateDoors(MAP_TYPE type, int allEnemiesDead);
 
 void ClearEnemies();
+
+void UpdateMapDoors();

@@ -52,7 +52,7 @@ void UpdateBullet() {
 			}
 		}
 
-		if (bullets[i].isActive == ACTIVE) {
+		if (bullets[i].isActive == ACTIVE && boss.base.state != BOSS_DEAD) {
 			HandleBulletBossCollision(&bullets[i], &boss);
 		}
 
@@ -114,7 +114,7 @@ void ShootBullet() {
 		for (int i = 0; i < BULLET_MAX; i++) {
 			if (bullets[i].isActive == INACTIVE) {
 				int fw = imgProjectile.width / 4;
-				int fh = imgProjectile.height / 17;
+				int fh = imgProjectile.height / 18;
 
 				bullets[i].x = player.base.x;
 				bullets[i].y = player.base.y;
@@ -163,7 +163,7 @@ void ShootSkillQ() {
 			for (int i = 0; i < BULLET_MAX && bulletFired < 3; i++) {
 				if (bullets[i].isActive == INACTIVE) {
 					int fw = imgProjectile.width / 4;
-					int fh = imgProjectile.height / 17;
+					int fh = imgProjectile.height / 18;
 
 					float currAngle = baseAngle + (bulletFired - 1) * spreadAngle;
 
@@ -282,7 +282,7 @@ void ShootSkillR() {
 		for (int i = 0; i < CHURU_MAX; i++) {
 			if (churues[i].isActive == INACTIVE) {
 				int fw = imgProjectile.width / 4;
-				int fh = imgProjectile.height / 17;
+				int fh = imgProjectile.height / 18;
 
 				churues[i].x = player.base.x;
 				churues[i].y = player.base.y;

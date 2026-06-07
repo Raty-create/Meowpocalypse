@@ -19,6 +19,9 @@ void InputEsc() {
 
 	if (!prevEscPressed && currEscPressed) {
 		if (g_UI.gameState == INGAME) {
+			// 카메라 연출 중 ESC 막기
+			if (camera.isIntroActive == ACTIVE) return;
+
 			g_UI.gameState = PAUSE;
 			PauseBGM();
 		}

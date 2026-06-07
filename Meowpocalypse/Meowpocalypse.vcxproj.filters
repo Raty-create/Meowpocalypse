@@ -95,6 +95,15 @@
       <UniqueIdentifier>{db5d4843-9fb8-48a7-ae1b-7d90448b34b0}</UniqueIdentifier>
     </Filter>
     <Filter Include="sound">
+<<<<<<< HEAD
+      <UniqueIdentifier>{5ebaefd4-3439-444e-8e79-f67a5f414591}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sound\헤더 파일">
+      <UniqueIdentifier>{26e31ea6-efc7-4ecc-8acd-70180f869ab0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sound\소스 파일">
+      <UniqueIdentifier>{fd02be9f-6341-4f42-aa70-054891545a68}</UniqueIdentifier>
+=======
       <UniqueIdentifier>{6714fae4-66b2-4d74-8968-19d27f598fcb}</UniqueIdentifier>
     </Filter>
     <Filter Include="sound\헤더 파일">
@@ -102,6 +111,7 @@
     </Filter>
     <Filter Include="sound\소스 파일">
       <UniqueIdentifier>{fdff4961-450f-4069-b7c8-5afbda1808af}</UniqueIdentifier>
+>>>>>>> 418263b1f2587242688b15ce9d87310a5aa0e0fd
     </Filter>
   </ItemGroup>
   <ItemGroup>

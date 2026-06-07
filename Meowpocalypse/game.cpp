@@ -104,6 +104,21 @@ void Update(HWND hWnd) {
 		UpdateEnemies();				// 잡몹 업데이트
 		SpawnBoss(currentMapType);		// 보스 스폰
 		UpdateBoss();					// 보스 업데이트
+
+		UpdateMapDoors();
+		
+		// 보스 HP HUD 표시 제어
+		if (currentMapType == MAP_FIRST_BOSS || currentMapType == MAP_SECOND_BOSS || currentMapType == MAP_THIRD_BOSS) {
+			if (boss.isActive) g_UI.hud.showBossHp = TRUE;
+			else g_UI.hud.showBossHp = FALSE;
+		}
+		else {
+			g_UI.hud.showBossHp = FALSE;
+		}
+		UpdateBossHpBar();				// 보스 HP 바 부드러운 감소 업데이트
+		UpdateHpBar();					// 플레이어 HP 바 부드러운 감소 업데이트
+		UpdateMpBar();					// 플레이어 MP 바 부드러운 감소 업데이트
+
 		UpdateBullet();					// 총알 업데이트
 		UpdateChuru();					// 츄르 업데이트
 		MAPDATA* m = &maps[currentMapType];									// 카메라(현재 맵 크기를 카메라로 전달)
@@ -131,17 +146,21 @@ void Render(HWND hWnd, HDC hDC) {
 	else if (g_UI.gameState == INGAME || g_UI.gameState == PAUSE || g_UI.gameState == KEY_GUIDE) {
 		// 모든 게임 그래픽을 가상 DC(g_hGameDC, 1920x1080 기준)에 먼저 그림
 		RenderCurrentMap(g_hGameDC);
+		RenderDoors(g_hGameDC);
 
 		if (camera.isIntroActive == INACTIVE) {
-			RenderObjectShadow(g_hGameDC, player.base.x, player.base.y, player.base.width * 3);
+			RenderObjectShadow(g_hGameDC, player.base.x, player.base.y, (int)(player.base.width * 3.2f));
 			for (int i = 0; i < ENEMY_LIMIT; i++) {
 				if (enemies[i].isActive)
 					RenderObjectShadow(g_hGameDC, enemies[i].base.x, enemies[i].base.y, enemies[i].base.width);
 			}
 			for (int i = 0; i < CHURU_MAX; i++) {
 				if (churues[i].isActive)
-					RenderObjectShadow(g_hGameDC, churues[i].x, churues[i].y, (int)((float)churues[i].width * 1.6f));
+					RenderObjectShadow(g_hGameDC, churues[i].x, churues[i].y, (int)((float)churues[i].width * 2.0f));
 			}
+		}
+		if (boss.isActive) {
+			RenderObjectShadow(g_hGameDC, boss.base.x, boss.base.y, (int)(boss.base.width * 1.1f));
 		}
 
 		RenderPlayer(g_hGameDC);								// 플레이어
@@ -155,6 +174,7 @@ void Render(HWND hWnd, HDC hDC) {
 		RenderBoss(g_hGameDC);									// 보스
 		RenderBossHitBox(g_hGameDC);							// 보스 hitBox
 		RenderBossPaws(g_hGameDC);								// 보스 젤리
+		RenderBossPawsHitBox(g_hGameDC);						// 보스 젤리 hitBox
 
 		RenderChuru(g_hGameDC);									// 츄르
 

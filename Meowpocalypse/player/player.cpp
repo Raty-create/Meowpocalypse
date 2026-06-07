@@ -240,13 +240,19 @@ void HandlePlayerMovement() {
 		player.base.kTimer--;
 
 		// 넉백 시에는 공격이 온 방향(넉백의 반대 방향)을 바라봄
-		if (fabsf(player.base.kx) > fabsf(player.base.ky)) {
+		if (fabsf(player.base.kx) > fabsf(player.base.ky) * 2) {
 			if (player.base.kx > 0) player.base.direction = DIR_LEFT;
 			else player.base.direction = DIR_RIGHT;
 		}
-		else {
+		else if (fabsf(player.base.ky) > fabsf(player.base.kx) * 2) {
 			if (player.base.ky > 0) player.base.direction = DIR_UP;
 			else player.base.direction = DIR_DOWN;
+		}
+		else {
+			if (player.base.kx < 0 && player.base.ky < 0) player.base.direction = DIR_DOWN_RIGHT;
+			else if (player.base.kx > 0 && player.base.ky < 0) player.base.direction = DIR_DOWN_LEFT;
+			else if (player.base.kx < 0 && player.base.ky > 0) player.base.direction = DIR_UP_RIGHT;
+			else if (player.base.kx > 0 && player.base.ky > 0) player.base.direction = DIR_UP_LEFT;
 		}
 	}
 	else {
