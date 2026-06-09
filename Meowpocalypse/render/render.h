@@ -3,6 +3,16 @@
 #include <Windows.h>
 #include <math.h>
 
+// 그림자/맵/문 등
+void InitRenderResources();
+void RenderObjectShadow(HDC hDC, float x, float y, int objW);
+
+// 자원 해제
+void ReleaseRenderResources();
+void ReleaseMap();
+void ReleaseDoor();
+void ReleaseShadow();
+
 // 타일
 void RenderTile(HDC hDC, int screenX, int screenY, COLORREF color);
 
@@ -11,10 +21,6 @@ void RenderCurrentMap(HDC hDC);
 
 // 문
 void RenderDoors(HDC hDC);
-
-// 그림자
-void InitRenderResources();
-void RenderObjectShadow(HDC hDC, float x, float y, int objW);
 
 // 플레이어
 void RenderPlayer(HDC hDC);
@@ -50,6 +56,7 @@ void RenderHUD(HDC hDC);
 void RenderBossHUD(HDC hDC);
 void RenderPause(HDC hDC);
 void RenderKeyGuide(HDC hDC);
+void RenderGameOver(HDC hDC);
 
 void RenderDimmedBackground(HDC hDC);
 void RenderFadeEffect(HDC hDC);

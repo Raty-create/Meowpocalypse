@@ -1,6 +1,7 @@
 ﻿#include "ui.h"
 
 UI_SYSTEM g_UI;
+IMAGE imgEnding;
 
 // UI 초기화
 void InitUI() {
@@ -19,6 +20,7 @@ void InitUI() {
 	g_UI.hTitleHoverFont = CreateFont(42, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, NONANTIALIASED_QUALITY, DEFAULT_PITCH, L"Upheaval TT (BRK)");
 	g_UI.hCooldownFont = CreateFont(48, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, NONANTIALIASED_QUALITY, DEFAULT_PITCH, L"Neo둥근모");
 	g_UI.hItemCountFont = CreateFont(16, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, NONANTIALIASED_QUALITY, DEFAULT_PITCH, L"Galmuri11 Regular");
+	g_UI.hGameOverFont = CreateFont(128, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, NONANTIALIASED_QUALITY, DEFAULT_PITCH, L"Upheaval TT (BRK)");
 
 	TitleBg();
 	TextLogo();
@@ -50,7 +52,28 @@ void InitUI() {
 
 	KeyGuideUI();
 
+	GameOverRestartBar();
+	GameOverExitBar();
+
+	g_UI.fadeAlpha = 0.0f;
+	g_UI.isFadeOut = FALSE;
+	g_UI.isFadeIn = FALSE;
+	g_UI.isMapFadeOut = FALSE;
+	g_UI.isMapFadeIn = FALSE;
+	g_UI.isPlayerDeadFadeOut = FALSE;
+	g_UI.isEndingFadeOut = FALSE;
+	g_UI.isEndingFadeIn = FALSE;
+	g_UI.isEndingToTitleFadeOut = FALSE;
+	g_UI.isEndingToTitleFadeIn = FALSE;
+
 	g_UI.gameState = TITLE;
+}
+
+void InitEnding() {
+	int fw = imgEnding.width / 25;
+	int fh = imgEnding.height;
+
+	InitAnimation(&g_UI.endingAnim, &imgEnding, fw, fh, 25, 16, FALSE);
 }
 
 // 타이틀 관련 자원 해제
@@ -83,6 +106,10 @@ void ReleaseUI() {
 		DeleteObject(g_UI.hItemCountFont);
 		g_UI.hItemCountFont = NULL;
 	}
+	if (g_UI.hGameOverFont) {
+		DeleteObject(g_UI.hGameOverFont);
+		g_UI.hGameOverFont = NULL;
+	}
 
 	RemoveFontResourceEx(L"upheavtt.ttf", FR_PRIVATE, NULL);
 	RemoveFontResourceEx(L"neodgm_code.ttf", FR_PRIVATE, NULL);
@@ -90,7 +117,7 @@ void ReleaseUI() {
 }
 
 // 타이틀 업데이트
-void UpdateTitle(HWND hWnd) {
+void UpdateTitle() {
 	// 텍스트 로고 둥둥 뜨는 효과
 	static float logoTimer = 0.0f;
 	logoTimer += 0.08f;
@@ -147,7 +174,7 @@ void UpdateTitle(HWND hWnd) {
 }
 
 // 퍼즈 업데이트
-void UpdatePause(HWND hWnd) {
+void UpdatePause() {
 	for (int i = 0; i < 4; i++) {
 		UI_ELEMENT* buttons = &g_UI.pause.menuButton[i];
 
@@ -188,9 +215,59 @@ void UpdatePause(HWND hWnd) {
 }
 
 // 키 가이드 업데이트
-void UpdateKeyGuide(HWND hWnd) {
+void UpdateKeyGuide() {
 	if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) {
 		g_UI.gameState = PAUSE;
+	}
+}
+
+// 게임 오버 업데이트
+void UpdateGameOver() {
+	// Restart 버튼 스케일링
+	const int MIN_W = g_UI.gameover.exitButton.srcW;
+	const int MAX_W = (int)(g_UI.gameover.exitButton.srcW * 1.3f);
+	const float RATIO = (float)g_UI.gameover.exitButton.srcH / MIN_W;		// height 비율
+
+	UI_ELEMENT* reStartBnt = &g_UI.gameover.reStartButton;
+	BOOL isReStartHover = (g_Input.mousePos.x >= reStartBnt->x - reStartBnt->width / 2 && g_Input.mousePos.x <= reStartBnt->x + reStartBnt->width / 2 &&
+		g_Input.mousePos.y >= reStartBnt->y - reStartBnt->height / 2 && g_Input.mousePos.y <= reStartBnt->y + reStartBnt->height / 2);
+
+	if (isReStartHover) {
+		if (reStartBnt->width < MAX_W) {
+			reStartBnt->width = (int)(reStartBnt->width * 1.1f) + 1;
+			if (reStartBnt->width > MAX_W) reStartBnt->width = MAX_W;
+			reStartBnt->height = (int)(reStartBnt->width * RATIO);
+		}
+		if (g_Input.isLButtonDown) {
+			ReleaseGame();
+			InitGame();
+		}
+	}
+	else if (reStartBnt->width > MIN_W) {
+		reStartBnt->width = (int)(reStartBnt->width / 1.1f);
+		if (reStartBnt->width < MIN_W) reStartBnt->width = MIN_W;
+		reStartBnt->height = (int)(reStartBnt->width * RATIO);
+	}
+
+	// Exit 버튼 스케일링
+	UI_ELEMENT* exitBnt = &g_UI.gameover.exitButton;
+	BOOL isExitHover = (g_Input.mousePos.x >= exitBnt->x - exitBnt->width / 2 && g_Input.mousePos.x <= exitBnt->x + exitBnt->width / 2 &&
+		g_Input.mousePos.y >= exitBnt->y - exitBnt->height / 2 && g_Input.mousePos.y <= exitBnt->y + exitBnt->height / 2);
+
+	if (isExitHover) {
+		if (exitBnt->width < MAX_W) {
+			exitBnt->width = (int)(exitBnt->width * 1.1f) + 1;
+			if (exitBnt->width > MAX_W) exitBnt->width = MAX_W;
+			exitBnt->height = (int)(exitBnt->width * RATIO);
+		}
+		if (g_Input.isLButtonDown) {
+			PostQuitMessage(0);
+		}
+	}
+	else if (exitBnt->width > MIN_W) {
+		exitBnt->width = (int)(exitBnt->width / 1.1f);
+		if (exitBnt->width < MIN_W) exitBnt->width = MIN_W;
+		exitBnt->height = (int)(exitBnt->width * RATIO);
 	}
 }
 
@@ -547,7 +624,7 @@ void BossHpBarUI() {
 	g_UI.hud.bossHpBar.srcH = 32;
 
 	// 보스 HP 바 위치 및 크기 조절
-	g_UI.hud.bossHpBar.x = SCREEN_WIDTH / 2 - (g_UI.hud.bossHpBarFrame.srcW - g_UI.hud.bossHpBar.srcW);
+	g_UI.hud.bossHpBar.x = (float)(SCREEN_WIDTH / 2 - (g_UI.hud.bossHpBarFrame.srcW - g_UI.hud.bossHpBar.srcW));
 	g_UI.hud.bossHpBar.y = g_UI.hud.bossHpBarFrame.y + 0.5f;
 	g_UI.hud.bossHpBar.width = (int)(g_UI.hud.bossHpBar.srcW * 1.5f);
 	g_UI.hud.bossHpBar.height = (int)(g_UI.hud.bossHpBar.srcH * 1.5f);
@@ -562,7 +639,7 @@ void BossEmblem() {
 	g_UI.hud.bossEmblem.srcH = 128;
 
 	// 보스 엠블럼 위치 및 크기 조절
-	g_UI.hud.bossEmblem.x = SCREEN_WIDTH / 2 - g_UI.hud.bossHpBarFrame.width / 2 - g_UI.hud.bossEmblem.srcW / 4;
+	g_UI.hud.bossEmblem.x = (float)(SCREEN_WIDTH / 2 - g_UI.hud.bossHpBarFrame.width / 2 - g_UI.hud.bossEmblem.srcW / 4);
 	g_UI.hud.bossEmblem.y = BOSS_HP_BAR_FRAME_HEIGHT_MARGIN - 3;
 	g_UI.hud.bossEmblem.width = (int)(g_UI.hud.bossEmblem.srcW * 1.5f);
 	g_UI.hud.bossEmblem.height = (int)(g_UI.hud.bossEmblem.srcH * 1.5f);
@@ -627,6 +704,10 @@ void PauseMenuButton() {
 	g_UI.pause.menuButton[3].height = (int)(g_UI.pause.menuButton[3].srcH * 2.5f);
 }
 
+
+
+
+
 // KEY_GUIDE
 //
 //
@@ -646,4 +727,44 @@ void KeyGuideUI() {
 	g_UI.keyGuide.keyGuideUI.y = SCREEN_HEIGHT / 2;
 	g_UI.keyGuide.keyGuideUI.width = SCREEN_WIDTH;
 	g_UI.keyGuide.keyGuideUI.height = SCREEN_HEIGHT;
+}
+
+
+
+
+
+// GAMEOVER
+//
+//
+//
+//
+//
+// 재시작 버튼
+void GameOverRestartBar() {
+	// 재시작 버튼 원본 크기
+	g_UI.gameover.reStartButton.srcX = 105;
+	g_UI.gameover.reStartButton.srcY = 430;
+	g_UI.gameover.reStartButton.srcW = 256;
+	g_UI.gameover.reStartButton.srcH = 128;
+
+	// 재시작 버튼 위치 및 크기 조절
+	g_UI.gameover.reStartButton.x = SCREEN_WIDTH / 2 - GAMEOVER_RESTART_BUTTON_MARGIN_X;
+	g_UI.gameover.reStartButton.y = SCREEN_HEIGHT / 2 + GAMEOVER_RESTART_BUTTON_MARGIN_Y;
+	g_UI.gameover.reStartButton.width = (int)(g_UI.gameover.reStartButton.srcW * 1.3f);
+	g_UI.gameover.reStartButton.height = (int)(g_UI.gameover.reStartButton.srcH * 1.3f);
+}
+
+// 종료 버튼
+void GameOverExitBar() {
+	// 재시작 버튼 원본 크기
+	g_UI.gameover.exitButton.srcX = 105;
+	g_UI.gameover.exitButton.srcY = 430;
+	g_UI.gameover.exitButton.srcW = 256;
+	g_UI.gameover.exitButton.srcH = 128;
+
+	// 재시작 버튼 위치 및 크기 조절
+	g_UI.gameover.exitButton.x = SCREEN_WIDTH / 2 + GAMEOVER_EXIT_BUTTON_MARGIN_X;
+	g_UI.gameover.exitButton.y = SCREEN_HEIGHT / 2 + GAMEOVER_EXIT_BUTTON_MARGIN_Y;
+	g_UI.gameover.exitButton.width = (int)(g_UI.gameover.exitButton.srcW * 1.3f);
+	g_UI.gameover.exitButton.height = (int)(g_UI.gameover.exitButton.srcH * 1.3f);
 }

@@ -20,7 +20,7 @@ HBITMAP g_hOldGameBitmap = NULL;
 void InitGame() {
 	currentMapType = MAP_WAITING;				// 시작 맵 설정
 
-	camera.zoom = 1.0f;
+	camera.zoom = CAMERA_ZOOM_RATIO;
 	camera.isIntroActive = INACTIVE;
 	camera.introTimer = 0;
 
@@ -33,7 +33,7 @@ void InitGame() {
 
 	InitAllMap();								// 맵
 	SetDoorState(MAP_WAITING, DOOR_OPEN);		// 문
-	InitRenderResources();						// 렌더링 리소스(그림자)
+	InitRenderResources();						// 렌더링 리소스
 	InitPlayer();								// 플레이어
 	InitEnemy();								// 잡몹
 	InitBoss();									// 보스
@@ -56,6 +56,10 @@ void ReleaseGame() {
 	ReleaseEnemy();
 	ReleaseBoss();
 	ReleaseUI();
+	ReleaseMap();
+	ReleaseDoor();
+	ReleaseShadow();
+	ReleaseRenderResources();
 	ReleaseSound();
 }
 
@@ -75,6 +79,71 @@ void Update(HWND hWnd) {
 			PlayBGM(BGM_WAITING, TRUE, 500);
 		}
 	}
+	else if (g_UI.isMapFadeOut) {
+		g_UI.fadeAlpha += 0.04f;
+		if (g_UI.fadeAlpha >= 1.0f) {
+			g_UI.fadeAlpha = 1.0f;
+			g_UI.isMapFadeOut = FALSE;
+			g_UI.isMapFadeIn = TRUE;
+			ExecuteMapTransition();
+		}
+	}
+	else if (g_UI.isPlayerDeadFadeOut) {
+		g_UI.fadeAlpha += 0.003f;
+		if (g_UI.fadeAlpha >= 0.7f) {
+			g_UI.fadeAlpha = 0.7f;
+			g_UI.isPlayerDeadFadeOut = FALSE;
+			g_UI.gameState = GAMEOVER;
+		}
+	}
+	else if (g_UI.isEndingFadeOut) {
+		g_UI.fadeAlpha += 0.02f;
+		if (g_UI.fadeAlpha >= 1.0f) {
+			g_UI.fadeAlpha = 1.0f;
+			g_UI.isEndingFadeOut = FALSE;
+			g_UI.isEndingFadeIn = TRUE;
+
+			LoadMyImage(&imgEnding, L"final_animation_sprite.png");
+			InitEnding();
+			g_UI.gameState = ENDING;
+		}
+	}
+	else if (g_UI.isEndingToTitleFadeOut) {
+		g_UI.fadeAlpha += 0.02f;
+		if (g_UI.fadeAlpha >= 1.0f) {
+			g_UI.fadeAlpha = 1.0f;
+			g_UI.isEndingToTitleFadeOut = FALSE;
+			g_UI.isEndingToTitleFadeIn = TRUE;
+
+			ReleaseMyImage(&imgEnding);
+
+			// 게임 상태 초기화 (전체 리소스를 해제하는 ReleaseGame() 대신 필요한 상태만 초기화)
+			currentMapType = MAP_WAITING;
+			g_hallwayStage = 0;
+
+			camera.zoom = CAMERA_ZOOM_RATIO;
+			camera.isIntroActive = INACTIVE;
+			camera.introTimer = 0;
+
+			InitAllMap();
+			InitPlayer();
+			InitEnemy();
+			InitBoss();
+			InitBullet();
+			InitChuru();
+
+			// UI 상태 일부 초기화 (fadeAlpha는 유지해야 하므로 InitUI() 대신 수동 초기화)
+			g_UI.hud.bossVisualHp = (float)BOSS_HP;
+			g_UI.hud.showBossHp = FALSE;
+			g_UI.hud.playerVisualHp = (float)PLAYER_HP;
+			g_UI.hud.playerVisualMp = (float)PLAYER_MP;
+
+			g_UI.gameState = TITLE;
+			LoadMyImage(&g_UI.imgTitleBg, L"title_bg.png");
+			LoadMyImage(&g_UI.imgMeowpocalypseTextLogo, L"meowpocalypse_logo.png");
+			PlayBGM(BGM_TITLE, TRUE);
+		}
+	}
 	else if (g_UI.isFadeIn) {
 		g_UI.fadeAlpha -= 0.02f;
 		if (g_UI.fadeAlpha <= 0.0f) {
@@ -82,47 +151,90 @@ void Update(HWND hWnd) {
 			g_UI.isFadeIn = FALSE;
 		}
 	}
+	else if (g_UI.isMapFadeIn) {
+		g_UI.fadeAlpha -= 0.04f;
+		if (g_UI.fadeAlpha <= 0.0f) {
+			g_UI.fadeAlpha = 0.0f;
+			g_UI.isMapFadeIn = FALSE;
+		}
+	}
+	else if (g_UI.isEndingFadeIn) {
+		g_UI.fadeAlpha -= 0.02f;
+		if (g_UI.fadeAlpha <= 0.0f) {
+			g_UI.fadeAlpha = 0.0f;
+			g_UI.isEndingFadeIn = FALSE;
+		}
+	}
+	else if (g_UI.isEndingToTitleFadeIn) {
+		g_UI.fadeAlpha -= 0.02f;
+		if (g_UI.fadeAlpha <= 0.0f) {
+			g_UI.fadeAlpha = 0.0f;
+			g_UI.isEndingToTitleFadeIn = FALSE;
+		}
+	}
 
 	if (g_UI.gameState == TITLE) {
-		UpdateTitle(hWnd);
+		UpdateTitle();
 	}
 	else if (g_UI.gameState == PAUSE) {
-		UpdatePause(hWnd);
+		UpdatePause();
 	}
 	else if (g_UI.gameState == KEY_GUIDE) {
-		UpdateKeyGuide(hWnd);
+		UpdateKeyGuide();
+	}
+	else if (g_UI.gameState == GAMEOVER) {
+		UpdateGameOver();
+		UpdateBoss();
 	}
 	else if (g_UI.gameState == INGAME) {
-		// 카메라 인트로 중에는 플레이어가 움직이지 못하게 막거나 업데이트를 제한
-		if (camera.isIntroActive == INACTIVE) {
-			UpdatePlayer();				// 플레이어 업데이트
-			ShootSkillQ();				// Q 스킬 - 총알 세 방향 발사
-			ShootBullet();				// 총알 발사
-			ShootSkillR();				// R 스킬 - 츄르 던지기
-		}
+		// 맵 전환 또는 엔딩 페이드 아웃 중에는 모든 업데이트 중단
+		if (g_UI.isMapFadeOut || g_UI.isEndingFadeOut) return;
 
-		UpdateEnemies();				// 잡몹 업데이트
-		SpawnBoss(currentMapType);		// 보스 스폰
-		UpdateBoss();					// 보스 업데이트
-
-		UpdateMapDoors();
-		
-		// 보스 HP HUD 표시 제어
-		if (currentMapType == MAP_FIRST_BOSS || currentMapType == MAP_SECOND_BOSS || currentMapType == MAP_THIRD_BOSS) {
-			if (boss.isActive) g_UI.hud.showBossHp = TRUE;
-			else g_UI.hud.showBossHp = FALSE;
+		// 맵 전환 페이드 인 또는 카메라 인트로 중에도 보스와 HUD 애니메이션은 업데이트 되어야 함
+		if (camera.isIntroActive == ACTIVE || g_UI.isMapFadeIn) {
+			UpdateBoss();					// 보스 인트로 상태(BOSS_IDLE) 처리를 위해 호출
+			UpdateBossHpBar();
+			UpdateHpBar();
+			UpdateMpBar();
+			UpdateAnimation(&player.anim);
 		}
 		else {
-			g_UI.hud.showBossHp = FALSE;
-		}
-		UpdateBossHpBar();				// 보스 HP 바 부드러운 감소 업데이트
-		UpdateHpBar();					// 플레이어 HP 바 부드러운 감소 업데이트
-		UpdateMpBar();					// 플레이어 MP 바 부드러운 감소 업데이트
+			// 실제 게임 플레이 중 업데이트
+			UpdatePlayer();					// 플레이어 업데이트
+			ShootSkillQ();					// Q 스킬 - 총알 세 방향 발사
+			ShootBullet();					// 총알 발사
+			ShootSkillR();					// R 스킬 - 츄르 던지기
 
-		UpdateBullet();					// 총알 업데이트
-		UpdateChuru();					// 츄르 업데이트
+			UpdateEnemies();				// 잡몹 업데이트
+			SpawnBoss(currentMapType);		// 보스 스폰
+			UpdateBoss();					// 보스 업데이트
+
+			UpdateMapDoors();
+
+			// 보스 HP HUD 표시 제어
+			if (currentMapType == MAP_FIRST_BOSS || currentMapType == MAP_SECOND_BOSS || currentMapType == MAP_THIRD_BOSS) {
+				if (boss.isActive) g_UI.hud.showBossHp = TRUE;
+				else g_UI.hud.showBossHp = FALSE;
+			}
+			else {
+				g_UI.hud.showBossHp = FALSE;
+			}
+			UpdateBossHpBar();				// 보스 HP 바 부드러운 감소 업데이트
+			UpdateHpBar();					// 플레이어 HP 바 부드러운 감소 업데이트
+			UpdateMpBar();					// 플레이어 MP 바 부드러운 감소 업데이트
+
+			UpdateBullet();					// 총알 업데이트
+			UpdateChuru();					// 츄르 업데이트
+		}
+
 		MAPDATA* m = &maps[currentMapType];									// 카메라(현재 맵 크기를 카메라로 전달)
 		UpdateCamera(player.base.x, player.base.y, m->rows, m->cols);		// 카메라 업데이트
+	}
+	else if (g_UI.gameState == ENDING) {
+		UpdateAnimation(&g_UI.endingAnim);
+		if (g_UI.endingAnim.isEnd) {
+			g_UI.isEndingToTitleFadeOut = TRUE;
+		}
 	}
 }
 
@@ -143,7 +255,7 @@ void Render(HWND hWnd, HDC hDC) {
 		RenderUI(g_hGameDC);
 	}
 	// 인게임 렌더링
-	else if (g_UI.gameState == INGAME || g_UI.gameState == PAUSE || g_UI.gameState == KEY_GUIDE) {
+	else if (g_UI.gameState == INGAME || g_UI.gameState == PAUSE || g_UI.gameState == KEY_GUIDE || g_UI.gameState == GAMEOVER) {
 		// 모든 게임 그래픽을 가상 DC(g_hGameDC, 1920x1080 기준)에 먼저 그림
 		RenderCurrentMap(g_hGameDC);
 		RenderDoors(g_hGameDC);
@@ -164,31 +276,40 @@ void Render(HWND hWnd, HDC hDC) {
 		}
 
 		RenderPlayer(g_hGameDC);								// 플레이어
-		RenderPlayerHitBox(g_hGameDC);							// 플레이어 hitBox
 
 		RenderEnemies(g_hGameDC);								// 잡몹
-		RenderEnemiesHitBox(g_hGameDC);							// 잡몹 hitBox
 		RenderCatPaw(g_hGameDC);								// 잡몹 젤리
-		RenderCatPawHitBox(g_hGameDC);							// 잡몹 젤리 hitBox
 
 		RenderBoss(g_hGameDC);									// 보스
-		RenderBossHitBox(g_hGameDC);							// 보스 hitBox
 		RenderBossPaws(g_hGameDC);								// 보스 젤리
-		RenderBossPawsHitBox(g_hGameDC);						// 보스 젤리 hitBox
 
 		RenderChuru(g_hGameDC);									// 츄르
 
 		RenderBullets(g_hGameDC);								// 총알
-		RenderBulletsHitBox(g_hGameDC);							// 총알 hitBox
 
 		if (camera.isIntroActive == INACTIVE) {
+			RenderPlayerHitBox(g_hGameDC);						// 플레이어 hitBox
+			RenderEnemiesHitBox(g_hGameDC);						// 잡몹 hitBox
+			RenderCatPawHitBox(g_hGameDC);						// 잡몹 젤리 hitBox
+			RenderBossHitBox(g_hGameDC);						// 보스 hitBox
+			RenderBossPawsHitBox(g_hGameDC);					// 보스 젤리 hitBox
+			RenderBulletsHitBox(g_hGameDC);						// 총알 hitBox
+
 			RenderUI(g_hGameDC);								// UI
 		}
+	}
+	else if (g_UI.gameState == ENDING) {
+		RenderAnimation(&g_UI.endingAnim, g_hGameDC, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, SCREEN_WIDTH, SCREEN_HEIGHT);
 	}
 
 	// Fade Out - Fade In (타이틀 -> 인게임)
 	if (g_UI.isFadeOut || g_UI.isFadeIn || g_UI.fadeAlpha > 0.0f) {
 		RenderFadeEffect(g_hGameDC);
+	}
+
+	// 게임 오버 버튼은 페이드 효과 위에
+	if (g_UI.gameState == GAMEOVER) {
+		RenderGameOver(g_hGameDC);
 	}
 
 	// 화면 비율 계산 (16:9 기준 레터박스)

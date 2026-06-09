@@ -94,6 +94,11 @@ void UpdatePlayerStatus() {
 		player.anim.isLoop = FALSE;
 
 		player.deathTimer--;
+		if (player.deathTimer <= 0) {
+			player.deathTimer = 0;
+
+			g_UI.isPlayerDeadFadeOut = TRUE;
+		}
 		return;
 	}
 

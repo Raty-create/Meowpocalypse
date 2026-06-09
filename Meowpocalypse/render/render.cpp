@@ -12,9 +12,12 @@ IMAGE imgShadow;
 IMAGE imgMapTiles[5];
 IMAGE imgDoors;
 
+HDC g_hFadeDC = NULL;
+HBITMAP g_hFadeBitmap = NULL;
+
 void InitRenderResources() {
 	LoadMyImage(&imgShadow, L"SHADOW.png");
-	
+
 	LoadMyImage(&imgMapTiles[MAP_WAITING], L"map_waiting.png");
 	LoadMyImage(&imgMapTiles[MAP_HALLWAY], L"hallway.png");
 	LoadMyImage(&imgMapTiles[MAP_FIRST_BOSS], L"first_boss_map.png");
@@ -22,6 +25,44 @@ void InitRenderResources() {
 	LoadMyImage(&imgMapTiles[MAP_THIRD_BOSS], L"third_boss_map.png");
 
 	LoadMyImage(&imgDoors, L"doors.png");
+
+	// Fade/Dimmed 효과용 1x1 검은색 비트맵 미리 생성
+	HDC hDC = GetDC(NULL);
+
+	g_hFadeDC = CreateCompatibleDC(hDC);
+	g_hFadeBitmap = CreateCompatibleBitmap(hDC, 1, 1);
+
+	SelectObject(g_hFadeDC, g_hFadeBitmap);
+	SetPixel(g_hFadeDC, 0, 0, RGB(0, 0, 0));
+
+	ReleaseDC(NULL, hDC);
+}
+
+void ReleaseRenderResources() {
+	if (g_hFadeDC) {
+		DeleteDC(g_hFadeDC);
+		g_hFadeDC = NULL;
+	}
+	if (g_hFadeBitmap) {
+		DeleteObject(g_hFadeBitmap);
+		g_hFadeBitmap = NULL;
+	}
+}
+
+void ReleaseMap() {
+	ReleaseMyImage(&imgMapTiles[MAP_WAITING]);
+	ReleaseMyImage(&imgMapTiles[MAP_HALLWAY]);
+	ReleaseMyImage(&imgMapTiles[MAP_FIRST_BOSS]);
+	ReleaseMyImage(&imgMapTiles[MAP_SECOND_BOSS]);
+	ReleaseMyImage(&imgMapTiles[MAP_THIRD_BOSS]);
+}
+
+void ReleaseDoor() {
+	ReleaseMyImage(&imgDoors);
+}
+
+void ReleaseShadow() {
+	ReleaseMyImage(&imgShadow);
 }
 
 HBRUSH hBrush, oldBrush;
@@ -988,13 +1029,62 @@ void RenderKeyGuide(HDC hDC) {
 		g_UI.keyGuide.keyGuideUI.srcX, g_UI.keyGuide.keyGuideUI.srcY, g_UI.keyGuide.keyGuideUI.srcW, g_UI.keyGuide.keyGuideUI.srcH);
 }
 
+// 게임 오버 UI
+void RenderGameOver(HDC hDC) {
+	// 버튼 호버 상태 체크 (텍스트 크기 결정을 위함)
+	UI_ELEMENT* reStartBnt = &g_UI.gameover.reStartButton;
+	UI_ELEMENT* exitBnt = &g_UI.gameover.exitButton;
+
+	BOOL isReStartHover = (g_Input.mousePos.x >= reStartBnt->x - reStartBnt->width / 2 && g_Input.mousePos.x <= reStartBnt->x + reStartBnt->width / 2 &&
+		g_Input.mousePos.y >= reStartBnt->y - reStartBnt->height / 2 && g_Input.mousePos.y <= reStartBnt->y + reStartBnt->height / 2);
+	BOOL isExitHover = (g_Input.mousePos.x >= exitBnt->x - exitBnt->width / 2 && g_Input.mousePos.x <= exitBnt->x + exitBnt->width / 2 &&
+		g_Input.mousePos.y >= exitBnt->y - exitBnt->height / 2 && g_Input.mousePos.y <= exitBnt->y + exitBnt->height / 2);
+
+	// Restart 버튼 배경 프레임
+	DrawMyImage(&g_UI.imgUISheet, hDC, (int)reStartBnt->x - reStartBnt->width / 2, (int)reStartBnt->y - reStartBnt->height / 2, reStartBnt->width, reStartBnt->height,
+		reStartBnt->srcX, reStartBnt->srcY, reStartBnt->srcW, reStartBnt->srcH);
+
+	// Exit 버튼 배경 프레임
+	DrawMyImage(&g_UI.imgUISheet, hDC, (int)exitBnt->x - exitBnt->width / 2, (int)exitBnt->y - exitBnt->height / 2, exitBnt->width, exitBnt->height,
+		exitBnt->srcX, exitBnt->srcY, exitBnt->srcW, exitBnt->srcH);
+
+	// 게임 오버 버튼 텍스트 (RESTART / EXIT)
+	SetBkMode(hDC, TRANSPARENT);
+	HFONT hOldFont = (HFONT)GetCurrentObject(hDC, OBJ_FONT);
+
+	SIZE textSize;
+	const wchar_t* gameoverStr = L"GAME OVER";
+	const wchar_t* reStartStr = L"RESTART";
+	const wchar_t* exitStr = L"EXIT";
+
+	// GAME OVER 텍스트 그리기
+	SetTextColor(hDC, RGB(220, 20, 60));
+	SelectObject(hDC, g_UI.hGameOverFont);
+	GetTextExtentPoint32(hDC, gameoverStr, lstrlen(gameoverStr), &textSize);
+	TextOut(hDC, SCREEN_WIDTH / 2 - (textSize.cx / 2), SCREEN_HEIGHT / 2 - (textSize.cy * 2), gameoverStr, lstrlen(gameoverStr));
+
+	// START 텍스트 그리기
+	SetTextColor(hDC, RGB(255, 255, 255));
+
+	if (isReStartHover) SelectObject(hDC, g_UI.hTitleHoverFont);
+	else SelectObject(hDC, g_UI.hTitleStartExitFont);
+
+	GetTextExtentPoint32(hDC, reStartStr, lstrlen(reStartStr), &textSize);
+	TextOut(hDC, (int)reStartBnt->x - (textSize.cx / 2), (int)(reStartBnt->y - (textSize.cy / 1.9f)), reStartStr, lstrlen(reStartStr));
+
+	// EXIT 텍스트 그리기
+	if (isExitHover) SelectObject(hDC, g_UI.hTitleHoverFont);
+	else SelectObject(hDC, g_UI.hTitleStartExitFont);
+
+	GetTextExtentPoint32(hDC, exitStr, lstrlen(exitStr), &textSize);
+	TextOut(hDC, (int)exitBnt->x - (textSize.cx / 2), (int)(exitBnt->y - (textSize.cy / 1.9f)), exitStr, lstrlen(exitStr));
+
+	SelectObject(hDC, hOldFont);
+}
+
 // 배경 어둡게(흐리게) 처리 (PAUSE 시)
 void RenderDimmedBackground(HDC hDC) {
-	HDC memDC = CreateCompatibleDC(hDC);
-	HBITMAP bmp = CreateCompatibleBitmap(hDC, 1, 1);
-	SelectObject(memDC, bmp);
-
-	SetPixel(memDC, 0, 0, (RGB(0, 0, 0)));
+	if (!g_hFadeDC) return;
 
 	BLENDFUNCTION bf;
 	bf.AlphaFormat = 0;
@@ -1002,21 +1092,12 @@ void RenderDimmedBackground(HDC hDC) {
 	bf.BlendOp = AC_SRC_OVER;
 	bf.SourceConstantAlpha = 100;
 
-	AlphaBlend(hDC, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, memDC, 0, 0, 1, 1, bf);
-
-	DeleteObject(bmp);
-	DeleteDC(memDC);
+	AlphaBlend(hDC, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, g_hFadeDC, 0, 0, 1, 1, bf);
 }
 
-// Fade Out - Fade In (타이틀 -> 인게임)
+// Fade Out - Fade In
 void RenderFadeEffect(HDC hDC) {
-	if (g_UI.fadeAlpha <= 0.0f) return;
-
-	HDC memDC = CreateCompatibleDC(hDC);
-	HBITMAP bmp = CreateCompatibleBitmap(hDC, 1, 1);
-	SelectObject(memDC, bmp);
-
-	SetPixel(memDC, 0, 0, (RGB(0, 0, 0)));
+	if (!g_hFadeDC || g_UI.fadeAlpha <= 0.0f) return;
 
 	// AlphaBlend 설정
 	BLENDFUNCTION bf;
@@ -1027,8 +1108,5 @@ void RenderFadeEffect(HDC hDC) {
 	BYTE alpha = (BYTE)(g_UI.fadeAlpha * 255.0f);
 	bf.SourceConstantAlpha = alpha;
 
-	AlphaBlend(hDC, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, memDC, 0, 0, 1, 1, bf);
-
-	DeleteObject(bmp);
-	DeleteDC(memDC);
+	AlphaBlend(hDC, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, g_hFadeDC, 0, 0, 1, 1, bf);
 }

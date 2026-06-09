@@ -25,11 +25,13 @@ typedef struct {
 
 extern MAP_TYPE currentMapType;
 extern MAPDATA maps[MAP_COUNT];
+extern int g_hallwayStage;
 
 MAP_TYPE GetNextMap(MAP_TYPE type);
 
 void GetSpawnPos(MAP_TYPE type, float* outX, float* outY);
 void MapTransition();
+void ExecuteMapTransition();
 
 void InitMap(MAP_TYPE type);
 void InitAllMap();
