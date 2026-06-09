@@ -1,6 +1,7 @@
 #include "input.h"
 #include "config.h"
 #include "sound.h"
+#include "enum.h"
 
 INPUT_STATE g_Input;
 
@@ -96,6 +97,7 @@ void Input_Skill_Q() {
 
 	g_Input.isQPressed = (!prevQPressed && currQPressed);
 	prevQPressed = currQPressed;
+	PlaySFX(SFX_PLAYER_SKILL_Q);
 }
 
 // 플레이어 E 스킬
@@ -105,6 +107,7 @@ void Input_Skill_E() {
 
 	g_Input.isEPressed = (!prevEPressed && currEPressed);
 	prevEPressed = currEPressed;
+	PlaySFX(SFX_PLAYER_SKILL_E);
 }
 
 // 플레이어 R 스킬
@@ -114,6 +117,7 @@ void Input_Skill_R() {
 
 	g_Input.isRPressed = (!prevRPressed && currRPressed);
 	prevRPressed = currRPressed;
+	PlaySFX(SFX_PLAYER_SKILL_R);
 }
 
 // 플레이어 키보드 숫자 입력 감지

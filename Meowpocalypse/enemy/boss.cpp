@@ -200,6 +200,7 @@ void SpawnBossPaws() {
 	boss.isAttacking = 1;
 	boss.base.state = BOSS_THREE_WAY_CATPAW;
 	boss.attackEndTimer = BOSS_ATTACK_INTERVAL / 2; // 발사 후 이 프레임 동안 정지
+	PlaySFX(SFX_BOSS_THREE_WAY_CATPAW);
 
 	float dx = player.base.x - boss.base.x;
 	float dy = player.base.y - boss.base.y;
@@ -266,6 +267,8 @@ void SpawnCircularPaws() {
 
 	int count = BOSS_CIRCULARPAWS_COUNT;
 	float angleStep = (2.0f * PI) / count;
+
+	PlaySFX(SFX_BOSS_CIRCULAR_CATPAW);
 
 	for (int i = 0; i < count; i++) {
 		float currAngle = i * angleStep;
@@ -934,6 +937,7 @@ void SpawnRandomCircularPaws() {
 	boss.base.direction = DIR_DOWN;
 	boss.randomCircularPhase = 0;
 	boss.randomCircularDelay = 0; // 첫 발사는 즉시
+	PlaySFX(SFX_BOSS_RANDOM_CATPAW);
 }
 
 // 3페이즈 회오리 PAW: 프레임마다 호출, 내부 타이머로 순차 발사
@@ -990,6 +994,7 @@ void StartSpiralPaws() {
 	boss.base.direction = DIR_DOWN;
 	boss.spiralIndex = 0;
 	boss.spiralTimer = 0;
+	PlaySFX(SFX_BOSS_SPIRAL_CATPAW);
 }
 
 // 3페이즈 첫 번째 대시 경고 시작 (doubleDashPhase 설정)

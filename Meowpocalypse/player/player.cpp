@@ -205,6 +205,7 @@ void HandlePlayerInput() {
 	// 키보드 숫자 1 아이템 - HP 회복 (잃은 체력의 30%)
 	if (g_Input.isOnePressed && player.itemOneCooldown <= 0 && player.hpPotionCount > 0) {
 		int missingHp = PLAYER_HP - player.base.hp;
+		PlaySFX(SFX_PLAYER_SKILL_DRINK);
 		if (missingHp > 0) {
 			player.itemOneCooldown = ITEM_ONE_COOLDOWN;
 			player.hpPotionCount--;
@@ -226,6 +227,7 @@ void HandlePlayerInput() {
 		player.itemTwoCooldown = ITEM_TWO_COOLDOWN;
 		player.mpPotionCount--;
 		player.mp = PLAYER_MP;
+		PlaySFX(SFX_PLAYER_SKILL_DRINK);
 	}
 }
 

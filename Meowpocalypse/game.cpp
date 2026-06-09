@@ -41,7 +41,7 @@ void InitGame() {
 	InitChuru();								// 츄르
 	InitUI();									// UI
 	InitSound();
-	PlayBGM(BGM_TITLE, TRUE);
+	PlayBGM(BGM_TITLE, TRUE, 100);
 }
 
 void ReleaseGame() {
@@ -72,7 +72,7 @@ void Update(HWND hWnd) {
 			g_UI.isFadeIn = TRUE;
 			g_UI.gameState = INGAME;
 			ReleaseTitle();
-			PlayBGM(BGM_WAITING, TRUE);
+			PlayBGM(BGM_WAITING, TRUE, 900);
 		}
 	}
 	else if (g_UI.isFadeIn) {

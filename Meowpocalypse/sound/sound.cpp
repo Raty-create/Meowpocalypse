@@ -1,5 +1,6 @@
 #include "sound.h"
 #include "config.h"
+#include "map.h"
 
 #include <mmsystem.h>
 #include <stdio.h>
@@ -7,10 +8,10 @@
 
 // BGM 파일 경로 테이블
 static const wchar_t* g_bgmPath[BGM_COUNT] = {
-    L"Title.mp3",                         // BGM_TITLE
+    L"Title.mp3",                         // BGM_TITLE      !!
     L"Waiting Map.mp3",                   // BGM_WAITING
     L"HallWayMap.mp3",                    // BGM_HALLWAY
-    L"First Boss Map.mp3",                // BGM_BOSS1
+    L"First Boss Map.mp3",                // BGM_BOSS1   !!
     L"boss2.mp3",                         // BGM_BOSS2   !!
     L"Third Boss Map.mp3",                // BGM_BOSS3
 };
@@ -20,13 +21,21 @@ static const wchar_t* g_sfxPath[SFX_COUNT] = {
     L"Shoot.mp3",                           // SFX_PLAYER_SHOOT
     L"FootStep.mp3",                        // SFX_PLAYER_FOOTSTEP
     L"Player_Hit.mp3",                      // SFX_PLAYER_HIT
-    L"skill.mp3",                           // SFX_PLAYER_SKILL  !!
-    L"boss_paw.mp3",                        // SFX_BOSS_PAW   !!
+    L"skill_drink.mp3",                     // SFX_PLAYER_SKILL HP, MP
+    L"skill_q.mp3",                         // SFX_PLAYER_SKILL Q   !!
+    L"skill_e.mp3",                         // SFX_PLAYER_SKILL E   !!
+    L"skill_r.mp3",                         // SFX_PLAYER_SKILL R   !!
+
+    L"boss_footstep.mp3",                   // 보스 발소리
+    L"boss_three_way_catpaw.mp3",           // 보스 탄막(젤리) 발사
+    L"boss_circular_catpaw.mp3",            // 보스 탄막(원형젤리) 발사
+    L"boss_random_catpaw.mp3",              // 보스 탄막(원형 * 10 젤리) 발사     !!
+    L"boss_spiral_catpaw.mp3",              // 보스 탄막(회오리 젤리) 발사     !!
     L"Boss_Dash.mp3",                       // SFX_BOSS_DASH
     L"Boss_Jump.mp3",                       // SFX_BOSS_JUMP
     L"Boss_Jump_Land.mp3",                  // SFX_BOSS_JUMP_Land
+
     L"Enemy_Hit.mp3",                       // SFX_ENEMY_HIT
-    L"door.mp3",                            // SFX_DOOR_OPEN   !!
 };
 
 static wchar_t g_bgmAlias[32] = L"";    // 현재 열려있는 BGM 의 alias ("" 면 없음)
@@ -35,7 +44,7 @@ static int g_bgmLoop = 0;      // 루프 여부
 static int g_bgmGrace = 0;      // 재생 직후 루프 오작동 방지 카운트
 static int g_bgmPaused = 0;
 
-static int g_bgmVolume = 600;
+//static int g_bgmVolume = 600;
 static int g_sfxVolume = 200;
 
 static int g_sfxLoaded[SFX_COUNT][SFX_VOICES];  // 채널별 open 성공 여부
@@ -102,7 +111,7 @@ void ReleaseSound() {
     mciSendStringW(L"close all", NULL, 0, NULL);  // 혹시 남은 장치 정리
 }
 
-void PlayBGM(BGM_TYPE type, BOOL loop) {
+void PlayBGM(BGM_TYPE type, BOOL loop, int volume) {
     if (type < 0 || type >= BGM_COUNT) return;
 
     // 같은 곡을 또 틀라고 하면 무시 (끊기지 않게)
@@ -127,7 +136,7 @@ void PlayBGM(BGM_TYPE type, BOOL loop) {
     }
 
     wchar_t cmd[64];
-    swprintf(cmd, 64, L"setaudio %s volume to %d", g_bgmAlias, g_bgmVolume);
+    swprintf(cmd, 64, L"setaudio %s volume to %d", g_bgmAlias, volume);
     mci(cmd);
 
     swprintf(cmd, 64, L"play %s from 0", g_bgmAlias);
@@ -200,29 +209,29 @@ void PlaySFX(SFX_TYPE type) {
     mci(cmd);
 }
 
-void SetBGMVolume(int volume) {
-    if (volume < 0)    volume = 0;
-    if (volume > 1000) volume = 1000;
-    g_bgmVolume = volume;
-
-    if (g_bgmAlias[0]) {
-        wchar_t cmd[64];
-        swprintf(cmd, 64, L"setaudio %s volume to %d", g_bgmAlias, volume);
-        mci(cmd);
-    }
-}
-
-void SetSFXVolume(int volume) {
-    if (volume < 0)    volume = 0;
-    if (volume > 1000) volume = 1000;
-    g_sfxVolume = volume;
-
-    for (int t = 0; t < SFX_COUNT; t++)
-        for (int v = 0; v < SFX_VOICES; v++)
-            if (g_sfxLoaded[t][v]) {
-                wchar_t alias[32], cmd[64];
-                MakeSfxAlias(alias, t, v);
-                swprintf(cmd, 64, L"setaudio %s volume to %d", alias, volume);
-                mci(cmd);
-            }
-}
+//void SetBGMVolume(int volume) {
+//    if (volume < 0)    volume = 0;
+//    if (volume > 1000) volume = 1000;
+//    g_bgmVolume = volume;
+//
+//    if (g_bgmAlias[0]) {
+//        wchar_t cmd[64];
+//        swprintf(cmd, 64, L"setaudio %s volume to %d", g_bgmAlias, volume);
+//        mci(cmd);
+//    }
+//}
+//
+//void SetSFXVolume(int volume) {
+//    if (volume < 0)    volume = 0;
+//    if (volume > 1000) volume = 1000;
+//    g_sfxVolume = volume;
+//
+//    for (int t = 0; t < SFX_COUNT; t++)
+//        for (int v = 0; v < SFX_VOICES; v++)
+//            if (g_sfxLoaded[t][v]) {
+//                wchar_t alias[32], cmd[64];
+//                MakeSfxAlias(alias, t, v);
+//                swprintf(cmd, 64, L"setaudio %s volume to %d", alias, volume);
+//                mci(cmd);
+//            }
+//}
