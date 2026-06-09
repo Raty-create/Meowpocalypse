@@ -141,7 +141,7 @@ void Update(HWND hWnd) {
 			g_UI.gameState = TITLE;
 			LoadMyImage(&g_UI.imgTitleBg, L"title_bg.png");
 			LoadMyImage(&g_UI.imgMeowpocalypseTextLogo, L"meowpocalypse_logo.png");
-			PlayBGM(BGM_TITLE, TRUE);
+			PlayBGM(BGM_TITLE, TRUE, 100);
 		}
 	}
 	else if (g_UI.isFadeIn) {
