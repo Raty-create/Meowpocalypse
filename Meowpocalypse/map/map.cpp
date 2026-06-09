@@ -5,6 +5,7 @@
 #include "camera.h"
 #include "collision.h"
 #include "sound.h"
+#include "ui.h"
 
 #include <stdlib.h>
 
@@ -526,15 +527,15 @@ void UpdateMapDoors() {
 
 MAP_TYPE GetNextMap(MAP_TYPE type) {
 	switch (type) {
-	case MAP_WAITING:     return MAP_HALLWAY;
+	case MAP_WAITING:					return MAP_HALLWAY;
 	case MAP_HALLWAY:
-		if (g_hallwayStage == 0)      return MAP_FIRST_BOSS;
-		else if (g_hallwayStage == 1) return MAP_SECOND_BOSS;
-		else                          return MAP_THIRD_BOSS;
-	case MAP_FIRST_BOSS:  return MAP_HALLWAY;
-	case MAP_SECOND_BOSS: return MAP_HALLWAY;
-	case MAP_THIRD_BOSS:  return MAP_THIRD_BOSS;   // 마지막
-	default: return type;
+		if (g_hallwayStage == 0)		return MAP_FIRST_BOSS;
+		else if (g_hallwayStage == 1)	return MAP_SECOND_BOSS;
+		else							return MAP_THIRD_BOSS;
+	case MAP_FIRST_BOSS:				return MAP_HALLWAY;
+	case MAP_SECOND_BOSS:				return MAP_HALLWAY;
+	case MAP_THIRD_BOSS:				return MAP_WAITING;   // 마지막
+	default:							return type;
 	}
 }
 
@@ -549,13 +550,27 @@ void PlayStageBGM(MAP_TYPE type) {
 }
 
 
-// 맵 전환
+// 맵 전환 시작 (Fade Out 유도)
 void MapTransition() {
+	if (g_UI.isMapFadeOut || g_UI.isMapFadeIn || g_UI.isEndingFadeOut || g_UI.isEndingFadeIn) return;
 	if (!IsPlayerOnDoor()) return;
 
 	MAP_TYPE prevMap = currentMapType;
 	MAP_TYPE nextMap = GetNextMap(prevMap);
 	if (nextMap == prevMap) return;
+
+	if (currentMapType != MAP_THIRD_BOSS) {
+		g_UI.isMapFadeOut = TRUE;
+	}
+	else if (currentMapType == MAP_THIRD_BOSS) {
+		g_UI.isEndingFadeOut = TRUE;
+	}
+}
+
+// 실제 맵 전환 처리
+void ExecuteMapTransition() {
+	MAP_TYPE prevMap = currentMapType;
+	MAP_TYPE nextMap = GetNextMap(prevMap);
 
 	// 보스 클리어 후 떠날 때 다음 단계로
 	if (prevMap == MAP_FIRST_BOSS)       g_hallwayStage = 1;
@@ -574,6 +589,8 @@ void MapTransition() {
 	player.base.y = player.base.hitBoxY = spawnY;
 
 	if (currentMapType == MAP_FIRST_BOSS || currentMapType == MAP_SECOND_BOSS || currentMapType == MAP_THIRD_BOSS) {
+		// 카메라 인트로를 위해 보스 먼저 스폰
+		SpawnBoss(currentMapType);
 		camera.isIntroActive = ACTIVE;
 		camera.introTimer = 180;
 		camera.zoom = 2.0f;
@@ -598,6 +615,6 @@ void GetSpawnPos(MAP_TYPE type, float* outX, float* outY) {
 		*outY = m->worldY + (m->rows - 16) * TILE_SIZE;
 	}
 	else {
-		*outY = m->worldY + (m->rows - 10) * TILE_SIZE;
+		*outY = m->worldY + (m->rows - 18) * TILE_SIZE;
 	}
 }

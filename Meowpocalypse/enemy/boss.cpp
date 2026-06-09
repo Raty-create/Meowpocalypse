@@ -40,6 +40,10 @@ void InitBoss() {
 	boss.base.height = BOSS_HEIGHT;
 	boss.base.hitBoxW = BOSS_HITBOX_WIDTH;
 	boss.base.hitBoxH = BOSS_HITBOX_HEIGHT;
+	boss.base.x = 0;
+	boss.base.y = 0;
+	boss.base.hitBoxX = 0;
+	boss.base.hitBoxY = 0;
 	boss.base.state = BOSS_IDLE;
 	boss.base.dx = 0;
 	boss.base.dy = 0;
@@ -121,6 +125,8 @@ void SpawnBoss(MAP_TYPE type) {
 			boss.isActive = ACTIVE;
 			boss.base.x = spawnX;
 			boss.base.y = spawnY;
+			boss.base.hitBoxX = spawnX;
+			boss.base.hitBoxY = spawnY;
 			boss.base.state = BOSS_IDLE;
 			boss.base.dx = 0;
 			boss.base.dy = 0;
@@ -136,6 +142,8 @@ void SpawnBoss(MAP_TYPE type) {
 			boss.isActive = ACTIVE;
 			boss.base.x = spawnX;
 			boss.base.y = spawnY;
+			boss.base.hitBoxX = spawnX;
+			boss.base.hitBoxY = spawnY;
 			boss.base.state = BOSS_CHASE;
 			boss.base.dx = 0;
 			boss.base.dy = 0;
@@ -165,6 +173,8 @@ void SpawnBoss(MAP_TYPE type) {
 			boss.isActive = ACTIVE;
 			boss.base.x = spawnX;
 			boss.base.y = spawnY;
+			boss.base.hitBoxX = spawnX;
+			boss.base.hitBoxY = spawnY;
 			boss.base.state = BOSS_IDLE;
 			boss.base.dx = 0;
 			boss.base.dy = 0;
@@ -763,6 +773,8 @@ void UpdateDash(int is3rdPhase) {
 
 // 대시 경고 카운트다운
 void UpdateDashWarningCountdown() {
+	HandleBossPlayerCollision(&player);
+
 	// [준비 중] 1프레임 (인덱스 0) 반복
 	if (boss.anim.currFrame > 0) {
 		SetAnimationFrame(&boss.anim, 0);
@@ -1154,6 +1166,8 @@ void UpdateBoss() {
 		SetAnimationFrame(&boss.effectAnim, frameIdx);
 		UpdateAnimation(&boss.anim);
 
+		HandleBossPlayerCollision(&player); // 기 모으는 중에도 충돌 체크
+
 		if (boss.skillChargeTimer <= 0) {
 			boss.skillChargeTimer = 0;
 
@@ -1260,9 +1274,11 @@ void UpdateBoss() {
 	}
 	else if (boss.isRandomCircularActive) {
 		// 랜덤 원형 3연속 발사 중 -> 이동 없음, 패턴선택 없음 (UpdateRandomCircularPaws가 처리)
+		HandleBossPlayerCollision(&player);
 	}
 	// PAW 발사 직후 정지 구간
 	else if (boss.isAttacking) {
+		HandleBossPlayerCollision(&player);
 		// Three-way 공격 중에는 첫 번째 프레임(인덱스 0)으로 고정
 		if (boss.base.state == BOSS_THREE_WAY_CATPAW) {
 			SetAnimationFrame(&boss.anim, 0);

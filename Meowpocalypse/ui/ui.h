@@ -38,6 +38,11 @@ typedef struct {
 } KEY_GUIDE_DATA;
 
 typedef struct {
+	UI_ELEMENT reStartButton;
+	UI_ELEMENT exitButton;
+} GAMEOVER_DATA;
+
+typedef struct {
 	UI_ELEMENT hpBarFrame;
 	UI_ELEMENT hpBar;
 	float playerVisualHp;
@@ -68,10 +73,6 @@ typedef struct {
 	IMAGE imgMeowpocalypseTextLogo;
 	TITLE_DATA title;
 
-	float fadeAlpha;			// 0.0f(투명) ~ 1.0f(검정)
-	BOOL isFadeOut;				// 타이틀 -> 검정(Fade Out)
-	BOOL isFadeIn;				// 검정 -> 인게임(Fade In)
-
 	IMAGE imgUISheet;
 	HUD_DATA hud;
 
@@ -80,19 +81,41 @@ typedef struct {
 	IMAGE imgKeyGuide;
 	KEY_GUIDE_DATA keyGuide;
 
+	GAMEOVER_DATA gameover;
+
 	HFONT hTitleStartExitFont;	// 타이틀 Start 및 Exit 폰트
 	HFONT hTitleHoverFont;		// 타이틀 마우스 호버용 큰 폰트
 	HFONT hCooldownFont;		// 스킬 쿨타임용 폰트
 	HFONT hItemCountFont;		// 아이템 개수용 폰트
+	HFONT hGameOverFont;		// 게임 오버 대형 폰트
+
+	float fadeAlpha;			// 0.0f(투명) ~ 1.0f (검정)
+	BOOL isFadeOut;				// 타이틀 -> 검정 (Fade Out)
+	BOOL isFadeIn;				// 검정 -> 인게임 (Fade In)
+
+	BOOL isMapFadeOut;			// 맵 전환 시작 (Fade Out)
+	BOOL isMapFadeIn;			// 맵 전환 완료 (Fade In)
+
+	BOOL isPlayerDeadFadeOut;	// 플레이어 사망 시 전환 시작 (Fade Out)
+
+	ANIMATION endingAnim;
+	BOOL isEndingFadeOut;
+	BOOL isEndingFadeIn;
+
+	BOOL isEndingToTitleFadeOut;
+	BOOL isEndingToTitleFadeIn;
 } UI_SYSTEM;
 
 extern UI_SYSTEM g_UI;
+extern IMAGE imgEnding;
 
 void InitUI();
+void InitEnding();
 
-void UpdateTitle(HWND hWnd);
-void UpdatePause(HWND hWnd);
-void UpdateKeyGuide(HWND hWnd);
+void UpdateTitle();
+void UpdatePause();
+void UpdateKeyGuide();
+void UpdateGameOver();
 void UpdateHpBar();						// 플레이어 HP 바 부드러운 감소 업데이트
 void UpdateMpBar();						// 플레이어 MP 바 부드러운 감소 업데이트
 void UpdateBossHpBar();					// 보스 HP 바 부드러운 감소 업데이트
@@ -127,3 +150,7 @@ void PauseMenuButton();
 
 // KEY_GUIDE
 void KeyGuideUI();
+
+// GAMEOVER
+void GameOverRestartBar();
+void GameOverExitBar();
