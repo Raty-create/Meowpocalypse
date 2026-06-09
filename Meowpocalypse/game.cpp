@@ -72,7 +72,7 @@ void Update(HWND hWnd) {
 			g_UI.isFadeIn = TRUE;
 			g_UI.gameState = INGAME;
 			ReleaseTitle();
-			PlayBGM(BGM_WAITING, TRUE, 900);
+			PlayBGM(BGM_WAITING, TRUE, 500);
 		}
 	}
 	else if (g_UI.isFadeIn) {

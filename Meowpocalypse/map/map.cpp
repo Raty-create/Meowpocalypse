@@ -540,7 +540,6 @@ MAP_TYPE GetNextMap(MAP_TYPE type) {
 
 void PlayStageBGM(MAP_TYPE type) {
 	switch (type) {
-	case MAP_WAITING:     PlayBGM(BGM_WAITING, TRUE, 900); break;
 	case MAP_HALLWAY:     PlayBGM(BGM_HALLWAY, TRUE, 100); break;
 	case MAP_FIRST_BOSS:  PlayBGM(BGM_BOSS1, TRUE, 200);   break;
 	case MAP_SECOND_BOSS: PlayBGM(BGM_BOSS2, TRUE, 800);   break;
