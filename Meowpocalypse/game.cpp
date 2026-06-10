@@ -1,16 +1,4 @@
-#include "config.h"
 #include "game.h"
-#include "player.h"
-#include "render.h"
-#include "camera.h"
-#include "map.h"
-#include "enemy.h"
-#include "bullet.h"
-#include "boss.h"
-#include "enum.h"
-#include "input.h"
-#include "ui.h"
-#include "sound.h"
 
 // 전역 렌더링 리소스
 HDC g_hGameDC = NULL;
@@ -260,6 +248,10 @@ void Render(HWND hWnd, HDC hDC) {
 		RenderCurrentMap(g_hGameDC);
 		RenderDoors(g_hGameDC);
 
+		RenderDashWarning(g_hGameDC);
+		RenderJumpWarning(g_hGameDC);
+		RenderBossSkillEffect(g_hGameDC);
+
 		if (camera.isIntroActive == INACTIVE) {
 			RenderObjectShadow(g_hGameDC, player.base.x, player.base.y, (int)(player.base.width * 3.2f));
 			for (int i = 0; i < ENEMY_LIMIT; i++) {
@@ -275,15 +267,63 @@ void Render(HWND hWnd, HDC hDC) {
 			RenderObjectShadow(g_hGameDC, boss.base.x, boss.base.y, (int)(boss.base.width * 1.1f));
 		}
 
-		RenderPlayer(g_hGameDC);								// 플레이어
+		RenderTask tasks[100];
+		int taskCount = 0;
 
-		RenderEnemies(g_hGameDC);								// 잡몹
+		// 플레이어 추가
+		tasks[taskCount].y = player.base.y + (player.base.height * 6.3f / 2.0f);		// 무조건 발밑 기준
+		tasks[taskCount].type = TYPE_PLAYER;
+		taskCount++;
+
+		// 잡몹 추가
+		for (int i = 0; i < ENEMY_LIMIT; i++) {
+			if (enemies[i].isActive) {
+				tasks[taskCount].y = enemies[i].base.y + enemies[i].base.height;
+				tasks[taskCount].type = TYPE_ENEMY;
+				tasks[taskCount].idx = i;
+				taskCount++;
+			}
+		}
+
+		// 보스 추가
+		if (boss.isActive) {
+			tasks[taskCount].y = boss.base.y + (boss.base.height / 2.5f);
+			tasks[taskCount].type = TYPE_BOSS;
+			taskCount++;
+		}
+
+		// 츄르 추가
+		for (int i = 0; i < CHURU_MAX; i++) {
+			if (churues[i].isActive) {
+				tasks[taskCount].y = churues[i].y + churues[i].height * 1.717f;
+				tasks[taskCount].type = TYPE_CHURU;
+				tasks[taskCount].idx = i;
+				taskCount++;
+			}
+		}
+
+		qsort(tasks, taskCount, sizeof(RenderTask), CompareTasks);
+
+		for (int i = 0; i < taskCount; i++) {
+			switch (tasks[i].type) {
+			case TYPE_PLAYER:
+				RenderPlayer(g_hGameDC);								// 플레이어
+				break;
+			case TYPE_ENEMY:
+				RenderSpecificEnemy(g_hGameDC, tasks[i].idx);			// 잡몹
+				break;
+			case TYPE_BOSS:
+				RenderBoss(g_hGameDC);									// 보스
+				break;
+			case TYPE_CHURU:
+				RenderSpecificChuru(g_hGameDC, tasks[i].idx);			// 츄르
+				break;
+			}
+		}
+
 		RenderCatPaw(g_hGameDC);								// 잡몹 젤리
 
-		RenderBoss(g_hGameDC);									// 보스
 		RenderBossPaws(g_hGameDC);								// 보스 젤리
-
-		RenderChuru(g_hGameDC);									// 츄르
 
 		RenderBullets(g_hGameDC);								// 총알
 

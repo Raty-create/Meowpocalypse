@@ -15,6 +15,16 @@ IMAGE imgDoors;
 HDC g_hFadeDC = NULL;
 HBITMAP g_hFadeBitmap = NULL;
 
+// 레이어 정렬에 사용할 qsort를 위한 비교 함수
+int CompareTasks(const void* a, const void* b) {
+	RenderTask* taskA = (RenderTask*)a;
+	RenderTask* taskB = (RenderTask*)b;
+
+	if (taskA->y < taskB->y) return -1;
+	if (taskA->y > taskB->y) return 1;
+	return 0;
+}
+
 void InitRenderResources() {
 	LoadMyImage(&imgShadow, L"SHADOW.png");
 
@@ -406,13 +416,68 @@ void RenderEnemiesHitBox(HDC hDC) {
 		oldPen = (HPEN)SelectObject(hDC, hPen);
 		oldBrush = (HBRUSH)SelectObject(hDC, GetStockObject(NULL_BRUSH));
 
-		Rectangle(hDC, screenX - sw / 2, screenY - sh / 3,
-			screenX + sw / 2, screenY + sh / 2);
+		Rectangle(hDC, screenX - sw / 2, screenY - sh / 3, screenX + sw / 2, screenY + sh / 2);
 
 		SelectObject(hDC, oldPen);
 		SelectObject(hDC, oldBrush);
 		DeleteObject(hPen);
 	}
+}
+
+// 레이어 정렬을 위한 특정 잡몹 그리기
+void RenderSpecificEnemy(HDC hDC, int idx) {
+	screenX = (int)((enemies[idx].base.x - camera.x) * camera.zoom);
+	screenY = (int)((enemies[idx].base.y - camera.y) * camera.zoom);
+	int sw = (int)(enemies[idx].base.width * camera.zoom);
+	int sh = (int)(enemies[idx].base.height * camera.zoom);
+
+	// 애니메이션 행 세트 결정 (각 세트는 8줄씩 차지)
+	int baseRow = 0;
+	BOOL isDeadState = FALSE;
+	switch (enemies[idx].base.state) {
+	case ENEMY_IDLE:
+	case ENEMY_MOVE:
+	case ENEMY_CHASE:
+	case ENEMY_AGGRO:
+		baseRow = 0;	// 대기/이동 세트 (0~7)
+		break;
+	case ENEMY_RANGED:
+		baseRow = 8;	// 총 쏘기 세트 (8~15)
+		break;
+	case ENEMY_HIT:
+		baseRow = 16;	// 피격 세트 (16~23)
+		break;
+	case ENEMY_MELEE:
+		baseRow = 24;	// 근접 공격 세트 (24~31)
+		break;
+	case ENEMY_DEAD:
+		baseRow = 32;	// 사망 세트 (32) - 방향 무시
+		isDeadState = TRUE;
+		break;
+	default:
+		baseRow = 0;
+		break;
+	}
+
+	// 방향에 따른 오프셋 (사망 상태면 오프셋 0 고정)
+	int dirOffset = 0;
+	if (!isDeadState) {
+		switch (enemies[idx].base.direction) {
+		case DIR_DOWN:       dirOffset = 0; break;
+		case DIR_UP:         dirOffset = 1; break;
+		case DIR_LEFT:       dirOffset = 2; break;
+		case DIR_RIGHT:      dirOffset = 3; break;
+		case DIR_UP_LEFT:    dirOffset = 4; break;
+		case DIR_UP_RIGHT:   dirOffset = 5; break;
+		case DIR_DOWN_LEFT:  dirOffset = 6; break;
+		case DIR_DOWN_RIGHT: dirOffset = 7; break;
+		default:             dirOffset = 0; break;
+		}
+	}
+
+	int finalRow = baseRow + dirOffset;
+
+	RenderAnimation(&enemies[idx].anim, hDC, screenX, screenY, sw, sh, finalRow);
 }
 
 // 잡몹 젤리
@@ -523,17 +588,17 @@ void RenderJumpWarning(HDC hDC) {
 void RenderBoss(HDC hDC) {
 	if (!boss.isActive) return;
 
-	// 연출 중에는 경고판을 그리거나 계산하지 않도록 예외 처리
-	if (camera.isIntroActive == INACTIVE) {
-		RenderDashWarning(hDC);
-		RenderJumpWarning(hDC);
-	}
-
 	// zoom을 적용한 스크린 좌표 및 크기 변환
 	screenX = (int)((boss.base.x - camera.x) * camera.zoom);
 	screenY = (int)((boss.base.y - camera.y + boss.jumpOffsetY) * camera.zoom);
 	int bw = (int)(boss.base.width * camera.zoom);
 	int bh = (int)(boss.base.height * camera.zoom);
+
+	//  DEAD일 때는 크기를 더 키움
+	if (boss.base.state == BOSS_DEAD) {
+		bw = (int)(boss.base.width * BOSS_DEAD_SCALE * camera.zoom);
+		bh = (int)(boss.base.height * BOSS_DEAD_SCALE * camera.zoom);
+	}
 
 	// 대쉬 중일 때는 크기를 더 키움
 	if (boss.base.state == BOSS_DASH) {
@@ -545,43 +610,6 @@ void RenderBoss(HDC hDC) {
 	if (boss.base.state == BOSS_JUMP) {
 		bw = (int)(boss.base.width * BOSS_JUMP_SCALE * camera.zoom);
 		bh = (int)(boss.base.height * BOSS_JUMP_SCALE * camera.zoom);
-	}
-
-	// 탄막 스킬 이펙트 그리기
-	if (boss.skillChargeTimer > 0) {
-		int ew = (int)(boss.base.width * BOSS_SKILL_EFFECT_SCALE * camera.zoom);
-		int eh = (int)(boss.base.height * BOSS_SKILL_EFFECT_SCALE * camera.zoom);
-
-		float offsetX = 0.0f;
-		float offsetY = 0.0f;
-
-		int effectRow = 0;
-		
-		if (boss.nextSkillState == BOSS_CIRCULAR_CATPAW) {
-			effectRow = 0;
-			offsetX = -10.0f;
-		}
-		else if (boss.nextSkillState == BOSS_RANDOM_CATPAW) {
-			effectRow = 1;
-			offsetX = -10.0f;
-			offsetY = -15.0f;
-		}
-		else if (boss.nextSkillState == BOSS_SPIRAL_CATPAW) {
-			effectRow = 2;
-			offsetX = -15.0f;
-			offsetY = -10.0f;
-		}
-
-		int finalEffX = screenX + (int)(offsetX * camera.zoom);
-		int finalEffY = screenY + (int)(offsetY * camera.zoom);
-
-		RenderAnimation(&boss.effectAnim, hDC, finalEffX, finalEffY, ew, eh, effectRow);
-	}
-
-	//  DEAD일 때는 크기를 더 키움
-	if (boss.base.state == BOSS_DEAD) {
-		bw = (int)(boss.base.width * BOSS_DEAD_SCALE * camera.zoom);
-		bh = (int)(boss.base.height * BOSS_DEAD_SCALE * camera.zoom);
 	}
 
 	// 보스 본체 그리기
@@ -628,7 +656,7 @@ void RenderBoss(HDC hDC) {
 	case BOSS_MELEE:
 		finalRow = 25 + (int)boss.base.direction;
 		break;
-	case BOSS_THREE_WAY_CATPAW:
+	case BOSS_THREE_WAY_CATPAW:	
 		finalRow = 34 + (int)boss.base.direction;
 		break;
 	case BOSS_JUMP:
@@ -644,6 +672,46 @@ void RenderBoss(HDC hDC) {
 	}
 
 	RenderAnimation(&boss.anim, hDC, screenX, screenY, bw, bh, finalRow);
+}
+
+// 보스 스킬 이펙트
+void RenderBossSkillEffect(HDC hDC) {
+	if (!boss.isActive || boss.skillChargeTimer <= 0) return;
+
+	// zoom을 적용한 스크린 좌표 및 크기 변환
+	screenX = (int)((boss.base.x - camera.x) * camera.zoom);
+	screenY = (int)((boss.base.y - camera.y + boss.jumpOffsetY) * camera.zoom);
+	int bw = (int)(boss.base.width * camera.zoom);
+	int bh = (int)(boss.base.height * camera.zoom);
+
+	// 탄막 스킬 이펙트 그리기
+	int ew = (int)(boss.base.width * BOSS_SKILL_EFFECT_SCALE * camera.zoom);
+	int eh = (int)(boss.base.height * BOSS_SKILL_EFFECT_SCALE * camera.zoom);
+
+	float offsetX = 0.0f;
+	float offsetY = 0.0f;
+
+	int effectRow = 0;
+
+	if (boss.nextSkillState == BOSS_CIRCULAR_CATPAW) {
+		effectRow = 0;
+		offsetX = -10.0f;
+	}
+	else if (boss.nextSkillState == BOSS_RANDOM_CATPAW) {
+		effectRow = 1;
+		offsetX = -10.0f;
+		offsetY = -15.0f;
+	}
+	else if (boss.nextSkillState == BOSS_SPIRAL_CATPAW) {
+		effectRow = 2;
+		offsetX = -15.0f;
+		offsetY = -10.0f;
+	}
+
+	int finalEffX = screenX + (int)(offsetX * camera.zoom);
+	int finalEffY = screenY + (int)(offsetY * camera.zoom);
+
+	RenderAnimation(&boss.effectAnim, hDC, finalEffX, finalEffY, ew, eh, effectRow);
 }
 
 // 보스 hitBox
@@ -753,6 +821,16 @@ void RenderChuru(HDC hDC) {
 
 		RenderAnimation(&churues[i].anim, hDC, screenX, screenY, sw, sh, churues[i].dirRow);
 	}
+}
+
+// 레이어 정렬을 위한 특정 츄르 그리기
+void RenderSpecificChuru(HDC hDC, int idx) {
+	screenX = (int)((churues[idx].x - camera.x) * camera.zoom);
+	screenY = (int)((churues[idx].y - camera.y) * camera.zoom);
+	int sw = (int)(churues[idx].width * camera.zoom);
+	int sh = (int)(churues[idx].height * camera.zoom);
+
+	RenderAnimation(&churues[idx].anim, hDC, screenX, screenY, sw, sh, churues[idx].dirRow);
 }
 
 // UI
