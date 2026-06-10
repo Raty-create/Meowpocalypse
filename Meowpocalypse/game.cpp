@@ -41,7 +41,7 @@ void InitGame() {
 	InitChuru();								// 츄르
 	InitUI();									// UI
 	InitSound();
-	PlayBGM(BGM_TITLE, TRUE, 100);
+	PlayBGM(BGM_TITLE, TRUE, 300);
 }
 
 void ReleaseGame() {

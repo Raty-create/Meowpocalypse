@@ -35,6 +35,7 @@ typedef enum {
     SFX_PLAYER_SKILL_Q,                    // 스킬 사용 (Q)
     SFX_PLAYER_SKILL_E,                    // 스킬 사용 (E)
     SFX_PLAYER_SKILL_R,                    // 스킬 사용 (R)
+    SFX_PLAYER_DEAD,                       // 플레이어 사망
 
     SFX_BOSS_FOOT_STEP,                    // 보스 발소리
     SFX_BOSS_THREE_WAY_CATPAW,             // 보스 탄막(젤리) 발사

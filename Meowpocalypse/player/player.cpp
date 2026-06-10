@@ -111,6 +111,7 @@ void UpdatePlayerStatus() {
 		player.deathTimer = 0;
 		player.invincibleTimer = 0; // 사망 시 무적 시간 초기화 (깜빡임 방지)
 		SetAnimationFrame(&player.anim, 0);
+		PlaySFX(SFX_PLAYER_DEAD);
 		return;
 	}
 
