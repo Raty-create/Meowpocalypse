@@ -50,3 +50,6 @@ typedef enum {
 
     SFX_COUNT
 } SFX_TYPE;
+
+// SORT LAYER
+typedef enum { TYPE_PLAYER, TYPE_ENEMY, TYPE_BOSS, TYPE_CHURU } RENDER_TYPE;

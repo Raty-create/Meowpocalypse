@@ -580,9 +580,9 @@ void UpdateBossPaws() {
 		}
 
 		// 플레이어가 살아있을 때만 충돌 체크
-		if (player.base.state != PLAYER_DEAD) {
+		/*if (player.base.state != PLAYER_DEAD) {
 			HandleBossPawPlayerCollision(&bossPaws[i], &player);
-		}
+		}*/
 	}
 }
 
@@ -598,6 +598,10 @@ int CheckPhaseTransition() {
 			boss.invincibleTimer = 120; // 매 프레임 무적 갱신
 			if(boss.escapingDelay == 10)
 				PlaySFX(SFX_BOSS_JUMP);
+
+			if (boss.escapingDelay == 0) {
+				PlaySFX(SFX_BOSS_JUMP);
+			}
 
 			UpdateAnimation(&boss.anim);
 			
@@ -1306,7 +1310,7 @@ void UpdateBoss() {
 	}
 	// PAW 발사 직후 정지 구간
 	else if (boss.isAttacking) {
-		HandleBossPlayerCollision(&player);
+		//HandleBossPlayerCollision(&player);
 		// Three-way 공격 중에는 첫 번째 프레임(인덱스 0)으로 고정
 		if (boss.base.state == BOSS_THREE_WAY_CATPAW) {
 			SetAnimationFrame(&boss.anim, 0);
@@ -1398,7 +1402,7 @@ void UpdateBoss() {
 				UpdateBossMove();
 		}
 
-		HandleBossPlayerCollision(&player);
+		//HandleBossPlayerCollision(&player);
 
 		boss.attackTimer--;
 		if (boss.attackTimer <= 0)
