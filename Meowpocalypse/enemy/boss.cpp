@@ -97,7 +97,7 @@ void InitBoss() {
 	boss.skillChargeTimer = 0;
 	boss.deathTimer = 0;
 
-	InitAnimation(&boss.anim, &imgBossSprite, bFW, bFH, 5, 10);
+	InitAnimation(&boss.anim, &imgBossSprite, bFW, bFH, 5, 16);
 	InitAnimation(&boss.effectAnim, &imgBossSkillPattrenEffect, bspeFW, bspeFH, 6, 0, FALSE);
 }
 
@@ -475,6 +475,10 @@ void UpdateBossMove() {
 		boss.moveDirY = -boss.moveDirY;
 		boss.moveTimer = 0;
 	}
+
+	if (boss.moveTimer % 20 == 0) {
+		PlaySFX(SFX_BOSS_FOOT_STEP);
+	}
 }
 
 // 보스(플레이어 추적 이동)
@@ -537,6 +541,14 @@ void UpdateBossChase() {
 		boss.base.y = nextY;
 		boss.base.hitBoxY = nextY;
 	}
+	
+	static int bossFootstepCount = 0;
+	bossFootstepCount++;
+
+	if (bossFootstepCount >= 20) {
+		PlaySFX(SFX_BOSS_FOOT_STEP);
+		bossFootstepCount = 0;
+	}
 }
 
 // BOSSPAW 이동 + 충돌처리
@@ -584,6 +596,8 @@ int CheckPhaseTransition() {
 		if (boss.escapingDelay > 0) {
 			boss.escapingDelay--;
 			boss.invincibleTimer = 120; // 매 프레임 무적 갱신
+			if(boss.escapingDelay == 10)
+				PlaySFX(SFX_BOSS_JUMP);
 
 			UpdateAnimation(&boss.anim);
 			
@@ -886,6 +900,8 @@ void FireRandomCircularPhase(int phase) {
 	float angleStep = (2.0f * PI) / count;
 	float angleOffset = DEG_TO_RAD(phase * 30.0f); // 0도, 30도, 60도
 
+	PlaySFX(SFX_BOSS_RANDOM_CATPAW);
+
 	for (int i = 0; i < count; i++) {
 		float currAngle = i * angleStep + angleOffset;
 
@@ -949,7 +965,6 @@ void SpawnRandomCircularPaws() {
 	boss.base.direction = DIR_DOWN;
 	boss.randomCircularPhase = 0;
 	boss.randomCircularDelay = 0; // 첫 발사는 즉시
-	PlaySFX(SFX_BOSS_RANDOM_CATPAW);
 }
 
 // 3페이즈 회오리 PAW: 프레임마다 호출, 내부 타이머로 순차 발사
@@ -992,6 +1007,8 @@ void UpdateSpiralPaws(int is2nd3rdPhase) {
 			int fh = imgProjectile.height / 18;
 			bossPaws[i].dirRow = 17;
 			InitAnimation(&bossPaws[i].anim, &imgProjectile, fw, fh, 1, 0, FALSE);
+			if (boss.spiralIndex % 2 == 0)
+				PlaySFX(SFX_BOSS_SPIRAL_CATPAW);
 
 			break;
 		}
@@ -1006,7 +1023,6 @@ void StartSpiralPaws() {
 	boss.base.direction = DIR_DOWN;
 	boss.spiralIndex = 0;
 	boss.spiralTimer = 0;
-	PlaySFX(SFX_BOSS_SPIRAL_CATPAW);
 }
 
 // 3페이즈 첫 번째 대시 경고 시작 (doubleDashPhase 설정)
@@ -1134,6 +1150,13 @@ void HandleBossAggro(float tx, float ty) {
 		if (!yBlocked) {
 			boss.base.y = nextY;
 			boss.base.hitBoxY = nextY;
+		}
+
+		static int aggroFootstepCount = 0;
+		aggroFootstepCount++;
+		if (aggroFootstepCount >= 25) {
+			PlaySFX(SFX_BOSS_FOOT_STEP);
+			aggroFootstepCount = 0;
 		}
 	}
 }

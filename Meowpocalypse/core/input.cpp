@@ -97,7 +97,10 @@ void Input_Skill_Q() {
 
 	g_Input.isQPressed = (!prevQPressed && currQPressed);
 	prevQPressed = currQPressed;
-	PlaySFX(SFX_PLAYER_SKILL_Q);
+	
+	if (g_Input.isQPressed) {
+		PlaySFX(SFX_PLAYER_SKILL_Q);
+	}
 }
 
 // 플레이어 E 스킬
@@ -107,7 +110,6 @@ void Input_Skill_E() {
 
 	g_Input.isEPressed = (!prevEPressed && currEPressed);
 	prevEPressed = currEPressed;
-	PlaySFX(SFX_PLAYER_SKILL_E);
 }
 
 // 플레이어 R 스킬
@@ -116,8 +118,11 @@ void Input_Skill_R() {
 	BOOL currRPressed = (GetAsyncKeyState('R') & 0x8000) != 0;
 
 	g_Input.isRPressed = (!prevRPressed && currRPressed);
-	prevRPressed = currRPressed;
-	PlaySFX(SFX_PLAYER_SKILL_R);
+	prevRPressed = currRPressed; 
+	
+	if (g_Input.isRPressed) {
+		PlaySFX(SFX_PLAYER_SKILL_R);
+	}
 }
 
 // 플레이어 키보드 숫자 입력 감지
