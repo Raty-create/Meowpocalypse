@@ -64,11 +64,16 @@ void Update(HWND hWnd) {
 			g_UI.isFadeIn = TRUE;
 			g_UI.gameState = INGAME;
 			ReleaseTitle();
-			PlayBGM(BGM_WAITING, TRUE, 500);
+			PlayBGM(BGM_WAITING, TRUE, 400);
 		}
 	}
 	else if (g_UI.isMapFadeOut) {
 		g_UI.fadeAlpha += 0.04f;
+
+		int target = GetBGMTargetVolume();
+		int currentVol = (int)(target * (1.0f - g_UI.fadeAlpha));
+		SetBGMVolume(currentVol); // 복도맵(800) -> 0으로 부드럽게 감소
+
 		if (g_UI.fadeAlpha >= 1.0f) {
 			g_UI.fadeAlpha = 1.0f;
 			g_UI.isMapFadeOut = FALSE;
@@ -179,12 +184,27 @@ void Update(HWND hWnd) {
 		if (g_UI.isMapFadeOut || g_UI.isEndingFadeOut) return;
 
 		// 맵 전환 페이드 인 또는 카메라 인트로 중에도 보스와 HUD 애니메이션은 업데이트 되어야 함
-		if (camera.isIntroActive == ACTIVE || g_UI.isMapFadeIn) {
-			UpdateBoss();					// 보스 인트로 상태(BOSS_IDLE) 처리를 위해 호출
-			UpdateBossHpBar();
-			UpdateHpBar();
-			UpdateMpBar();
-			UpdateAnimation(&player.anim);
+		if (camera.isIntroActive == ACTIVE && (currentMapType == MAP_FIRST_BOSS || currentMapType == MAP_SECOND_BOSS || currentMapType == MAP_THIRD_BOSS)) {
+
+			int target = 200;
+			static float introVol = 0.0f;
+
+			introVol += ((float)target / 180.0f);
+			if (introVol > (float)target) introVol = (float)target;
+
+			SetBGMVolume((int)introVol);
+
+			if (camera.introTimer <= 0) {
+				introVol = 0.0f;
+			}
+
+			else if (g_UI.isMapFadeIn) {
+				UpdateBoss();
+				UpdateBossHpBar();
+				UpdateHpBar();
+				UpdateMpBar();
+				UpdateAnimation(&player.anim);
+			}
 		}
 		else {
 			// 실제 게임 플레이 중 업데이트

@@ -344,6 +344,14 @@ void StartDashWarning() {
 		}
 	}
 
+	int is2nd3rd = (currentMapType == MAP_SECOND_BOSS || currentMapType == MAP_THIRD_BOSS);
+	if (dashWarn.stopDist < DASH_MIN_DIST) {
+		dashWarn.isActive = INACTIVE;
+		boss.base.state = is2nd3rd ? BOSS_CHASE : BOSS_IDLE;
+		boss.attackTimer = BOSS_ATTACK_INTERVAL;
+		return;
+	}
+
 	dashWarn.timer = DASH_WARN_INTERVAL;
 	dashWarn.isActive = ACTIVE;
 
@@ -580,9 +588,9 @@ void UpdateBossPaws() {
 		}
 
 		// 플레이어가 살아있을 때만 충돌 체크
-		/*if (player.base.state != PLAYER_DEAD) {
+		if (player.base.state != PLAYER_DEAD) {
 			HandleBossPawPlayerCollision(&bossPaws[i], &player);
-		}*/
+		}
 	}
 }
 
@@ -1032,7 +1040,8 @@ void StartSpiralPaws() {
 // 3페이즈 첫 번째 대시 경고 시작 (doubleDashPhase 설정)
 void StartDoubleDashWarning() {
 	StartDashWarning();
-	boss.doubleDashPhase = 1; // 첫 번째 대시 예약
+	if (dashWarn.isActive == ACTIVE)   // 경고가 실제로 켜졌을 때만 연속 대시 예약
+		boss.doubleDashPhase = 1;
 }
 
 // 패턴 선택
@@ -1310,7 +1319,7 @@ void UpdateBoss() {
 	}
 	// PAW 발사 직후 정지 구간
 	else if (boss.isAttacking) {
-		//HandleBossPlayerCollision(&player);
+		HandleBossPlayerCollision(&player);
 		// Three-way 공격 중에는 첫 번째 프레임(인덱스 0)으로 고정
 		if (boss.base.state == BOSS_THREE_WAY_CATPAW) {
 			SetAnimationFrame(&boss.anim, 0);
@@ -1402,7 +1411,7 @@ void UpdateBoss() {
 				UpdateBossMove();
 		}
 
-		//HandleBossPlayerCollision(&player);
+		HandleBossPlayerCollision(&player);
 
 		boss.attackTimer--;
 		if (boss.attackTimer <= 0)
