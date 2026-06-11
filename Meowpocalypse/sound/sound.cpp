@@ -45,8 +45,8 @@ static int g_bgmLoop = 0;      // 루프 여부
 static int g_bgmGrace = 0;      // 재생 직후 루프 오작동 방지 카운트
 static int g_bgmPaused = 0;
 
-//static int g_bgmVolume = 600;
-static int g_sfxVolume = 400;
+static int g_bgmTargetVolume = 400;
+static int g_sfxVolume = 200;
 
 static int g_sfxLoaded[SFX_COUNT][SFX_VOICES];  // 채널별 open 성공 여부
 static int g_sfxNextVoice[SFX_COUNT];           // 다음에 사용할 채널 (라운드 로빈)
@@ -115,6 +115,8 @@ void ReleaseSound() {
 void PlayBGM(BGM_TYPE type, BOOL loop, int volume) {
     if (type < 0 || type >= BGM_COUNT) return;
 
+    g_bgmTargetVolume = volume;
+
     // 같은 곡을 또 틀라고 하면 무시 (끊기지 않게)
     wchar_t wantAlias[32];
     swprintf(wantAlias, 32, L"bgm_%d", type);
@@ -146,6 +148,10 @@ void PlayBGM(BGM_TYPE type, BOOL loop, int volume) {
     g_bgmActive = 1;
     g_bgmLoop = loop ? 1 : 0;
     g_bgmGrace = 30;   // 재생 직후 잠깐은 루프 체크를 건너뜀
+}
+
+int GetBGMTargetVolume() {
+    return g_bgmTargetVolume;
 }
 
 void StopBGM() {
@@ -210,18 +216,17 @@ void PlaySFX(SFX_TYPE type) {
     mci(cmd);
 }
 
-//void SetBGMVolume(int volume) {
-//    if (volume < 0)    volume = 0;
-//    if (volume > 1000) volume = 1000;
-//    g_bgmVolume = volume;
-//
-//    if (g_bgmAlias[0]) {
-//        wchar_t cmd[64];
-//        swprintf(cmd, 64, L"setaudio %s volume to %d", g_bgmAlias, volume);
-//        mci(cmd);
-//    }
-//}
-//
+void SetBGMVolume(int volume) {
+    if (volume < 0)    volume = 0;
+    if (volume > 1000) volume = 1000;
+
+    if (g_bgmAlias[0]) {
+        wchar_t cmd[64];
+        swprintf(cmd, 64, L"setaudio %s volume to %d", g_bgmAlias, volume);
+        mci(cmd);
+    }
+}
+
 //void SetSFXVolume(int volume) {
 //    if (volume < 0)    volume = 0;
 //    if (volume > 1000) volume = 1000;
