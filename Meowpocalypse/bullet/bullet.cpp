@@ -68,10 +68,7 @@ void UpdateBullet() {
 				IsTileBlocked(bullets[i].x + halfW, bullets[i].y - halfH) ||
 				IsTileBlocked(bullets[i].x - halfW, bullets[i].y + halfH) ||
 				IsTileBlocked(bullets[i].x + halfW, bullets[i].y + halfH) ||
-				IsObstacleBlocked(bullets[i].x - halfW, bullets[i].y - halfH) ||
-				IsObstacleBlocked(bullets[i].x + halfW, bullets[i].y - halfH) ||
-				IsObstacleBlocked(bullets[i].x - halfW, bullets[i].y + halfH) ||
-				IsObstacleBlocked(bullets[i].x + halfW, bullets[i].y + halfH))
+				IsObstacleAABBBlocked(bullets[i].x, bullets[i].y, BULLET_HITBOX_WIDTH, BULLET_HITBOX_HEIGHT))
 				bullets[i].isActive = INACTIVE;
 		}
 	}

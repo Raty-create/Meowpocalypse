@@ -89,7 +89,7 @@ void RenderTile(HDC hDC, int screenX, int screenY, COLORREF color) {
 	// CreateSolidBrush 대신 FillRect 사용 (시스템 브러시 활용 가능 시)
 	HBRUSH hBrush = CreateSolidBrush(color);
 	HBRUSH oldBrush = (HBRUSH)SelectObject(hDC, hBrush);
-	
+
 	// 테두리 없는 사각형 그리기 (펜 생성 방지)
 	SelectObject(hDC, GetStockObject(NULL_PEN));
 
@@ -103,18 +103,6 @@ void RenderTile(HDC hDC, int screenX, int screenY, COLORREF color) {
 void RenderCurrentMap(HDC hDC) {
 	MAPDATA* m = &maps[currentMapType];
 	IMAGE* pMapImg = &imgMapTiles[currentMapType];
-
-	// 화면 전체를 검은색으로 먼저 채워 여백 처리
-	hBrush = CreateSolidBrush(RGB(0, 0, 0));
-	oldBrush = (HBRUSH)SelectObject(hDC, hBrush);
-	hPen = CreatePen(PS_NULL, 0, 0);
-	oldPen = (HPEN)SelectObject(hDC, hPen);
-
-	// 화면보다 약간 크게 그려서 테두리 잔상을 확실히 방지
-	Rectangle(hDC, -10, -10, SCREEN_WIDTH + 10, SCREEN_HEIGHT + 10);
-
-	SelectObject(hDC, oldBrush); DeleteObject(hBrush);
-	SelectObject(hDC, oldPen); DeleteObject(hPen);
 
 	// 이동 가능한 영역(바닥/문)의 범위(Bounding Box)를 계산
 	int minC = m->cols, maxC = 0, minR = m->rows, maxR = 0;

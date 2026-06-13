@@ -77,16 +77,13 @@ void SpawnEnemy(MAP_TYPE type, int count) {
 		attempts++;
 		
 		float spawnX = m->worldX + (rand() % (m->cols - ENEMY_COLS_SPAWN_MARGIN) + ENEMY_COLS_SPAWN_MARGIN) * TILE_SIZE + TILE_SIZE / 2.0f;
-		float spawnY = m->worldY + (rand() % (m->rows - ENEMY_ROWS_SPAWN_MARGIN * 3) + ENEMY_ROWS_SPAWN_MARGIN) * TILE_SIZE + TILE_SIZE / 2.0f;
+		float spawnY = m->worldY + (rand() % (m->rows - ENEMY_ROWS_SPAWN_MARGIN * 4) + ENEMY_ROWS_SPAWN_MARGIN) * TILE_SIZE + TILE_SIZE / 2.0f;
 
 		if (IsTileBlocked(spawnX - halfW, spawnY - halfH) ||
 			IsTileBlocked(spawnX + halfW, spawnY - halfH) ||
 			IsTileBlocked(spawnX - halfW, spawnY + halfH) ||
 			IsTileBlocked(spawnX + halfW, spawnY + halfH) ||
-			IsObstacleBlocked(spawnX - halfW, spawnY - halfH) ||
-			IsObstacleBlocked(spawnX + halfW, spawnY - halfH) || 
-			IsObstacleBlocked(spawnX - halfW, spawnY + halfH) || 
-			IsObstacleBlocked(spawnX + halfW, spawnY + halfH)) continue;
+			IsObstacleAABBBlocked(spawnX, spawnY, ENEMY_HITBOX_WIDTH, ENEMY_HITBOX_HEIGHT)) continue;
 
 		if (IsOverlapWithEnemy(spawnX, spawnY)) continue;
 
@@ -526,10 +523,7 @@ void UpdateCatPaws() {
 			IsTileBlocked(catpawNextX, catpaw[i].y) ||
 			IsTileBlocked(catpaw[i].x, catpawNextY) ||
 			IsTileBlocked(catpawNextX, catpawNextY) ||
-			IsObstacleBlocked(catpaw[i].x, catpaw[i].y) ||
-			IsObstacleBlocked(catpawNextX, catpaw[i].y) || 
-			IsObstacleBlocked(catpaw[i].x, catpawNextY) || 
-			IsObstacleBlocked(catpawNextX, catpawNextY)) {
+			IsObstacleAABBBlocked(catpaw[i].hitBoxX, catpaw[i].hitBoxY, catpaw[i].hitBoxW, catpaw[i].hitBoxH)) {
 			catpaw[i].isActive = INACTIVE;
 			continue;
 		}

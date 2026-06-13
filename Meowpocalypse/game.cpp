@@ -311,7 +311,7 @@ void Render(HWND hWnd, HDC hDC) {
 			}
 		}
 
-		RenderTask tasks[100];
+		RenderTask tasks[500];
 		int taskCount = 0;
 
 		// 플레이어 추가
@@ -407,13 +407,13 @@ void Render(HWND hWnd, HDC hDC) {
 		RenderBossPaws(g_hGameDC);								// 보스 젤리
 
 		if (camera.isIntroActive == INACTIVE) {
-			RenderPlayerHitBox(g_hGameDC);						// 플레이어 hitBox
+/*			RenderPlayerHitBox(g_hGameDC);						// 플레이어 hitBox
 			RenderEnemiesHitBox(g_hGameDC);						// 잡몹 hitBox
 			RenderCatPawHitBox(g_hGameDC);						// 잡몹 젤리 hitBox
 			RenderBossHitBox(g_hGameDC);						// 보스 hitBox
 			RenderBossPawsHitBox(g_hGameDC);					// 보스 젤리 hitBox
 			RenderBulletsHitBox(g_hGameDC);						// 총알 hitBox
-			RenderObstaclesHitBox(g_hGameDC);					// 장애물 hitBox
+			RenderObstaclesHitBox(g_hGameDC);					// 장애물 hitBox*/
 
 			RenderUI(g_hGameDC);								// UI
 		}
@@ -444,22 +444,28 @@ void Render(HWND hWnd, HDC hDC) {
 	int destX = (winW - destW) / 2;
 	int destY = (winH - destH) / 2;
 
+	SetStretchBltMode(hDC, COLORONCOLOR);
+
 	// 가상 화면을 실제 화면 해상도에 맞춰 출력
 	StretchBlt(hDC, destX, destY, destW, destH, g_hGameDC, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SRCCOPY);
 
 	// [깜빡임 방지] 전체를 지우는 대신, 게임 화면이 그려지지 않는 '레터박스' 영역만 검은색으로 채움
 	HBRUSH hBlack = (HBRUSH)GetStockObject(BLACK_BRUSH);
 	
-	// 위쪽 바
-	RECT rtTop = { 0, 0, winW, destY };
-	FillRect(hDC, &rtTop, hBlack);
-	// 아래쪽 바
-	RECT rtBottom = { 0, destY + destH, winW, winH };
-	FillRect(hDC, &rtBottom, hBlack);
-	// 왼쪽 바
-	RECT rtLeft = { 0, destY, destX, destY + destH };
-	FillRect(hDC, &rtLeft, hBlack);
-	// 오른쪽 바
-	RECT rtRight = { destX + destW, destY, winW, destY + destH };
-	FillRect(hDC, &rtRight, hBlack);
+	if (destY > 0) {
+		// 위쪽 바
+		RECT rtTop = { 0, 0, winW, destY };
+		FillRect(hDC, &rtTop, hBlack);
+		// 아래쪽 바
+		RECT rtBottom = { 0, destY + destH, winW, winH };
+		FillRect(hDC, &rtBottom, hBlack);
+	}
+	if (destX > 0) {
+		// 왼쪽 바
+		RECT rtLeft = { 0, destY, destX, destY + destH };
+		FillRect(hDC, &rtLeft, hBlack);
+		// 오른쪽 바
+		RECT rtRight = { destX + destW, destY, winW, destY + destH };
+		FillRect(hDC, &rtRight, hBlack);
+	}
 }
