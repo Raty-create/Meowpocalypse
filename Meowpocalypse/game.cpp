@@ -177,9 +177,8 @@ void Update(HWND hWnd) {
 		if (g_UI.fadeAlpha <= 0.0f) {
 			g_UI.fadeAlpha = 0.0f;
 			g_UI.isEndingFadeIn = FALSE;
-			// StopBGM();  // 완전히 0이 된 뒤 장치까지 끄고 싶으면 주석 해제
 		}
-		}
+	}
 	else if (g_UI.isEndingToTitleFadeIn) {
 		g_UI.fadeAlpha -= 0.02f;
 		if (g_UI.fadeAlpha <= 0.0f) {
