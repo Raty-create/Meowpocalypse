@@ -25,6 +25,22 @@ typedef enum { BOSS_DASH = 6, BOSS_MELEE, BOSS_THREE_WAY_CATPAW, BOSS_CIRCULAR_C
 // CHURU
 typedef enum { AIRBORNE, DROPPED } CHURU_STATE;
 
+// OBSTACLE
+typedef enum { 
+    OBS_SOLID,          // 지나가지 못 하게 막는 장애물
+    OBS_HAZARD          // 밟으면 상태 이상을 주는 장애물
+} OBS_TYPE;
+
+typedef enum {
+    // SOLID 계열
+    SUB_TOWER_BROKEN,
+    SUB_TOWER_TUNNEL,
+    SUB_TOWER_TILTED,
+
+    // HAZARD 계열
+    SUB_CYBER_SLIME
+} OBS_SUBTYPE;
+
 // SOUND
 typedef enum { BGM_TITLE, BGM_WAITING, BGM_HALLWAY, BGM_BOSS1, BGM_BOSS2,  BGM_BOSS3, BGM_COUNT } BGM_TYPE;
 typedef enum {
@@ -52,4 +68,4 @@ typedef enum {
 } SFX_TYPE;
 
 // SORT LAYER
-typedef enum { TYPE_PLAYER, TYPE_ENEMY, TYPE_BOSS, TYPE_CHURU } RENDER_TYPE;
+typedef enum { TYPE_PLAYER, TYPE_ENEMY, TYPE_BOSS, TYPE_CHURU, TYPE_OBSTACLE, TYPE_PLAYER_BULLET, TYPE_CATPAW } RENDER_TYPE;

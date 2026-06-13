@@ -58,7 +58,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 		break;
 
 	case WM_ERASEBKGND:
-		return 1;
+		return TRUE;
+
+	case WM_SETCURSOR:
+		SetCursor(NULL);
+		return TRUE;
 
 	case WM_SIZE:
 		g_WindowWidth = LOWORD(lParam);

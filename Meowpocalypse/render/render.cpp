@@ -1,12 +1,4 @@
 #include "render.h"
-#include "player.h"
-#include "enemy.h"
-#include "camera.h"
-#include "map.h"
-#include "boss.h"
-#include "bullet.h"
-#include "enum.h"
-#include "ui.h"
 
 IMAGE imgShadow;
 IMAGE imgMapTiles[5];
@@ -92,19 +84,19 @@ COLORREF TileColor(int tileType, DOOR_STATE doorState) {
 	}
 }
 
-//타일 그리기
+//타일 그리기 (성능 최적화)
 void RenderTile(HDC hDC, int screenX, int screenY, COLORREF color) {
-	hBrush = CreateSolidBrush(color);
-	oldBrush = (HBRUSH)SelectObject(hDC, hBrush);
-	hPen = CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
-	oldPen = (HPEN)SelectObject(hDC, hPen);
+	// CreateSolidBrush 대신 FillRect 사용 (시스템 브러시 활용 가능 시)
+	HBRUSH hBrush = CreateSolidBrush(color);
+	HBRUSH oldBrush = (HBRUSH)SelectObject(hDC, hBrush);
+	
+	// 테두리 없는 사각형 그리기 (펜 생성 방지)
+	SelectObject(hDC, GetStockObject(NULL_PEN));
 
-	Rectangle(hDC, screenX, screenY, screenX + TILE_SIZE, screenY + TILE_SIZE);
+	Rectangle(hDC, screenX, screenY, screenX + TILE_SIZE + 1, screenY + TILE_SIZE + 1);
 
 	SelectObject(hDC, oldBrush);
 	DeleteObject(hBrush);
-	SelectObject(hDC, oldPen);
-	DeleteObject(hPen);
 }
 
 // 맵 그리기
@@ -266,7 +258,7 @@ void RenderObjectShadow(HDC hDC, float x, float y, int objW) {
 	int shadowY = (int)((y - camera.y + (float)objW / 3.3f) * camera.zoom);
 
 	int sw = (int)(objW * 0.5f * camera.zoom);
-	int sh = sw / 2;
+	int sh = (int)(sw / 1.5f);
 
 	DrawMyImage(&imgShadow, hDC, shadowX - sw / 2, shadowY - sh / 2, sw, sh, 0, 0, imgShadow.width, imgShadow.height);
 }
@@ -278,8 +270,8 @@ void RenderPlayer(HDC hDC) {
 	// zoom을 적용한 스크린 좌표 및 크기 변환
 	screenX = (int)((player.base.x - camera.x) * camera.zoom);
 	screenY = (int)((player.base.y - camera.y) * camera.zoom);
-	int sw = (int)(player.base.width * 6 * camera.zoom);
-	int sh = (int)(player.base.height * 6.3f * camera.zoom);
+	int sw = (int)(player.base.width * 6.0f * camera.zoom);
+	int sh = (int)(player.base.height * 6.0f * camera.zoom);
 
 	int finalRow = 0;
 
@@ -494,6 +486,16 @@ void RenderCatPaw(HDC hDC) {
 	}
 }
 
+// 레이어 정렬을 위한 특정 잡몹 젤리 그리기
+void RenderSpecificCatPaw(HDC hDC, int idx) {
+	screenX = (int)((catpaw[idx].x - camera.x) * camera.zoom);
+	screenY = (int)((catpaw[idx].y - camera.y) * camera.zoom);
+	int sw = (int)(catpaw[idx].width * camera.zoom);
+	int sh = (int)(catpaw[idx].height * camera.zoom);
+
+	RenderAnimation(&catpaw[idx].anim, hDC, screenX, screenY, sw, sh, catpaw[idx].dirRow);
+}
+
 // 잡몹 젤리 hitBox
 void RenderCatPawHitBox(HDC hDC) {
 	for (int i = 0; i < CAT_PAW_LIMIT; i++) {
@@ -520,30 +522,30 @@ void RenderCatPawHitBox(HDC hDC) {
 void RenderDashWarning(HDC hDC) {
 	if (dashWarn.isActive == INACTIVE) return;
 
-	// 깜빡임: 10프레임 단위로 켜짐/꺼짐
-	if ((dashWarn.timer / 10) % 2 == 0) return;
+	// 깜빡임: 10프레임 단위로 켜짐/꺼짐 (시작 시점에 바로 그려지도록 조정)
+	if ((dashWarn.timer / 10) % 2 != 0) return;
 
-	int halfW = (int)(BOSS_HITBOX_WIDTH * camera.zoom / 2);
-	int halfH = (int)(BOSS_HITBOX_HEIGHT * camera.zoom / 2);
+	// 경고 영역의 너비 (히트박스 크기 기준, 방향에 상관없이 일관되게 적용)
+	float dashWidth = (BOSS_HITBOX_WIDTH > BOSS_HITBOX_HEIGHT) ? BOSS_HITBOX_WIDTH : BOSS_HITBOX_HEIGHT;
+	float halfW = dashWidth / 2.5f;
 
-	// 경고 영역의 꼭짓점 4개 계산 (월드 → 화면 좌표)
-	// 끝점 중심
+	// 경고 영역의 끝점 중심
 	float ex = dashWarn.startX + dashWarn.dirX * dashWarn.stopDist;
 	float ey = dashWarn.startY + dashWarn.dirY * dashWarn.stopDist;
 
 	POINT pts[4];
 	// P0: 시작 왼쪽 위
-	pts[0].x = (int)((dashWarn.startX - camera.x) * camera.zoom + dashWarn.perpX * halfW);
-	pts[0].y = (int)((dashWarn.startY - camera.y) * camera.zoom + dashWarn.perpY * halfH);
+	pts[0].x = (int)((dashWarn.startX + dashWarn.perpX * halfW - camera.x) * camera.zoom);
+	pts[0].y = (int)((dashWarn.startY + dashWarn.perpY * halfW - camera.y) * camera.zoom);
 	// P1: 끝   왼쪽 위
-	pts[1].x = (int)((ex - camera.x) * camera.zoom + dashWarn.perpX * halfW);
-	pts[1].y = (int)((ey - camera.y) * camera.zoom + dashWarn.perpY * halfH);
+	pts[1].x = (int)((ex + dashWarn.perpX * halfW - camera.x) * camera.zoom);
+	pts[1].y = (int)((ey + dashWarn.perpY * halfW - camera.y) * camera.zoom);
 	// P2: 끝   오른쪽 아래
-	pts[2].x = (int)((ex - camera.x) * camera.zoom - dashWarn.perpX * halfW);
-	pts[2].y = (int)((ey - camera.y) * camera.zoom - dashWarn.perpY * halfH);
+	pts[2].x = (int)((ex - dashWarn.perpX * halfW - camera.x) * camera.zoom);
+	pts[2].y = (int)((ey - dashWarn.perpY * halfW - camera.y) * camera.zoom);
 	// P3: 시작 오른쪽 아래
-	pts[3].x = (int)((dashWarn.startX - camera.x) * camera.zoom - dashWarn.perpX * halfW);
-	pts[3].y = (int)((dashWarn.startY - camera.y) * camera.zoom - dashWarn.perpY * halfH);
+	pts[3].x = (int)((dashWarn.startX - dashWarn.perpX * halfW - camera.x) * camera.zoom);
+	pts[3].y = (int)((dashWarn.startY - dashWarn.perpY * halfW - camera.y) * camera.zoom);
 
 	hBrush = CreateSolidBrush(RGB(255, 40, 40));
 	oldBrush = (HBRUSH)SelectObject(hDC, hBrush);
@@ -787,6 +789,16 @@ void RenderBullets(HDC hDC) {
 	}
 }
 
+// 레이어 정렬을 위한 특정 총알 그리기
+void RenderSpecificBullets(HDC hDC, int idx) {
+	screenX = (int)((bullets[idx].x - camera.x) * camera.zoom);
+	screenY = (int)((bullets[idx].y - camera.y) * camera.zoom);
+	int sw = (int)(bullets[idx].width * camera.zoom);
+	int sh = (int)(bullets[idx].height * camera.zoom);
+
+	RenderAnimation(&bullets[idx].anim, hDC, screenX, screenY, sw, sh, bullets[idx].dirRow);
+}
+
 // 총알 hitBox
 void RenderBulletsHitBox(HDC hDC) {
 	for (int i = 0; i < BULLET_MAX; i++) {
@@ -831,6 +843,44 @@ void RenderSpecificChuru(HDC hDC, int idx) {
 	int sh = (int)(churues[idx].height * camera.zoom);
 
 	RenderAnimation(&churues[idx].anim, hDC, screenX, screenY, sw, sh, churues[idx].dirRow);
+}
+
+// 레이어 정렬을 위한 특정 장애물 그리기
+void RenderSpecificObstacle(HDC hDC, int idx) {
+	if (!obstacles[idx].isActive) return;
+	
+	int imgW = imgObstacles.width / 4;
+	int imgH = imgObstacles.height;
+	int srcX = (int)obstacles[idx].subType * imgW;
+
+	screenX = (int)((obstacles[idx].base.x - camera.x) * camera.zoom);
+	screenY = (int)((obstacles[idx].base.y - camera.y) * camera.zoom);
+	int sw = (int)(obstacles[idx].base.width * camera.zoom);
+	int sh = (int)(obstacles[idx].base.height * camera.zoom);
+
+	DrawMyImage(&imgObstacles, hDC, screenX - sw / 2, screenY - sh / 2, sw, sh, srcX, 0, imgW, imgH);
+}
+
+// 장애물 hitBox
+void RenderObstaclesHitBox(HDC hDC) {
+	for (int i = 0; i < OBSTACLE_LIMIT; i++) {
+		if (!obstacles[i].isActive) continue;
+
+		screenX = (int)((obstacles[i].base.hitBoxX - camera.x) * camera.zoom);
+		screenY = (int)((obstacles[i].base.hitBoxY - camera.y) * camera.zoom);
+		int sw = (int)(obstacles[i].base.hitBoxW * camera.zoom);
+		int sh = (int)(obstacles[i].base.hitBoxH * camera.zoom);
+
+		hPen = CreatePen(PS_SOLID, 1, RGB(255, 0, 0));
+		oldPen = (HPEN)SelectObject(hDC, hPen);
+		oldBrush = (HBRUSH)SelectObject(hDC, GetStockObject(NULL_BRUSH));
+
+		Rectangle(hDC, screenX - sw / 2, screenY - sh / 2, screenX + sw / 2, screenY + sh / 2);
+
+		SelectObject(hDC, oldPen);
+		SelectObject(hDC, oldBrush);
+		DeleteObject(hPen);
+	}
 }
 
 // UI
@@ -987,15 +1037,25 @@ void RenderHUD(HDC hDC) {
 		}
 	}
 
-	// 아이템 개수
+	// 스킬 마나 소모량 텍스트
 	SelectObject(hDC, g_UI.hItemCountFont);
+	int skillMpCounts[3] = { SKILL_Q_MP, SKILL_E_MP, SKILL_R_MP };
+
+	for (int i = 0; i < 3; i++) {
+		swprintf_s(textBuf, L"%d", skillMpCounts[i]);
+		TextOut(hDC, (int)g_UI.hud.skill_Icon[i].x, (int)(g_UI.hud.skill_Icon[i].y - g_UI.hud.skill_Icon[i].height / 2.2f), textBuf, lstrlen(textBuf));
+	}
+
+	SelectObject(hDC, hOldFont);
+
+	// 아이템 개수
 	SetTextColor(hDC, RGB(242, 232, 175));
 
-	int counts[2] = { player.hpPotionCount, player.mpPotionCount };
+	int potionCounts[2] = { player.hpPotionCount, player.mpPotionCount };
 	UI_ELEMENT* potionIcons[2] = { &g_UI.hud.hpPotion, &g_UI.hud.mpPotion };
 
 	for (int i = 0; i < 2; i++) {
-		swprintf_s(textBuf, L"%d", counts[i]);
+		swprintf_s(textBuf, L"%d", potionCounts[i]);
 		TextOut(hDC, (int)(potionIcons[i]->x + potionIcons[i]->width / 3.2f), (int)(potionIcons[i]->y - potionIcons[i]->height / 2.2f), textBuf, lstrlen(textBuf));
 	}
 
@@ -1158,6 +1218,20 @@ void RenderGameOver(HDC hDC) {
 	TextOut(hDC, (int)exitBnt->x - (textSize.cx / 2), (int)(exitBnt->y - (textSize.cy / 1.9f)), exitStr, lstrlen(exitStr));
 
 	SelectObject(hDC, hOldFont);
+}
+
+// 마우스 커서 그리기
+void RenderCursor(HDC hDC) {
+	int cursorX = g_Input.mousePos.x;
+	int cursorY = g_Input.mousePos.y;
+
+	int sw = imgCursor.width;
+	int sh = imgCursor.height;
+
+	int dw = (int)(imgCursor.width / 2.0f);
+	int dh = (int)(imgCursor.height / 2.0f);
+
+	DrawMyImage(&imgCursor, hDC, cursorX, cursorY, dw, dh, 0, 0, sw, sh);
 }
 
 // 배경 어둡게(흐리게) 처리 (PAUSE 시)

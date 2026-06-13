@@ -103,6 +103,15 @@
     <Filter Include="sound\소스 파일">
       <UniqueIdentifier>{fd02be9f-6341-4f42-aa70-054891545a68}</UniqueIdentifier>
     </Filter>
+    <Filter Include="obstacle">
+      <UniqueIdentifier>{5d2f8461-a7b8-4819-ae1d-aa20ffe28fcb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="obstacle\헤더 파일">
+      <UniqueIdentifier>{71b84f23-51a1-45f7-91b4-4b9a8b123c43}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="obstacle\소스 파일">
+      <UniqueIdentifier>{79cd5295-f5c8-4959-86fc-5a312ec11eb4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="game.cpp">
@@ -149,6 +158,9 @@
     </ClCompile>
     <ClCompile Include="sound\sound.cpp">
       <Filter>sound\소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="obstacle\obstacle.cpp">
+      <Filter>obstacle\소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -205,6 +217,9 @@
     </ClInclude>
     <ClInclude Include="sound\sound.h">
       <Filter>sound\헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="obstacle\obstacle.h">
+      <Filter>obstacle\헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

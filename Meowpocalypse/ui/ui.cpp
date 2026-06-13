@@ -2,6 +2,7 @@
 
 UI_SYSTEM g_UI;
 IMAGE imgEnding;
+IMAGE imgCursor;
 
 // UI 초기화
 void InitUI() {
@@ -9,6 +10,7 @@ void InitUI() {
 	LoadMyImage(&g_UI.imgTitleBg, L"title_bg.png");
 	LoadMyImage(&g_UI.imgMeowpocalypseTextLogo, L"meowpocalypse_logo.png");
 	LoadMyImage(&g_UI.imgKeyGuide, L"keyGuide.png");
+	LoadMyImage(&imgCursor, L"cat_cursor.png");
 
 	// 폰트 파일 로드
 	AddFontResourceEx(L"upheavtt.ttf", FR_PRIVATE, NULL);
@@ -55,9 +57,9 @@ void InitUI() {
 	GameOverRestartBar();
 	GameOverExitBar();
 
-	g_UI.fadeAlpha = 0.0f;
+	g_UI.fadeAlpha = 1.0f;					// 프로그램 시작 시 Fade In 효과를 위해 1.0f로 설정
 	g_UI.isFadeOut = FALSE;
-	g_UI.isFadeIn = FALSE;
+	g_UI.isFadeIn = TRUE;					// 프로그램 시작 시 Fade In 효과 활성화
 	g_UI.isMapFadeOut = FALSE;
 	g_UI.isMapFadeIn = FALSE;
 	g_UI.isPlayerDeadFadeOut = FALSE;
@@ -86,6 +88,7 @@ void ReleaseTitle() {
 void ReleaseUI() {
 	ReleaseMyImage(&g_UI.imgUISheet);
 	ReleaseMyImage(&g_UI.imgKeyGuide);
+	ReleaseMyImage(&imgCursor);
 	
 	// 타이틀 리소스가 아직 남아있다면 해제 (ReleaseTitle에서 NULL 처리를 하므로 안전하기 함)
 	ReleaseTitle();

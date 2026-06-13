@@ -30,6 +30,7 @@ void InitPlayer() {
 	player.base.hitBoxH = PLAYER_HITBOX_HEIGHT;
 	player.base.hp = PLAYER_HP;
 	player.mp = PLAYER_MP;
+	player.speed = 0;
 
 	player.invincibleTimer = 0;
 
@@ -230,10 +231,22 @@ void HandlePlayerInput() {
 
 	// 키보드 숫자 2 아이템 - MP 전체 회복
 	if (g_Input.isTwoPressed && player.itemTwoCooldown <= 0 && player.mpPotionCount > 0) {
-		player.itemTwoCooldown = ITEM_TWO_COOLDOWN;
-		player.mpPotionCount--;
-		player.mp = PLAYER_MP;
+		int missingMp = PLAYER_MP - player.mp;
 		PlaySFX(SFX_PLAYER_SKILL_DRINK);
+		if (missingMp > 0) {
+			player.itemTwoCooldown = ITEM_TWO_COOLDOWN;
+			player.mpPotionCount--;
+
+			int chargeAmount = (int)(missingMp * 0.7f);
+			if (chargeAmount < 1) chargeAmount = 1;
+
+			player.mp += chargeAmount;
+			if (player.mp > PLAYER_MP) player.mp = PLAYER_MP;
+		}
+		else {
+			player.itemTwoCooldown = ITEM_TWO_COOLDOWN;
+			player.mpPotionCount--;
+		}
 	}
 }
 
@@ -273,21 +286,17 @@ void HandlePlayerMovement() {
 			if (g_Input.moveX != 0 || g_Input.moveY != 0) {
 				if (footstepTimer <= 0) {
 					PlaySFX(SFX_PLAYER_FOOTSTEP);
-					footstepTimer = 18;   // 약 18프레임마다 (타이머가 6ms라 빠르면 값 키우세요)
+					footstepTimer = 18;   // 약 18프레임마다
 				}
 			}
 			if (footstepTimer > 0) footstepTimer--;
 
 			float length = sqrtf(moveX * moveX + moveY * moveY);
-			float speed = PLAYER_SPEED;
+			
+			HandlePlayerCyberSlimeCollision();
 
-			// 부스트 상태일 때 속도 증가
-			if (player.boostTimer > 0) {
-				speed *= BOOST_SPEED_MULTIPLIER;
-			}
-
-			player.base.dx = (moveX / length) * speed;
-			player.base.dy = (moveY / length) * speed;
+			player.base.dx = (moveX / length) * player.speed;
+			player.base.dy = (moveY / length) * player.speed;
 
 			if (moveX > 0) {
 				if (moveY > 0) player.base.direction = DIR_DOWN_RIGHT;

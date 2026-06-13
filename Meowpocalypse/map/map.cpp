@@ -458,7 +458,7 @@ void InitMap(MAP_TYPE type) {
 
 	switch (type) {
 	case MAP_WAITING: InitWaitingMap(m); break;
-	case MAP_HALLWAY: InitHallWayMap(m, HALLWAY1_Y); break;
+	case MAP_HALLWAY: InitHallWayMap(m, HALLWAY_Y); break;
 	case MAP_FIRST_BOSS: InitFirstBossMap(m, BOSS1_Y); break;
 	case MAP_SECOND_BOSS: InitSecondBossMap(m, BOSS2_Y); break;
 	case MAP_THIRD_BOSS: InitThirdBossMap(m, BOSS3_Y); break;
@@ -579,6 +579,8 @@ void ExecuteMapTransition() {
 	currentMapType = nextMap;
 	PlayStageBGM(currentMapType);
 
+	InitObstacles();
+
 	if (currentMapType != MAP_WAITING)
 		SetDoorState(currentMapType, DOOR_CLOSE);
 
@@ -591,7 +593,7 @@ void ExecuteMapTransition() {
 		// 카메라 인트로를 위해 보스 먼저 스폰
 		SpawnBoss(currentMapType);
 		camera.isIntroActive = ACTIVE;
-		camera.introTimer = 180;
+		camera.introTimer = CAMERA_INTRO_TIMER;
 		camera.zoom = 2.0f;
 	}
 

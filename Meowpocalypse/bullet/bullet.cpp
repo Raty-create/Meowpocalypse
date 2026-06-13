@@ -57,8 +57,7 @@ void UpdateBullet() {
 		}
 
 		// 이미 적과 충돌하여 비활성화되었다면 벽 충돌 체크는 건너뜀
-		BOOL insidePlayerBody = IsObjectCollision(
-			bullets[i].x, bullets[i].y, BULLET_HITBOX_WIDTH, BULLET_HITBOX_HEIGHT,
+		BOOL insidePlayerBody = IsObjectCollision(bullets[i].x, bullets[i].y, BULLET_HITBOX_WIDTH, BULLET_HITBOX_HEIGHT,
 			player.base.x, player.base.y, PLAYER_WIDTH, PLAYER_HEIGHT * 2);
 
 		if (!insidePlayerBody) {
@@ -68,7 +67,11 @@ void UpdateBullet() {
 			if (IsTileBlocked(bullets[i].x - halfW, bullets[i].y - halfH) ||
 				IsTileBlocked(bullets[i].x + halfW, bullets[i].y - halfH) ||
 				IsTileBlocked(bullets[i].x - halfW, bullets[i].y + halfH) ||
-				IsTileBlocked(bullets[i].x + halfW, bullets[i].y + halfH))
+				IsTileBlocked(bullets[i].x + halfW, bullets[i].y + halfH) ||
+				IsObstacleBlocked(bullets[i].x - halfW, bullets[i].y - halfH) ||
+				IsObstacleBlocked(bullets[i].x + halfW, bullets[i].y - halfH) ||
+				IsObstacleBlocked(bullets[i].x - halfW, bullets[i].y + halfH) ||
+				IsObstacleBlocked(bullets[i].x + halfW, bullets[i].y + halfH))
 				bullets[i].isActive = INACTIVE;
 		}
 	}

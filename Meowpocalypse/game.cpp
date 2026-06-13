@@ -43,6 +43,7 @@ void ReleaseGame() {
 	ReleaseBullet();
 	ReleaseEnemy();
 	ReleaseBoss();
+	ReleaseObstacles();
 	ReleaseUI();
 	ReleaseMap();
 	ReleaseDoor();
@@ -74,6 +75,7 @@ void Update(HWND hWnd) {
 			g_UI.isMapFadeOut = FALSE;
 			g_UI.isMapFadeIn = TRUE;
 			ExecuteMapTransition();
+			player.base.state = PLAYER_IDLE;
 		}
 	}
 	else if (g_UI.isPlayerDeadFadeOut) {
@@ -119,6 +121,7 @@ void Update(HWND hWnd) {
 			InitBoss();
 			InitBullet();
 			InitChuru();
+			InitObstacles();
 
 			// UI 상태 일부 초기화 (fadeAlpha는 유지해야 하므로 InitUI() 대신 수동 초기화)
 			g_UI.hud.bossVisualHp = (float)BOSS_HP;
@@ -248,6 +251,13 @@ void Render(HWND hWnd, HDC hDC) {
 		RenderCurrentMap(g_hGameDC);
 		RenderDoors(g_hGameDC);
 
+		for (int i = 0; i < OBSTACLE_LIMIT; i++) {
+			if (obstacles[i].isActive && obstacles[i].type == OBS_HAZARD) {
+				RenderObjectShadow(g_hGameDC, obstacles[i].base.x, obstacles[i].base.y - 40.0f, (int)(obstacles[i].base.width * 1.7f));
+				RenderSpecificObstacle(g_hGameDC, i);
+			}
+		}
+
 		RenderDashWarning(g_hGameDC);
 		RenderJumpWarning(g_hGameDC);
 		RenderBossSkillEffect(g_hGameDC);
@@ -256,29 +266,43 @@ void Render(HWND hWnd, HDC hDC) {
 			RenderObjectShadow(g_hGameDC, player.base.x, player.base.y, (int)(player.base.width * 3.2f));
 			for (int i = 0; i < ENEMY_LIMIT; i++) {
 				if (enemies[i].isActive)
-					RenderObjectShadow(g_hGameDC, enemies[i].base.x, enemies[i].base.y, enemies[i].base.width);
+					RenderObjectShadow(g_hGameDC, enemies[i].base.x, enemies[i].base.y + 5.0f, (int)(enemies[i].base.width * 0.8f));
 			}
 			for (int i = 0; i < CHURU_MAX; i++) {
 				if (churues[i].isActive)
-					RenderObjectShadow(g_hGameDC, churues[i].x, churues[i].y, (int)((float)churues[i].width * 2.0f));
+					RenderObjectShadow(g_hGameDC, churues[i].x, churues[i].y - 10.0f, (int)(churues[i].width * 2.0f));
 			}
 		}
 		if (boss.isActive) {
 			RenderObjectShadow(g_hGameDC, boss.base.x, boss.base.y, (int)(boss.base.width * 1.1f));
+		}
+		
+		for (int i = 0; i < OBSTACLE_LIMIT; i++) {
+			if (obstacles[i].isActive) {
+				if (obstacles[i].subType == SUB_TOWER_BROKEN) {
+					RenderObjectShadow(g_hGameDC, obstacles[i].base.x + 2.0f, obstacles[i].base.y + 24.0f, obstacles[i].base.width);
+				}
+				else if (obstacles[i].subType == SUB_TOWER_TUNNEL) {
+					RenderObjectShadow(g_hGameDC, obstacles[i].base.x, obstacles[i].base.y - 20.0f, (int)(obstacles[i].base.width * 2.0f));
+				}
+				else if (obstacles[i].subType == SUB_TOWER_TILTED) {
+					RenderObjectShadow(g_hGameDC, obstacles[i].base.x - 3.0f, obstacles[i].base.y + 3.0f, (int)(obstacles[i].base.width * 1.4f));
+				}
+			}
 		}
 
 		RenderTask tasks[100];
 		int taskCount = 0;
 
 		// 플레이어 추가
-		tasks[taskCount].y = player.base.y + (player.base.height * 6.3f / 2.0f);		// 무조건 발밑 기준
+		tasks[taskCount].y = player.base.y + (player.base.height / 1.5f);		// 무조건 발밑 기준
 		tasks[taskCount].type = TYPE_PLAYER;
 		taskCount++;
 
 		// 잡몹 추가
 		for (int i = 0; i < ENEMY_LIMIT; i++) {
 			if (enemies[i].isActive) {
-				tasks[taskCount].y = enemies[i].base.y + enemies[i].base.height;
+				tasks[taskCount].y = enemies[i].base.y + (enemies[i].base.height * 0.2f);
 				tasks[taskCount].type = TYPE_ENEMY;
 				tasks[taskCount].idx = i;
 				taskCount++;
@@ -295,8 +319,38 @@ void Render(HWND hWnd, HDC hDC) {
 		// 츄르 추가
 		for (int i = 0; i < CHURU_MAX; i++) {
 			if (churues[i].isActive) {
-				tasks[taskCount].y = churues[i].y + churues[i].height * 1.717f;
+				tasks[taskCount].y = churues[i].y + (churues[i].height * 0.2f);
 				tasks[taskCount].type = TYPE_CHURU;
+				tasks[taskCount].idx = i;
+				taskCount++;
+			}
+		}
+
+		// 장애물 추가
+		for (int i = 0; i < OBSTACLE_LIMIT; i++) {
+			if (obstacles[i].isActive && obstacles[i].type == OBS_SOLID) {
+				tasks[taskCount].y = obstacles[i].base.y + (obstacles[i].base.height * 0.3f);
+				tasks[taskCount].type = TYPE_OBSTACLE;
+				tasks[taskCount].idx = i;
+				taskCount++;
+			}
+		}
+
+		// 총알 추가
+		for (int i = 0; i < BULLET_MAX; i++) {
+			if (bullets[i].isActive) {
+				tasks[taskCount].y = bullets[i].y + (bullets[i].height / 2.0f);
+				tasks[taskCount].type = TYPE_PLAYER_BULLET;
+				tasks[taskCount].idx = i;
+				taskCount++;
+			}
+		}
+
+		// 잡못 catpaw 추가
+		for (int i = 0; i < CAT_PAW_LIMIT; i++) {
+			if (catpaw[i].isActive) {
+				tasks[taskCount].y = catpaw[i].y + (catpaw[i].height / 2.0f);
+				tasks[taskCount].type = TYPE_CATPAW;
 				tasks[taskCount].idx = i;
 				taskCount++;
 			}
@@ -318,14 +372,19 @@ void Render(HWND hWnd, HDC hDC) {
 			case TYPE_CHURU:
 				RenderSpecificChuru(g_hGameDC, tasks[i].idx);			// 츄르
 				break;
+			case TYPE_OBSTACLE:
+				RenderSpecificObstacle(g_hGameDC, tasks[i].idx);		// 장애물
+				break;
+			case TYPE_PLAYER_BULLET:
+				RenderSpecificBullets(g_hGameDC, tasks[i].idx);			// 총알
+				break;
+			case TYPE_CATPAW:
+				RenderSpecificCatPaw(g_hGameDC, tasks[i].idx);			// 잡몹 젤리
+				break;
 			}
 		}
 
-		RenderCatPaw(g_hGameDC);								// 잡몹 젤리
-
 		RenderBossPaws(g_hGameDC);								// 보스 젤리
-
-		RenderBullets(g_hGameDC);								// 총알
 
 		if (camera.isIntroActive == INACTIVE) {
 			RenderPlayerHitBox(g_hGameDC);						// 플레이어 hitBox
@@ -334,6 +393,7 @@ void Render(HWND hWnd, HDC hDC) {
 			RenderBossHitBox(g_hGameDC);						// 보스 hitBox
 			RenderBossPawsHitBox(g_hGameDC);					// 보스 젤리 hitBox
 			RenderBulletsHitBox(g_hGameDC);						// 총알 hitBox
+			RenderObstaclesHitBox(g_hGameDC);					// 장애물 hitBox
 
 			RenderUI(g_hGameDC);								// UI
 		}
@@ -351,6 +411,8 @@ void Render(HWND hWnd, HDC hDC) {
 	if (g_UI.gameState == GAMEOVER) {
 		RenderGameOver(g_hGameDC);
 	}
+
+	RenderCursor(g_hGameDC);
 
 	// 화면 비율 계산 (16:9 기준 레터박스)
 	float scaleX = (float)winW / SCREEN_WIDTH;
