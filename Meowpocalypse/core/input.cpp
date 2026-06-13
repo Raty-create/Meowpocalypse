@@ -99,7 +99,9 @@ void Input_Skill_Q() {
 	g_Input.isQPressed = (!prevQPressed && currQPressed);
 	prevQPressed = currQPressed;
 	
-	if (g_Input.isQPressed && player.skillQCooldown  <= 0 && player.mp >= SKILL_Q_MP) {
+	if (g_Input.isQPressed && player.skillQCooldown  <= 0 && player.mp >= SKILL_Q_MP && camera.isIntroActive == INACTIVE && g_UI.gameState != ENDING && 
+		!g_UI.isFadeOut && !g_UI.isMapFadeOut && !g_UI.isPlayerDeadFadeOut && !g_UI.isEndingFadeOut && !g_UI.isEndingToTitleFadeOut &&
+		!g_UI.isFadeIn && !g_UI.isMapFadeIn && !g_UI.isEndingFadeIn && !g_UI.isEndingToTitleFadeIn) {
 		PlaySFX(SFX_PLAYER_SKILL_Q);
 	}
 }
@@ -121,7 +123,9 @@ void Input_Skill_R() {
 	g_Input.isRPressed = (!prevRPressed && currRPressed);
 	prevRPressed = currRPressed; 
 	
-	if (g_Input.isRPressed && player.skillRCooldown <= 0 && player.mp >= SKILL_R_MP) {
+	if (g_Input.isRPressed && player.skillRCooldown <= 0 && player.mp >= SKILL_R_MP && camera.isIntroActive == INACTIVE && g_UI.gameState != ENDING &&
+		!g_UI.isFadeOut && !g_UI.isMapFadeOut && !g_UI.isPlayerDeadFadeOut && !g_UI.isEndingFadeOut && !g_UI.isEndingToTitleFadeOut &&
+		!g_UI.isFadeIn && !g_UI.isMapFadeIn && !g_UI.isEndingFadeIn && !g_UI.isEndingToTitleFadeIn) {
 		PlaySFX(SFX_PLAYER_SKILL_R);
 	}
 }
