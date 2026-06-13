@@ -101,6 +101,11 @@ void Update(HWND hWnd) {
 	}
 	else if (g_UI.isEndingFadeOut) {
 		g_UI.fadeAlpha += 0.02f;
+
+		int target = GetBGMTargetVolume();
+		float volProgress = g_UI.fadeAlpha * 0.5f;
+		SetBGMVolume((int)(target * (1.0f - volProgress)));
+
 		if (g_UI.fadeAlpha >= 1.0f) {
 			g_UI.fadeAlpha = 1.0f;
 			g_UI.isEndingFadeOut = FALSE;
@@ -164,11 +169,17 @@ void Update(HWND hWnd) {
 	}
 	else if (g_UI.isEndingFadeIn) {
 		g_UI.fadeAlpha -= 0.02f;
+
+		int target = GetBGMTargetVolume();
+		float volProgress = 1.0f - (g_UI.fadeAlpha * 0.5f);
+		SetBGMVolume((int)(target * (1.0f - volProgress)));
+
 		if (g_UI.fadeAlpha <= 0.0f) {
 			g_UI.fadeAlpha = 0.0f;
 			g_UI.isEndingFadeIn = FALSE;
+			// StopBGM();  // 완전히 0이 된 뒤 장치까지 끄고 싶으면 주석 해제
 		}
-	}
+		}
 	else if (g_UI.isEndingToTitleFadeIn) {
 		g_UI.fadeAlpha -= 0.02f;
 		if (g_UI.fadeAlpha <= 0.0f) {
