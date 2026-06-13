@@ -89,6 +89,7 @@ void ReleaseUI() {
 	ReleaseMyImage(&g_UI.imgUISheet);
 	ReleaseMyImage(&g_UI.imgKeyGuide);
 	ReleaseMyImage(&imgCursor);
+	ReleaseMyImage(&imgEnding);
 	
 	// 타이틀 리소스가 아직 남아있다면 해제 (ReleaseTitle에서 NULL 처리를 하므로 안전하기 함)
 	ReleaseTitle();

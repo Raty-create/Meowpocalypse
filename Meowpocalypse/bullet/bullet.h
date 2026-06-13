@@ -33,6 +33,7 @@ typedef struct {
 extern BULLET bullets[BULLET_MAX];
 extern CHURU churues[CHURU_MAX];
 extern IMAGE imgProjectile;
+extern BOOL g_bulletDamageBoost;
 
 void InitBullet();
 void ReleaseBullet();

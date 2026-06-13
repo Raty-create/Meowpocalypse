@@ -50,6 +50,23 @@ BOOL IsObstacleBlocked(float x, float y) {
 	return FALSE;	// 안 막힘
 }
 
+// 장애물 AABB 충돌 체크 (한 번에 검사)
+BOOL IsObstacleAABBBlocked(float x, float y, int w, int h) {
+	for (int i = 0; i < OBSTACLE_LIMIT; i++) {
+		if (!obstacles[i].isActive) continue;
+
+		if (obstacles[i].type == OBS_SOLID) {
+			if (IsObjectCollision(x, y, w, h,
+				obstacles[i].base.hitBoxX, obstacles[i].base.hitBoxY,
+				obstacles[i].base.hitBoxW, obstacles[i].base.hitBoxH)) {
+				return TRUE; // 막힘
+			}
+		}
+	}
+	return FALSE; // 안 막힘
+}
+
+
 // 특정 좌표(x, y)가 장애물 히트박스 안에 있는지 체크
 BOOL IsPointInsideObstacle(float x, float y, OBSTACLE* ob) {
 	if (!ob->isActive) return FALSE;
@@ -221,7 +238,7 @@ int HandleBulletEnemyCollision(BULLET* bullet, ENEMY* enemy) {
 		enemy->base.hitBoxX, enemy->base.hitBoxY, enemy->base.hitBoxW, enemy->base.hitBoxH)) {
 
 		bullet->isActive = INACTIVE;
-		enemy->base.hp -= BULLET_DAMAGE;
+		enemy->base.hp -= bullet->damage;
 
 		if (enemy->base.hp <= 0) {
 			enemy->base.hp = 0;
@@ -328,7 +345,7 @@ int HandleBulletBossCollision(BULLET* bullet, BOSS* boss) {
 		boss->base.hitBoxX, boss->base.hitBoxY, boss->base.hitBoxW, boss->base.hitBoxH)) {
 
 		bullet->isActive = INACTIVE;
-		boss->base.hp -= BULLET_DAMAGE;
+		boss->base.hp -= bullet->damage;
 
 		if (boss->base.hp <= 0) {
 			boss->base.hp = 0;

@@ -10,6 +10,7 @@
 BOOL IsObjectCollision(float ax, float ay, int aw, int ah, float bx, float by, int bw, int bh);		// AABB 충돌 체크 함수
 BOOL IsTileBlocked(float x, float y);
 BOOL IsObstacleBlocked(float x, float y);
+BOOL IsObstacleAABBBlocked(float x, float y, int w, int h);
 BOOL IsPointInsideObstacle(float x, float y, OBSTACLE* ob);
 
 int IsPlayerOnDoor();

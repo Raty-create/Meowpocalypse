@@ -12,6 +12,8 @@ void UpdateInput(HWND hWnd) {
 	InputBulletShoot(hWnd);			// 마우스 입력 (총알 발사)
 	InputSkill();					// 스킬 입력
 	InputNum();						// 키보드 숫자 입력
+
+	Input_Cheat_C();
 }
 
 // 키보드 ESC
@@ -152,4 +154,17 @@ void Input_Num_Two() {
 
 	g_Input.isTwoPressed = (!prevTwoPressed && currTwoPressed);
 	prevTwoPressed = currTwoPressed;
+}
+
+// 치트키 C
+void Input_Cheat_C() {
+	static BOOL prevCPressed = FALSE;
+	BOOL currCPressed = (GetAsyncKeyState('C') & 0x8000) != 0;
+
+	g_Input.isCPressed = (!prevCPressed && currCPressed);
+	prevCPressed = currCPressed;
+
+	if (g_Input.isCPressed) {
+		g_bulletDamageBoost = !g_bulletDamageBoost;   // 누를 때마다 켜고 끔
+	}
 }
