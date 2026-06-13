@@ -69,12 +69,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 		g_WindowHeight = HIWORD(lParam);
 		break;
 
-	case WM_KEYDOWN:
-		switch (wParam) {
-		case VK_BACK: DestroyWindow(hWnd); break;
-		}
-		break;
-
 	case WM_TIMER:
 		Update(hWnd);
 
