@@ -25,11 +25,11 @@ void InputEsc() {
 			if (camera.isIntroActive == ACTIVE || g_UI.isPlayerDeadFadeOut) return;
 
 			g_UI.gameState = PAUSE;
-			PauseBGM();
+			// PauseBGM();
 		}
 		else if (g_UI.gameState == PAUSE) {
 			g_UI.gameState = INGAME;
-			ResumeBGM();
+			// ResumeBGM();
 		}
 	}
 	prevEscPressed = currEscPressed;
