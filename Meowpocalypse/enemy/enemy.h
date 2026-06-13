@@ -24,6 +24,7 @@ typedef struct {
     int moveTimer;
     int deathTimer;
     int attackTimer;
+    float speedMultiplier;
     ANIMATION anim;
 } ENEMY;
 

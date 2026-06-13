@@ -108,6 +108,7 @@ typedef struct {
 
 extern UI_SYSTEM g_UI;
 extern IMAGE imgEnding;
+extern IMAGE imgCursor;
 
 void InitUI();
 void InitEnding();

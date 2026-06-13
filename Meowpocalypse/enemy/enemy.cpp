@@ -82,7 +82,11 @@ void SpawnEnemy(MAP_TYPE type, int count) {
 		if (IsTileBlocked(spawnX - halfW, spawnY - halfH) ||
 			IsTileBlocked(spawnX + halfW, spawnY - halfH) ||
 			IsTileBlocked(spawnX - halfW, spawnY + halfH) ||
-			IsTileBlocked(spawnX + halfW, spawnY + halfH)) continue;
+			IsTileBlocked(spawnX + halfW, spawnY + halfH) ||
+			IsObstacleBlocked(spawnX - halfW, spawnY - halfH) ||
+			IsObstacleBlocked(spawnX + halfW, spawnY - halfH) || 
+			IsObstacleBlocked(spawnX - halfW, spawnY + halfH) || 
+			IsObstacleBlocked(spawnX + halfW, spawnY + halfH)) continue;
 
 		if (IsOverlapWithEnemy(spawnX, spawnY)) continue;
 
@@ -90,7 +94,9 @@ void SpawnEnemy(MAP_TYPE type, int count) {
 			if (!enemies[i].isActive) {
 				enemies[i].isActive = ACTIVE;
 				enemies[i].base.x = enemies[i].base.hitBoxX = spawnX;
-				enemies[i].base.y = enemies[i].base.hitBoxY = spawnY;
+				enemies[i].base.y = spawnY;
+				enemies[i].base.hitBoxY = spawnY + (ENEMY_HEIGHT * 0.05f);
+				enemies[i].speedMultiplier = ENEMY_SPEED_MULTIPLIER;
 				enemies[i].base.state = ENEMY_IDLE;
 				enemies[i].base.direction = DIR_DOWN;
 				enemies[i].shootTimer = rand() % CAT_PAW_INTERVAL;
@@ -124,7 +130,7 @@ void SpawnCatPaw(int i) {
 	float dist = sqrtf(dx * dx + dy * dy);
 	if (dist == 0) return;
 
-	// 공격 방향 결정 (플레이어를 바라보게) - atan2f 사용으로 정교화
+	// 공격 방향 결정 (플레이어를 바라보게)
 	float angle = atan2f(dy, dx) * 180.0f / PI;
 	if (angle < 0) angle += 360.0f;
 	
@@ -139,7 +145,7 @@ void SpawnCatPaw(int i) {
 
 	enemies[i].base.state = ENEMY_RANGED;
 	enemies[i].anim.totalFrames = 5;
-	enemies[i].attackTimer = 30;
+	enemies[i].attackTimer = ENEMY_ATTACK_TIME;
 	SetAnimationFrame(&enemies[i].anim, 0);
 
 	int fw = imgProjectile.width / 4;
@@ -219,6 +225,8 @@ void UpdateEnemyState(int i) {
 		return;
 	}
 
+	HandleEnemyCyberSlimeCollision(i);
+
 	// 플레이어가 죽었으면 순찰 상태로 강제 전환
 	if (player.base.state == PLAYER_DEAD) {
 		enemies[i].base.state = ENEMY_IDLE;
@@ -285,10 +293,6 @@ void HandleEnemyKnockback(int i) {
 
 	float ex = enemies[i].base.x;
 	float ey = enemies[i].base.y;
-	float nextX = ex + enemies[i].base.kx;
-	float nextY = ey + enemies[i].base.ky;
-	int halfW = ENEMY_HITBOX_WIDTH / 2;
-	int halfH = ENEMY_HITBOX_HEIGHT / 2;
 
 	float toPlayerX = player.base.x - ex;
 	float toPlayerY = player.base.y - ey;
@@ -308,17 +312,20 @@ void HandleEnemyKnockback(int i) {
 		else if (toPlayerX < 0 && toPlayerY < 0) enemies[i].base.direction = DIR_DOWN_RIGHT;
 	}
 
-	if (!IsTileBlocked(nextX - halfW, ey - halfH) &&
-		!IsTileBlocked(nextX + halfW, ey - halfH) &&
-		!IsTileBlocked(nextX - halfW, ey + halfH) &&
-		!IsTileBlocked(nextX + halfW, ey + halfH)) enemies[i].base.x = enemies[i].base.hitBoxX = nextX;
+	enemies[i].base.dx = enemies[i].base.kx;
+	enemies[i].base.dy = enemies[i].base.ky;
 
-	if (!IsTileBlocked(ex - halfW, nextY - halfH) &&
-		!IsTileBlocked(ex + halfW, nextY - halfH) &&
-		!IsTileBlocked(ex - halfW, nextY + halfH) &&
-		!IsTileBlocked(ex + halfW, nextY + halfH)) enemies[i].base.y = enemies[i].base.hitBoxY = nextY;
+	HandleEnemyWallCollision(i);
 
 	enemies[i].base.kTimer--;
+
+	// 넉백이 끝나는 순간 속도를 초기화하여 미끄러짐 방지 및 새로운 이동 유도
+	if (enemies[i].base.kTimer <= 0) {
+		enemies[i].base.kTimer = 0;
+		enemies[i].base.dx = 0;
+		enemies[i].base.dy = 0;
+		enemies[i].moveTimer = 0;
+	}
 }
 
 // 적 -> 플레이어 쫓기
@@ -336,12 +343,12 @@ void HandleEnemyChase(int i, float dx, float dy, float dist) {
 	if (dist > 0) {
 		float nx = 0, ny = 0;
 		if (dist > ENEMY_STOP_DISTANCE) {
-			nx = (dx / dist) * (ENEMY_SPEED * 1.5f);
-			ny = (dy / dist) * (ENEMY_SPEED * 1.5f);
+			nx = (dx / dist) * (ENEMY_SPEED * 1.5f * enemies[i].speedMultiplier);
+			ny = (dy / dist) * (ENEMY_SPEED * 1.5f * enemies[i].speedMultiplier);
 		}
 		else if (dist < ENEMY_STOP_DISTANCE - 5.0f) {
-			nx = -(dx / dist) * (ENEMY_SPEED * 0.5f);
-			ny = -(dy / dist) * (ENEMY_SPEED * 0.5f);
+			nx = -(dx / dist) * (ENEMY_SPEED * 0.5f * enemies[i].speedMultiplier);
+			ny = -(dy / dist) * (ENEMY_SPEED * 0.5f * enemies[i].speedMultiplier);
 		}
 
 		float sepX = 0, sepY = 0;
@@ -354,8 +361,8 @@ void HandleEnemyChase(int i, float dx, float dy, float dist) {
 
 			if (eDist < ENEMY_WIDTH && eDist > 0) {
 				float force = (ENEMY_WIDTH - eDist) / ENEMY_WIDTH;
-				sepX += (diffX / eDist) * force * ENEMY_SPEED;
-				sepY += (diffY / eDist) * force * ENEMY_SPEED;
+				sepX += (diffX / eDist) * force * ENEMY_SPEED * enemies[i].speedMultiplier;
+				sepY += (diffY / eDist) * force * ENEMY_SPEED * enemies[i].speedMultiplier;
 			}
 		}
 
@@ -377,31 +384,17 @@ void HandleEnemyChase(int i, float dx, float dy, float dist) {
 			else if (finalNY < 0) enemies[i].base.direction = DIR_UP;
 		}
 
-			int halfW = ENEMY_HITBOX_WIDTH / 2;
-			int halfH = ENEMY_HITBOX_HEIGHT / 2;
-		float ex = enemies[i].base.x;
-		float ey = enemies[i].base.y;
-		float nextX = ex + finalNX;
-		float nextY = ey + finalNY;
+		enemies[i].base.dx = finalNX;
+		enemies[i].base.dy = finalNY;
 
-		if (!IsTileBlocked(nextX - halfW, ey - halfH) &&
-			!IsTileBlocked(nextX + halfW, ey - halfH) &&
-			!IsTileBlocked(nextX - halfW, ey + halfH) &&
-			!IsTileBlocked(nextX + halfW, ey + halfH)) enemies[i].base.x = enemies[i].base.hitBoxX = nextX;
-
-		if (!IsTileBlocked(ex - halfW, nextY - halfH) &&
-			!IsTileBlocked(ex + halfW, nextY - halfH) &&
-			!IsTileBlocked(ex - halfW, nextY + halfH) &&
-			!IsTileBlocked(ex + halfW, nextY + halfH)) enemies[i].base.y = enemies[i].base.hitBoxY = nextY;
+		HandleEnemyWallCollision(i);
 	}
 }
 
 // 적 순찰 (기본 이동)
 void HandleEnemyPatrol(int i) {
-	float ex = enemies[i].base.x;
-	float ey = enemies[i].base.y;
-
 	if (enemies[i].attackTimer <= 0) {
+		enemies[i].attackTimer = 0;
 		enemies[i].base.state = ENEMY_MOVE;
 	}
 
@@ -417,12 +410,14 @@ void HandleEnemyPatrol(int i) {
 		enemies[i].moveTimer = 120 + rand() % 60;
 
 		int dir = rand() % 8;
-		float diagSpeed = ENEMY_SPEED * 0.7071f;		// 0.7071 ≒ ( 1/√2 )
+		float currSpeed = ENEMY_SPEED * enemies[i].speedMultiplier;
+		float diagSpeed = currSpeed * 0.7071f;
+		
 		switch (dir) {
-		case 0: enemies[i].base.dx = ENEMY_SPEED; enemies[i].base.dy = 0; break;
-		case 1: enemies[i].base.dx = -ENEMY_SPEED; enemies[i].base.dy = 0; break;
-		case 2: enemies[i].base.dx = 0; enemies[i].base.dy = ENEMY_SPEED; break;
-		case 3: enemies[i].base.dx = 0; enemies[i].base.dy = -ENEMY_SPEED; break;
+		case 0: enemies[i].base.dx = currSpeed; enemies[i].base.dy = 0; break;
+		case 1: enemies[i].base.dx = -currSpeed; enemies[i].base.dy = 0; break;
+		case 2: enemies[i].base.dx = 0; enemies[i].base.dy = currSpeed; break;
+		case 3: enemies[i].base.dx = 0; enemies[i].base.dy = -currSpeed; break;
 		case 4: enemies[i].base.dx = -diagSpeed; enemies[i].base.dy = -diagSpeed; break;
 		case 5: enemies[i].base.dx = diagSpeed; enemies[i].base.dy = -diagSpeed; break;
 		case 6: enemies[i].base.dx = -diagSpeed; enemies[i].base.dy = diagSpeed; break;
@@ -450,25 +445,7 @@ void HandleEnemyPatrol(int i) {
 		}
 	}
 
-	int halfW = ENEMY_HITBOX_WIDTH / 2;
-	int halfH = ENEMY_HITBOX_HEIGHT / 2;
-	float nextX = ex + enemies[i].base.dx;
-	if (!IsTileBlocked(nextX - halfW, ey - halfH) &&
-		!IsTileBlocked(nextX + halfW, ey - halfH) &&
-		!IsTileBlocked(nextX - halfW, ey + halfH) &&
-		!IsTileBlocked(nextX + halfW, ey + halfH))
-		enemies[i].base.x = enemies[i].base.hitBoxX = nextX;
-	else
-		enemies[i].moveTimer = 0;
-
-	float nextY = ey + enemies[i].base.dy;
-	if (!IsTileBlocked(ex - halfW, nextY - halfH) &&
-		!IsTileBlocked(ex + halfW, nextY - halfH) &&
-		!IsTileBlocked(ex - halfW, nextY + halfH) &&
-		!IsTileBlocked(ex + halfW, nextY + halfH))
-		enemies[i].base.y = enemies[i].base.hitBoxY = nextY;
-	else
-		enemies[i].moveTimer = 0;
+	HandleEnemyWallCollision(i);
 }
 
 // 적 -> 츄르 쫓기
@@ -482,12 +459,12 @@ void HandleEnemyAggro(int i, float tx, float ty) {
 	if (dist > 0) {
 		float nx = 0, ny = 0;
 		if (dist > ENEMY_STOP_DISTANCE) {
-			nx = (dx / dist) * (ENEMY_SPEED * 1.5f);
-			ny = (dy / dist) * (ENEMY_SPEED * 1.5f);
+			nx = (dx / dist) * (ENEMY_SPEED * 1.5f * enemies[i].speedMultiplier);
+			ny = (dy / dist) * (ENEMY_SPEED * 1.5f * enemies[i].speedMultiplier);
 		}
 		else if (dist < ENEMY_STOP_DISTANCE - 5.0f) {
-			nx = -(dx / dist) * (ENEMY_SPEED * 0.5f);
-			ny = -(dy / dist) * (ENEMY_SPEED * 0.5f);
+			nx = -(dx / dist) * (ENEMY_SPEED * 0.5f * enemies[i].speedMultiplier);
+			ny = -(dy / dist) * (ENEMY_SPEED * 0.5f * enemies[i].speedMultiplier);
 		}
 		
 		float sepX = 0, sepY = 0;
@@ -500,8 +477,8 @@ void HandleEnemyAggro(int i, float tx, float ty) {
 
 			if (eDist < ENEMY_WIDTH && eDist > 0) {
 				float force = (ENEMY_WIDTH - eDist) / ENEMY_WIDTH;
-				sepX += (diffX / eDist) * force * ENEMY_SPEED;
-				sepY += (diffY / eDist) * force * ENEMY_SPEED;
+				sepX += (diffX / eDist) * force * ENEMY_SPEED * enemies[i].speedMultiplier;
+				sepY += (diffY / eDist) * force * ENEMY_SPEED * enemies[i].speedMultiplier;
 			}
 		}
 
@@ -523,20 +500,10 @@ void HandleEnemyAggro(int i, float tx, float ty) {
 			else if (finalNY < 0) enemies[i].base.direction = DIR_UP;
 		}
 		
-		int halfW = ENEMY_HITBOX_WIDTH / 2;
-		int halfH = ENEMY_HITBOX_HEIGHT / 2;
-		float nextX = ex + finalNX;
-		float nextY = ey + finalNY;
+		enemies[i].base.dx = finalNX;
+		enemies[i].base.dy = finalNY;
 
-		if (!IsTileBlocked(nextX - halfW, ey - halfH) &&
-			!IsTileBlocked(nextX + halfW, ey - halfH) &&
-			!IsTileBlocked(nextX - halfW, ey + halfH) &&
-			!IsTileBlocked(nextX + halfW, ey + halfH)) enemies[i].base.x = enemies[i].base.hitBoxX = nextX;
-
-		if (!IsTileBlocked(ex - halfW, nextY - halfH) &&
-			!IsTileBlocked(ex + halfW, nextY - halfH) &&
-			!IsTileBlocked(ex - halfW, nextY + halfH) &&
-			!IsTileBlocked(ex + halfW, nextY + halfH)) enemies[i].base.y = enemies[i].base.hitBoxY = nextY;
+		HandleEnemyWallCollision(i);
 	}
 }
 
@@ -558,7 +525,11 @@ void UpdateCatPaws() {
 		if (IsTileBlocked(catpaw[i].x, catpaw[i].y) ||
 			IsTileBlocked(catpawNextX, catpaw[i].y) ||
 			IsTileBlocked(catpaw[i].x, catpawNextY) ||
-			IsTileBlocked(catpawNextX, catpawNextY)) {
+			IsTileBlocked(catpawNextX, catpawNextY) ||
+			IsObstacleBlocked(catpaw[i].x, catpaw[i].y) ||
+			IsObstacleBlocked(catpawNextX, catpaw[i].y) || 
+			IsObstacleBlocked(catpaw[i].x, catpawNextY) || 
+			IsObstacleBlocked(catpawNextX, catpawNextY)) {
 			catpaw[i].isActive = INACTIVE;
 			continue;
 		}

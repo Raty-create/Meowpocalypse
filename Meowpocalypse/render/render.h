@@ -4,6 +4,14 @@
 #include <math.h>
 
 #include "enum.h"
+#include "player.h"
+#include "enemy.h"
+#include "camera.h"
+#include "map.h"
+#include "boss.h"
+#include "bullet.h"
+#include "obstacle.h"
+#include "ui.h"
 
 // 레이어 정렬을 위한 구조체
 typedef struct {
@@ -42,11 +50,13 @@ void RenderPlayerHitBox(HDC hDC);
 void RenderEnemies(HDC hDC);
 void RenderEnemiesHitBox(HDC hDC);
 
-void RenderSpecificEnemy(HDC hDC, int idx);				// 레이어 정렬 시 사용(모든 잡몹을 순회할 필요없이 특정 잡몹의 인덱스만 받음)
+void RenderSpecificEnemy(HDC hDC, int idx);				// 레이어 정렬 시 사용
 
 // 잡몹 공격
 void RenderCatPaw(HDC hDC);
 void RenderCatPawHitBox(HDC hDC);
+
+void RenderSpecificCatPaw(HDC hDC, int idx);			// 레이어 정렬 시 사용
 
 // 보스
 void RenderBoss(HDC hDC);
@@ -61,10 +71,16 @@ void RenderJumpWarning(HDC hDC);
 void RenderBullets(HDC hDC);
 void RenderBulletsHitBox(HDC hDC);
 
+void RenderSpecificBullets(HDC hDC, int idx);			// 레이어 정렬 시 사용
+
 // 츄르
 void RenderChuru(HDC hDC);
 
-void RenderSpecificChuru(HDC hDC, int idx);				// 레이어 정렬 시 사용(모든 잡몹을 순회할 필요없이 특정 츄르의 인덱스만 받음)
+void RenderSpecificChuru(HDC hDC, int idx);				// 레이어 정렬 시 사용
+
+// 장애물
+void RenderSpecificObstacle(HDC hDC, int idx);			// 레이어 정렬 시 사용
+void RenderObstaclesHitBox(HDC hDC);
 
 // UI
 void RenderUI(HDC hDC);
@@ -75,5 +91,9 @@ void RenderPause(HDC hDC);
 void RenderKeyGuide(HDC hDC);
 void RenderGameOver(HDC hDC);
 
+// 마우스 커서
+void RenderCursor(HDC hDC);
+
+// Fade 효과
 void RenderDimmedBackground(HDC hDC);
 void RenderFadeEffect(HDC hDC);

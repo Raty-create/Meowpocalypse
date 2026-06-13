@@ -9,7 +9,7 @@
 #include <math.h>
 
 // AABB 충돌 체크
-int IsObjectCollision(float ax, float ay, int aw, int ah, float bx, float by, int bw, int bh) {
+BOOL IsObjectCollision(float ax, float ay, int aw, int ah, float bx, float by, int bw, int bh) {
 	return (ax - aw / 2 < bx + bw / 2 &&
 		ax + aw / 2 > bx - bw / 2 &&
 		ay - ah / 2 < by + bh / 2 &&
@@ -17,7 +17,7 @@ int IsObjectCollision(float ax, float ay, int aw, int ah, float bx, float by, in
 }
 
 // 플레이어 - 벽 및 장애물 충돌 체크
-int IsTileBlocked(float x, float y) {
+BOOL IsTileBlocked(float x, float y) {
 	MAPDATA* m = &maps[currentMapType];
 
 	int col = (int)((x - m->worldX) / TILE_SIZE);
@@ -28,6 +28,38 @@ int IsTileBlocked(float x, float y) {
 
 	int tile = m->tiles[row][col];
 	return (tile == TILE_WALL || tile == TILE_OBSTACLE);
+}
+
+// 장애물에 막혀있는지 체크
+BOOL IsObstacleBlocked(float x, float y) {
+	for (int i = 0; i < OBSTACLE_LIMIT; i++) {
+		if (!obstacles[i].isActive) continue;
+
+		if (obstacles[i].type == OBS_SOLID) {
+			float ohx = obstacles[i].base.hitBoxX;
+			float ohy = obstacles[i].base.hitBoxY;
+			float ohw = obstacles[i].base.hitBoxW / 2.0f;
+			float ohh = obstacles[i].base.hitBoxH / 2.0f;
+
+			if (x > ohx - ohw && x < ohx + ohw && y > ohy - ohh && y < ohy + ohh) {
+				return TRUE;	// 막힘
+			}
+		}
+	}
+
+	return FALSE;	// 안 막힘
+}
+
+// 특정 좌표(x, y)가 장애물 히트박스 안에 있는지 체크
+BOOL IsPointInsideObstacle(float x, float y, OBSTACLE* ob) {
+	if (!ob->isActive) return FALSE;
+
+    float ohx = ob->base.hitBoxX;
+	float ohy = ob->base.hitBoxY;
+    float ohw = ob->base.hitBoxW / 2.0f;
+    float ohh = ob->base.hitBoxH / 2.0f;
+
+	return (x > ohx - ohw && x < ohx + ohw && y > ohy - ohh && y < ohy + ohh);
 }
 
 // 플레이어 - 문
@@ -60,20 +92,114 @@ int IsPlayerOnDoor() {
 	return 0;
 }
 
-// 플레이어 - 벽과의 충돌 처리
+// 플레이어가 사이버 끈끈이 위에 있는지 체크
+int IsPlayerOnHazard(PLAYER* p, OBSTACLE* ob) {
+	float footX = p->base.x;
+	float footY = p->base.y + (p->base.height / 1.5f);
+	
+	return IsPointInsideObstacle(footX, footY, ob);
+}
+
+// 잡몹이 사이버 끈끈이 위에 있는지 체크
+int IsEnemyOnHazard(ENEMY* enemy, OBSTACLE* ob) {
+	if (!enemy->isActive) return FALSE;
+
+	float footX = enemy->base.x;
+	float footY = enemy->base.y + (enemy->base.height * 0.2f);
+
+	return IsPointInsideObstacle(footX, footY, ob);
+}
+
+// 플레이어 - 사이버 끈끈이 충돌 처리
+void HandlePlayerCyberSlimeCollision() {
+	player.speed = PLAYER_SPEED; // 기본 속도로 초기화
+
+	if (player.boostTimer > 0) {
+		player.speed *= BOOST_SPEED_MULTIPLIER;
+	}
+
+	for (int i = 0; i < OBSTACLE_LIMIT; i++) {
+		if (!obstacles[i].isActive || obstacles[i].type != OBS_HAZARD) continue;
+
+		if (IsPlayerOnHazard(&player, &obstacles[i])) {
+			if (obstacles[i].subType == SUB_CYBER_SLIME) {
+				player.speed *= 0.25f; // 끈끈이 효과 적용
+				break; 
+			}
+		}
+	}
+}
+
+// 잡몹 - 사이버 끈끈이 충돌 처리
+void HandleEnemyCyberSlimeCollision(int enemyIdx) {
+	enemies[enemyIdx].speedMultiplier = ENEMY_SPEED_MULTIPLIER; // 기본 배율로 초기화
+
+	for (int i = 0; i < OBSTACLE_LIMIT; i++) {
+		if (!obstacles[i].isActive || obstacles[i].type != OBS_HAZARD) continue;
+
+		if (IsEnemyOnHazard(&enemies[enemyIdx], &obstacles[i])) {
+			if (obstacles[i].subType == SUB_CYBER_SLIME) {
+				enemies[enemyIdx].speedMultiplier = 0.4f;
+				break;
+			}
+		}
+	}
+}
+
+// 플레이어 - 벽/장애물과의 충돌 처리
 void HandlePlayerWallCollision() {
 	float playerNextX = player.base.x + player.base.dx;
 	float playerNextY = player.base.y + player.base.dy;
 
 	int playerHalfW = PLAYER_WIDTH / 2;
-	int playerHalfH = PLAYER_HEIGHT;
+	int playerHalfH = PLAYER_HEIGHT / 2;
 	if (!IsTileBlocked(playerNextX - playerHalfW, player.base.y + playerHalfH) &&
-		!IsTileBlocked(playerNextX + playerHalfW, player.base.y + playerHalfH))
+		!IsTileBlocked(playerNextX + playerHalfW, player.base.y + playerHalfH) &&
+		!IsObstacleBlocked(playerNextX - playerHalfW, player.base.y + playerHalfH) &&
+		!IsObstacleBlocked(playerNextX + playerHalfW, player.base.y + playerHalfH))
 		player.base.x = player.base.hitBoxX = playerNextX;
 
 	if (!IsTileBlocked(player.base.x - playerHalfW, playerNextY + playerHalfH) &&
-		!IsTileBlocked(player.base.x + playerHalfW, playerNextY + playerHalfH))
+		!IsTileBlocked(player.base.x + playerHalfW, playerNextY + playerHalfH) &&
+		!IsObstacleBlocked(player.base.x - playerHalfW, playerNextY + playerHalfH) &&
+		!IsObstacleBlocked(player.base.x + playerHalfW, playerNextY + playerHalfH))
 		player.base.y = player.base.hitBoxY = playerNextY;
+}
+
+// 잡몹 - 벽/장애물과의 충돌 처리
+void HandleEnemyWallCollision(int i) {
+	if (!enemies[i].isActive || enemies[i].base.state == ENEMY_DEAD) return;
+
+	float ex = enemies[i].base.x;
+	float ey = enemies[i].base.y;
+	float nextX = ex + enemies[i].base.dx;
+	float nextY = ey + enemies[i].base.dy;
+
+	int halfW = ENEMY_HITBOX_WIDTH / 2;
+	int halfH = ENEMY_HITBOX_HEIGHT / 2;
+
+	// X축 이동 체크
+	if (!IsTileBlocked(nextX - halfW, ey + halfH) &&
+		!IsTileBlocked(nextX + halfW, ey + halfH) &&
+		!IsObstacleBlocked(nextX - halfW, ey + halfH) &&
+		!IsObstacleBlocked(nextX + halfW, ey + halfH)) {
+		enemies[i].base.x = enemies[i].base.hitBoxX = nextX;
+	}
+	else {
+		if (enemies[i].base.state == ENEMY_MOVE) enemies[i].moveTimer = 0;
+	}
+
+	// Y축 이동 체크
+	if (!IsTileBlocked(ex - halfW, nextY + halfH) &&
+		!IsTileBlocked(ex + halfW, nextY + halfH) &&
+		!IsObstacleBlocked(ex - halfW, nextY + halfH) &&
+		!IsObstacleBlocked(ex + halfW, nextY + halfH)) {
+		enemies[i].base.y = nextY;
+		enemies[i].base.hitBoxY = nextY + (ENEMY_HEIGHT * 0.05f);
+	}
+	else {
+		if (enemies[i].base.state == ENEMY_MOVE) enemies[i].moveTimer = 0;
+	}
 }
 
 // 잡몹 - 잡몹 충돌 체크
@@ -267,7 +393,7 @@ int HandleBossPawPlayerCollision(BOSS_PAW* bp, PLAYER* p) {
 		p->base.hitBoxX, p->base.hitBoxY, p->base.hitBoxW, p->base.hitBoxH)) {
 
 		bp->isActive = INACTIVE;
-		p->base.hp -= CAT_PAW_DAMAGE * 2;
+		p->base.hp -= BOSS_PAW_DAMAGE;
 		p->invincibleTimer = PLAYER_INVINCIBLE_TIME;
 
 		if (p->base.hp <= 0) {

@@ -6,6 +6,7 @@
 
 typedef struct {
 	OBJECT base;
+	float speed;
 	int mp;
 	int invincibleTimer;
 	int skillQCooldown;			// Q 스킬 - 쿨타임 타이머
