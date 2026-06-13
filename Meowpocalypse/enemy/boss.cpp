@@ -342,6 +342,14 @@ void StartDashWarning() {
 		}
 	}
 
+	int is2nd3rd = (currentMapType == MAP_SECOND_BOSS || currentMapType == MAP_THIRD_BOSS);
+	if (dashWarn.stopDist < DASH_MIN_DIST) {
+		dashWarn.isActive = INACTIVE;
+		boss.base.state = is2nd3rd ? BOSS_CHASE : BOSS_IDLE;
+		boss.attackTimer = BOSS_ATTACK_INTERVAL;
+		return;
+	}
+
 	dashWarn.timer = DASH_WARN_INTERVAL;
 	dashWarn.isActive = ACTIVE;
 
@@ -1042,7 +1050,8 @@ void StartSpiralPaws() {
 // 3페이즈 첫 번째 대시 경고 시작 (doubleDashPhase 설정)
 void StartDoubleDashWarning() {
 	StartDashWarning();
-	boss.doubleDashPhase = 1; // 첫 번째 대시 예약
+	if (dashWarn.isActive == ACTIVE)   // 경고가 실제로 켜졌을 때만 연속 대시 예약
+		boss.doubleDashPhase = 1;
 }
 
 // 패턴 선택

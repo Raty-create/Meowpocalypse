@@ -118,6 +118,7 @@
 #define DASH_WARN_INTERVAL 120
 #define DASH_SPEED 18.0f
 #define DASH_INTERVAL 50
+#define DASH_MIN_DIST (TILE_SIZE * 5)
 
 #define BOSS_ATTACK_INTERVAL 60
 #define BOSS_SKILL_CHARGE_TIME 120				// 총 2초 (20프레임 * 6단계)

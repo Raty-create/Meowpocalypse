@@ -541,10 +541,10 @@ MAP_TYPE GetNextMap(MAP_TYPE type) {
 
 void PlayStageBGM(MAP_TYPE type) {
 	switch (type) {
-	case MAP_HALLWAY:     PlayBGM(BGM_HALLWAY, TRUE, 400); break;
-	case MAP_FIRST_BOSS:  PlayBGM(BGM_BOSS1, TRUE, 400);   break;
-	case MAP_SECOND_BOSS: PlayBGM(BGM_BOSS2, TRUE, 400);   break;
-	case MAP_THIRD_BOSS:  PlayBGM(BGM_BOSS3, TRUE, 400);   break;
+	case MAP_HALLWAY:     PlayBGM(BGM_HALLWAY, TRUE, 200); break;
+	case MAP_FIRST_BOSS:  PlayBGM(BGM_BOSS1, TRUE, 200);   break;
+	case MAP_SECOND_BOSS: PlayBGM(BGM_BOSS2, TRUE, 200);   break;
+	case MAP_THIRD_BOSS:  PlayBGM(BGM_BOSS3, TRUE, 200);   break;
 	}
 }
 
@@ -579,6 +579,13 @@ void ExecuteMapTransition() {
 	currentMapType = nextMap;
 	PlayStageBGM(currentMapType);
 
+	if (currentMapType == MAP_FIRST_BOSS || currentMapType == MAP_SECOND_BOSS || currentMapType == MAP_THIRD_BOSS) {
+		SetBGMVolume(0); // 인트로 페이드 인을 위해 일단 0으로!
+	}
+	else {
+		// 복도맵이나 대기맵일 때는 페이드 인 없이 즉시 볼륨 복구
+		SetBGMVolume(GetBGMTargetVolume());
+	}
 	InitObstacles();
 
 	if (currentMapType != MAP_WAITING)
