@@ -5,6 +5,14 @@ HDC g_hGameDC = NULL;
 HBITMAP g_hGameBitmap = NULL;
 HBITMAP g_hOldGameBitmap = NULL;
 
+static float g_titleBgmVol = 0.0f;
+
+static void StartTitleBGM(int volume) {
+	PlayBGM(BGM_TITLE, TRUE, volume);  // 목표 볼륨 기록 (GetBGMTargetVolume이 이 값을 반환)
+	SetBGMVolume(0);                   // 실제 재생은 0에서 시작
+	g_titleBgmVol = 0.0f;              // swell 리셋
+}
+
 void InitGame() {
 	currentMapType = MAP_WAITING;				// 시작 맵 설정
 
@@ -29,7 +37,7 @@ void InitGame() {
 	InitChuru();								// 츄르
 	InitUI();									// UI
 	InitSound();
-	PlayBGM(BGM_TITLE, TRUE, 300);
+	StartTitleBGM(300);
 }
 
 void ReleaseGame() {
@@ -93,6 +101,11 @@ void Update(HWND hWnd) {
 	}
 	else if (g_UI.isEndingFadeOut) {
 		g_UI.fadeAlpha += 0.02f;
+
+		int target = GetBGMTargetVolume();
+		float volProgress = g_UI.fadeAlpha * 0.5f;
+		SetBGMVolume((int)(target * (1.0f - volProgress)));
+
 		if (g_UI.fadeAlpha >= 1.0f) {
 			g_UI.fadeAlpha = 1.0f;
 			g_UI.isEndingFadeOut = FALSE;
@@ -137,7 +150,7 @@ void Update(HWND hWnd) {
 			g_UI.gameState = TITLE;
 			LoadMyImage(&g_UI.imgTitleBg, L"title_bg.png");
 			LoadMyImage(&g_UI.imgMeowpocalypseTextLogo, L"meowpocalypse_logo.png");
-			PlayBGM(BGM_TITLE, TRUE, 100);
+			StartTitleBGM(100);
 		}
 	}
 	else if (g_UI.isFadeIn) {
@@ -156,6 +169,11 @@ void Update(HWND hWnd) {
 	}
 	else if (g_UI.isEndingFadeIn) {
 		g_UI.fadeAlpha -= 0.02f;
+
+		int target = GetBGMTargetVolume();
+		float volProgress = 1.0f - (g_UI.fadeAlpha * 0.5f);
+		SetBGMVolume((int)(target * (1.0f - volProgress)));
+
 		if (g_UI.fadeAlpha <= 0.0f) {
 			g_UI.fadeAlpha = 0.0f;
 			g_UI.isEndingFadeIn = FALSE;
@@ -170,7 +188,15 @@ void Update(HWND hWnd) {
 	}
 
 	if (g_UI.gameState == TITLE) {
-		UpdateTitle();
+		if (g_UI.gameState == TITLE) {
+			int target = GetBGMTargetVolume();
+			if (g_titleBgmVol < (float)target) {
+				g_titleBgmVol += (float)target / 180.0f;
+				if (g_titleBgmVol > (float)target) g_titleBgmVol = (float)target;
+				SetBGMVolume((int)g_titleBgmVol);
+			}
+			UpdateTitle();
+		}
 	}
 	else if (g_UI.gameState == PAUSE) {
 		UpdatePause();
