@@ -10,7 +10,7 @@
 static const wchar_t* g_bgmPath[BGM_COUNT] = {
     L"Title.mp3",                         // BGM_TITLE
     L"Waiting Map.mp3",                   // BGM_WAITING
-    L"HallWayMap.mp3",                    // BGM_HALLWAY
+    L"Hall Way Map.mp3",                    // BGM_HALLWAY
     L"First Boss Map.mp3",                // BGM_BOSS1
     L"Second Boss Map.mp3",               // BGM_BOSS2
     L"Third Boss Map.mp3",                // BGM_BOSS3
