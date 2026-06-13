@@ -13,6 +13,7 @@
 BULLET bullets[BULLET_MAX];
 CHURU churues[CHURU_MAX];
 IMAGE imgProjectile;
+BOOL g_bulletDamageBoost = FALSE;
 
 void InitBullet() {
 	if (imgProjectile.img.IsNull()) {
@@ -123,6 +124,7 @@ void ShootBullet() {
 				bullets[i].dx = (dirX / length) * BULLET_SPEED;
 				bullets[i].dy = (dirY / length) * BULLET_SPEED;
 				bullets[i].isActive = ACTIVE;
+				bullets[i].damage = g_bulletDamageBoost ? 20050 : BULLET_DAMAGE;
 
 				InitAnimation(&bullets[i].anim, &imgProjectile, fw, fh, 1, 0, FALSE);
 				bullets[i].dirRow = 0;
@@ -174,7 +176,7 @@ void ShootSkillQ() {
 					bullets[i].dx = cosf(currAngle) * BULLET_SPEED;
 					bullets[i].dy = sinf(currAngle) * BULLET_SPEED;
 					bullets[i].isActive = ACTIVE;
-					bullets[i].damage = BULLET_DAMAGE;
+					bullets[i].damage = g_bulletDamageBoost ? 20050 : BULLET_DAMAGE;
 
 					InitAnimation(&bullets[i].anim, &imgProjectile, fw, fh, 1, 0, FALSE);
 					bullets[i].dirRow = 0;

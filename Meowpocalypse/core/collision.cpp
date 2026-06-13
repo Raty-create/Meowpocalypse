@@ -238,7 +238,7 @@ int HandleBulletEnemyCollision(BULLET* bullet, ENEMY* enemy) {
 		enemy->base.hitBoxX, enemy->base.hitBoxY, enemy->base.hitBoxW, enemy->base.hitBoxH)) {
 
 		bullet->isActive = INACTIVE;
-		enemy->base.hp -= BULLET_DAMAGE;
+		enemy->base.hp -= bullet->damage;
 
 		if (enemy->base.hp <= 0) {
 			enemy->base.hp = 0;
@@ -345,7 +345,7 @@ int HandleBulletBossCollision(BULLET* bullet, BOSS* boss) {
 		boss->base.hitBoxX, boss->base.hitBoxY, boss->base.hitBoxW, boss->base.hitBoxH)) {
 
 		bullet->isActive = INACTIVE;
-		boss->base.hp -= BULLET_DAMAGE;
+		boss->base.hp -= bullet->damage;
 
 		if (boss->base.hp <= 0) {
 			boss->base.hp = 0;
