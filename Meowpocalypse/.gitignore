@@ -1,0 +1,33 @@
+# Visual Studio 이진 파일 및 빌드 결과물
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Bb]in/
+[Oo]bj/
+
+# Visual Studio 프로젝트 및 솔루션 관련
+.vs/
+*.vcxproj.user
+*.sln.docstates
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# 컴파일된 개별 파일
+*.obj
+*.pdb
+*.ilk
+*.exe
+*.dll
+*.lib
+*.exp
+*.tlog
+*.lastbuildstate
+*.idb
+
+# 기타 임시 파일
+*.log
+*.tmp
+*.cache

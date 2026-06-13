@@ -1,14 +1,21 @@
 #include <windows.h>
-#include<stdlib.h>
+#include <stdlib.h>
 #include <time.h>
 #include "game.h"
+#include "config.h"
 
 HINSTANCE g_hInst;
 LPCTSTR lpszClass = L"My Window Class";
 LPCTSTR lpszWindowName = L"windows program 1";
+int g_WindowWidth;
+int g_WindowHeight;
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam);
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdParam, int nCmdShow)
 {
+	g_WindowWidth = GetSystemMetrics(SM_CXSCREEN);
+	g_WindowHeight = GetSystemMetrics(SM_CYSCREEN);
+
 	HWND hWnd;
 	MSG Message;
 	WNDCLASSEX WndClass;
@@ -27,7 +34,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdPa
 	WndClass.lpszClassName = lpszClass;
 	WndClass.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
 	RegisterClassEx(&WndClass);
-	hWnd = CreateWindow(lpszClass, lpszWindowName, WS_OVERLAPPEDWINDOW, 0, 0, 1920, 1080, NULL, (HMENU)NULL, hInstance, NULL);
+	hWnd = CreateWindow(lpszClass, lpszWindowName, WS_POPUP | WS_VISIBLE, 0, 0, g_WindowWidth, g_WindowHeight, NULL, (HMENU)NULL, hInstance, NULL);
 	ShowWindow(hWnd, nCmdShow);
 	UpdateWindow(hWnd);
 	while (GetMessage(&Message, 0, 0, 0)) {
@@ -40,13 +47,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdPa
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	PAINTSTRUCT ps;
-	HDC hDC, mDC;
-	HBITMAP hBitmap, oldBitMap;
-
-	RECT rt;
-	GetClientRect(hWnd, &rt);
-
-	static int mx, my;
+	HDC hDC;
 
 	switch (uMsg) {
 	case WM_CREATE:
@@ -55,30 +56,42 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 		SetTimer(hWnd, 1, 6, NULL);
 
 		break;
+
+	case WM_ERASEBKGND:
+		return TRUE;
+
+	case WM_SETCURSOR:
+		SetCursor(NULL);
+		return TRUE;
+
+	case WM_SIZE:
+		g_WindowWidth = LOWORD(lParam);
+		g_WindowHeight = HIWORD(lParam);
+		break;
+
+	case WM_KEYDOWN:
+		switch (wParam) {
+		case VK_BACK: DestroyWindow(hWnd); break;
+		}
+		break;
+
 	case WM_TIMER:
 		Update(hWnd);
 
 		InvalidateRect(hWnd, NULL, FALSE);
 		break;
+
 	case WM_PAINT:
 		hDC = BeginPaint(hWnd, &ps);
-		mDC = CreateCompatibleDC(hDC);
-		hBitmap = CreateCompatibleBitmap(hDC, rt.right, rt.bottom);
-		oldBitMap = (HBITMAP)SelectObject(mDC, hBitmap);
-		FillRect(mDC, &rt, (HBRUSH)GetStockObject(BLACK_BRUSH));
 		
-		Render(mDC);
-
-		BitBlt(hDC, 0, 0, rt.right, rt.bottom, mDC, 0, 0, SRCCOPY);
-
-		SelectObject(mDC, oldBitMap);
-		DeleteObject(hBitmap);
-		DeleteDC(mDC);
+		Render(hWnd, hDC);
 
 		EndPaint(hWnd, &ps);
 		break;
+
 	case WM_DESTROY:
 		KillTimer(hWnd, 1);
+		ReleaseGame();
 		PostQuitMessage(0);
 		break;
 	}

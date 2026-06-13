@@ -3,8 +3,6 @@
 #include "config.h"
 #include "enum.h"
 
-extern MAP_TYPE currentMapType;
-
 typedef struct {
     int row;
     int col;
@@ -15,18 +13,25 @@ typedef struct {
     int tiles[MAX_MAP_ROWS][MAX_MAP_COLS];
     int rows;
     int cols;
-    int worldX;
-    int worldY;
+    float worldX;
+    float worldY;
     DOOR_INFO doors[MAX_DOORS];
     int doorCount;
+
+    float doorAnimTimer;
+    int doorAnimFrame;
+    float doorOffsetY;
 } MAPDATA;
 
-extern MAPDATA maps[7];
+extern MAP_TYPE currentMapType;
+extern MAPDATA maps[MAP_COUNT];
+extern int g_hallwayStage;
 
 MAP_TYPE GetNextMap(MAP_TYPE type);
 
 void GetSpawnPos(MAP_TYPE type, float* outX, float* outY);
 void MapTransition();
+void ExecuteMapTransition();
 
 void InitMap(MAP_TYPE type);
 void InitAllMap();
@@ -35,3 +40,5 @@ void SetDoorState(MAP_TYPE type, DOOR_STATE state);
 void UpdateDoors(MAP_TYPE type, int allEnemiesDead);
 
 void ClearEnemies();
+
+void UpdateMapDoors();

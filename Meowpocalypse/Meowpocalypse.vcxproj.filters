@@ -76,6 +76,42 @@
     <Filter Include="camera\소스 파일">
       <UniqueIdentifier>{978c7eef-606a-4dbb-9c1b-c039124c80c4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="graphics">
+      <UniqueIdentifier>{5d446d7b-5c2c-4bd0-aa8b-ae5686252fa9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="graphics\헤더 파일">
+      <UniqueIdentifier>{acef0aa4-89f3-4e7d-92d7-968daa78039c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="graphics\소스 파일">
+      <UniqueIdentifier>{b2ac6441-79dd-4fef-a058-f122a125bf09}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ui">
+      <UniqueIdentifier>{1bf7d60b-7fa4-4efe-97d0-bdf8295cdfc0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ui\헤더 파일">
+      <UniqueIdentifier>{1bbdc704-7edc-4de7-b5f5-3a704ff2d863}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ui\소스 파일">
+      <UniqueIdentifier>{db5d4843-9fb8-48a7-ae1b-7d90448b34b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sound">
+      <UniqueIdentifier>{5ebaefd4-3439-444e-8e79-f67a5f414591}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sound\헤더 파일">
+      <UniqueIdentifier>{26e31ea6-efc7-4ecc-8acd-70180f869ab0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sound\소스 파일">
+      <UniqueIdentifier>{fd02be9f-6341-4f42-aa70-054891545a68}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="obstacle">
+      <UniqueIdentifier>{5d2f8461-a7b8-4819-ae1d-aa20ffe28fcb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="obstacle\헤더 파일">
+      <UniqueIdentifier>{71b84f23-51a1-45f7-91b4-4b9a8b123c43}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="obstacle\소스 파일">
+      <UniqueIdentifier>{79cd5295-f5c8-4959-86fc-5a312ec11eb4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="game.cpp">
@@ -110,6 +146,21 @@
     </ClCompile>
     <ClCompile Include="camera\camera.cpp">
       <Filter>camera\소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\image.cpp">
+      <Filter>graphics\소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\animation.cpp">
+      <Filter>graphics\소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\ui.cpp">
+      <Filter>ui\소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="sound\sound.cpp">
+      <Filter>sound\소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="obstacle\obstacle.cpp">
+      <Filter>obstacle\소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -148,6 +199,27 @@
     </ClInclude>
     <ClInclude Include="camera\camera.h">
       <Filter>camera\헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="enum.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\image.h">
+      <Filter>graphics\헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\animation.h">
+      <Filter>graphics\헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\ui.h">
+      <Filter>ui\헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="sound\sound.h">
+      <Filter>sound\헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="obstacle\obstacle.h">
+      <Filter>obstacle\헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -105,14 +105,18 @@
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)core;$(ProjectDir)player;$(ProjectDir)enemy;$(ProjectDir)map;$(ProjectDir)camera;$(ProjectDir)render;$(ProjectDir)bullet;$(ProjectDir)enum</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)core;$(ProjectDir)player;$(ProjectDir)enemy;$(ProjectDir)map;$(ProjectDir)camera;$(ProjectDir)render;$(ProjectDir)bullet;$(ProjectDir)enum;$(ProjectDir)graphics;$(ProjectDir)ui;$(ProjectDir)sound;$(ProjectDir)obstacle</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalOptions>msimg32.lib %(AdditionalOptions)</AdditionalOptions>
     </Link>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -137,10 +141,15 @@
     <ClCompile Include="enemy\boss.cpp" />
     <ClCompile Include="enemy\enemy.cpp" />
     <ClCompile Include="game.cpp" />
+    <ClCompile Include="graphics\animation.cpp" />
+    <ClCompile Include="graphics\image.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="map\map.cpp" />
+    <ClCompile Include="obstacle\obstacle.cpp" />
     <ClCompile Include="player\player.cpp" />
     <ClCompile Include="render\render.cpp" />
+    <ClCompile Include="sound\sound.cpp" />
+    <ClCompile Include="ui\ui.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bullet\bullet.h" />
@@ -153,10 +162,15 @@
     <ClInclude Include="enemy\enemy.h" />
     <ClInclude Include="enum.h" />
     <ClInclude Include="game.h" />
+    <ClInclude Include="graphics\animation.h" />
+    <ClInclude Include="graphics\image.h" />
     <ClInclude Include="map\map.h" />
+    <ClInclude Include="obstacle\obstacle.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="player\player.h" />
     <ClInclude Include="render\render.h" />
+    <ClInclude Include="sound\sound.h" />
+    <ClInclude Include="ui\ui.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
