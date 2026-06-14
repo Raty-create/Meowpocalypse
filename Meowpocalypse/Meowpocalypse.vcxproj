@@ -170,8 +170,15 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="player\player.h" />
     <ClInclude Include="render\render.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="sound\sound.h" />
     <ClInclude Include="ui\ui.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\..\OneDrive\바탕 화면\Meowpocalypse_exe_icon\Meowpocalypse_emblem_256x256.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

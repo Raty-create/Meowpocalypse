@@ -433,13 +433,13 @@ void Render(HWND hWnd, HDC hDC) {
 		RenderBossPaws(g_hGameDC);								// 보스 젤리
 
 		if (camera.isIntroActive == INACTIVE) {
-/*			RenderPlayerHitBox(g_hGameDC);						// 플레이어 hitBox
+			RenderPlayerHitBox(g_hGameDC);						// 플레이어 hitBox
 			RenderEnemiesHitBox(g_hGameDC);						// 잡몹 hitBox
 			RenderCatPawHitBox(g_hGameDC);						// 잡몹 젤리 hitBox
 			RenderBossHitBox(g_hGameDC);						// 보스 hitBox
 			RenderBossPawsHitBox(g_hGameDC);					// 보스 젤리 hitBox
 			RenderBulletsHitBox(g_hGameDC);						// 총알 hitBox
-			RenderObstaclesHitBox(g_hGameDC);					// 장애물 hitBox*/
+			RenderObstaclesHitBox(g_hGameDC);					// 장애물 hitBox
 
 			RenderUI(g_hGameDC);								// UI
 		}

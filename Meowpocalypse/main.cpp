@@ -4,6 +4,8 @@
 #include "game.h"
 #include "config.h"
 
+#include "resource.h"
+
 HINSTANCE g_hInst;
 LPCTSTR lpszClass = L"My Window Class";
 LPCTSTR lpszWindowName = L"windows program 1";
@@ -27,12 +29,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdPa
 	WndClass.cbClsExtra = 0;
 	WndClass.cbWndExtra = 0;
 	WndClass.hInstance = hInstance;
-	WndClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+	WndClass.hIcon = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_ICON1));
 	WndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
 	WndClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
 	WndClass.lpszMenuName = NULL;
 	WndClass.lpszClassName = lpszClass;
-	WndClass.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
+	WndClass.hIconSm = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_ICON1));
 	RegisterClassEx(&WndClass);
 	hWnd = CreateWindow(lpszClass, lpszWindowName, WS_POPUP | WS_VISIBLE, 0, 0, g_WindowWidth, g_WindowHeight, NULL, (HMENU)NULL, hInstance, NULL);
 	ShowWindow(hWnd, nCmdShow);

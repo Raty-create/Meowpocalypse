@@ -303,7 +303,7 @@ int HandleCatPawPlayerCollision(CATPAW* cp, PLAYER* p) {
 int HandleEnemyPlayerCollision(ENEMY* enemy, PLAYER* p) {
 	if (!enemy->isActive || p->invincibleTimer > 0) return 0;
 
-	if (IsObjectCollision(enemy->base.hitBoxX, enemy->base.hitBoxY, enemy->base.hitBoxW, enemy->base.hitBoxH,
+	if (IsObjectCollision(enemy->base.hitBoxX, enemy->base.hitBoxY, (int)(enemy->base.hitBoxW * 1.2f), enemy->base.hitBoxH,
 		p->base.hitBoxX, p->base.hitBoxY, p->base.hitBoxW, p->base.hitBoxH)) {
 
 		p->base.hp -= ENEMY_CONTACT_DAMAGE;
